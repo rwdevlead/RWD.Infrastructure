@@ -1,3 +1,4 @@
+# Terraform
 # Local .terraform directories
 .terraform/
 
@@ -35,3 +36,65 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Packer
+# Cache objects
+packer_cache/
+
+# Packer variable files (may contain sensitive data)
+*.pkrvars.hcl
+*.pkrvars.json
+
+# For `packer init` downloaded plugins
+.packer.d/plugins/
+
+# Build artifacts
+builds/
+output-*/
+
+# Crash logs
+packer-crash.log
+
+# Ansible
+# Galaxy-installed roles and collections
+roles/*
+!roles/requirements.yml
+collections/*
+!collections/requirements.yml
+
+# Ansible Vault password file
+.vault_pass
+
+# Inventory files that may contain sensitive data
+inventory/*
+!inventory/example.ini
+!inventory/group_vars/example.yml
+
+# Generated retry files
+*.retry
+
+# Ansible fact cache
+.ansible/fact-cache/
+
+# Local configuration overrides
+ansible.cfg
+
+# Don't ignore these if they exist
+!roles/*/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# VS Code settings
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# OS specific files
+.DS_Store
+Thumbs.db
