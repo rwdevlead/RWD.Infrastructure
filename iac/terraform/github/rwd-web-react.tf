@@ -1,16 +1,23 @@
+
+# *** import repo ***
+# import {
+#   id = "RWD.Web.REACT"
+#   to = module.rwd_web_react.github_repository.this
+# }
+
 # create a open repo
-module "test_open_repo_on_primary" {
+module "rwd_web_react" {
   source = "./modules/github-repository"
 
   providers = {
     github = github.primary
   }
 
-  repository_name = "TEST.repo"
-  description     = "Testing Terraform Create - ${local.managed_by}"
+  repository_name = "RWD.Web.REACT"
+  description     = "Homepage for Real World Developers - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["terraform", "iac", "automation"]
+  topics          = ["react", "vite", "frontend"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki
@@ -20,18 +27,19 @@ module "test_open_repo_on_primary" {
 }
 
 # Use CODEOWNERS module to manage the CODEOWNERS file
-module "codeowners" {
+module "codeowners_rwd_web_react" {
   source = "./modules/github-codeowners"
   providers = {
     github = github.primary
   }
 
-  repository   = module.test_open_repo_on_primary.repository_name
+  repository   = module.rwd_web_react.repository_name
+  branch       = "main"
   github_owner = var.github_owner_primary
   # admins       = [var.github_owner_primary]
   owners = [var.github_owner_primary]
 
-  depends_on = [module.test_open_repo_on_primary]
+  depends_on = [module.rwd_web_react]
 
   # extra_rules = {
   #   "/frontend/*" = "dave"
@@ -41,14 +49,13 @@ module "codeowners" {
 }
 
 # create classic branch protection instead of a ruleset
-module "branch_protection_main" {
-  source = "./modules/github-branch-protection" # path to the module
+module "branch_protection_rwd_web_react" {
+  source = "./modules/github-branch-protection"
   providers = {
     github = github.primary
   }
 
-  # repository    = module.test_open_repo_on_primary.repository_name
-  repository_id = module.test_open_repo_on_primary.repository_id
+  repository_id = module.rwd_web_react.repository_id
   branch        = "main"
 
   github_owner = var.github_owner_primary
@@ -63,7 +70,7 @@ module "branch_protection_main" {
   require_code_owner_reviews      = local.branch_protection_settings.require_code_owner_reviews
   required_approving_review_count = local.branch_protection_settings.required_approving_review_count
 
-  depends_on = [module.codeowners]
+  depends_on = [module.codeowners_rwd_web_react]
 
 }
 

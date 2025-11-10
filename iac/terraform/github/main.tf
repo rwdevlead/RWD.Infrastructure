@@ -3,7 +3,7 @@ locals {
   repo_features = {
     has_issues      = true
     has_wiki        = false
-    has_discussions = true
+    has_discussions = false
     has_projects    = true
     auto_init       = true
   }
@@ -22,7 +22,7 @@ locals {
   managed_by = "Managed by Terraform"
 }
 
-
+# TODO 
 
 # *** import repo ***
 # import {
@@ -30,25 +30,25 @@ locals {
 #   to = module.my_repo.github_repository.this
 # }
 
-module "my_repo" {
-  source = "./modules/github-repository"
+# module "my_repo" {
+#   source = "./modules/github-repository"
 
-  providers = {
-    github = github.primary
-  }
+#   providers = {
+#     github = github.primary
+#   }
 
-  repository_name = "TEST.importme"
-  description     = "Testing Terraform Import - ${local.managed_by}"
-  visibility      = "public"
+#   repository_name = "TEST.importme"
+#   description     = "Testing Terraform Import - ${local.managed_by}"
+#   visibility      = "public"
 
-  topics          = ["terraform", "iac", "testing"]
-  has_issues      = local.repo_features.has_issues
-  has_projects    = local.repo_features.has_projects
-  has_wiki        = local.repo_features.has_wiki
-  auto_init       = local.repo_features.auto_init
-  has_discussions = local.repo_features.has_discussions
+#   topics          = ["terraform", "iac", "testing"]
+#   has_issues      = local.repo_features.has_issues
+#   has_projects    = local.repo_features.has_projects
+#   has_wiki        = local.repo_features.has_wiki
+#   auto_init       = local.repo_features.auto_init
+#   has_discussions = local.repo_features.has_discussions
 
-}
+# }
 
 
 
