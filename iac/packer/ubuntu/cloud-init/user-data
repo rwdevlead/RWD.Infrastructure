@@ -1,0 +1,21 @@
+#cloud-config
+hostname: "{{user `template_name`}}" # Packer variable for dynamic hostname
+ssh_pwauth: false # Disable password login
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - "{{user `ssh_public_key`}}" # Inject your personal SSH key
+
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+runcmd:
+  # Install QEMU Guest Agent for Proxmox integration
+  - [sh, -c, "sudo apt-get install -y qemu-guest-agent"]
+  - [sh, -c, "sudo systemctl enable --now qemu-guest-agent"]
+
+  # Simple final message
+  - [sh, -c, "echo 'Ubuntu base template ready.'"]

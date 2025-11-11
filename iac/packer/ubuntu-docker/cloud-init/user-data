@@ -1,0 +1,41 @@
+#cloud-config
+hostname: "{{user `template_name`}}" # Packer variable for dynamic hostname
+ssh_pwauth: false # Disable password login
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - "{{user `ssh_public_key`}}" # Inject your personal SSH key
+
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+runcmd:
+  # Install QEMU Guest Agent
+  - [sh, -c, "sudo apt-get install -y qemu-guest-agent"]
+  - [sh, -c, "sudo systemctl enable --now qemu-guest-agent"]
+
+  # Install Docker and dependencies
+  - [sh, -c, "sudo apt-get install -y ca-certificates curl gnupg lsb-release"]
+  - [sh, -c, "sudo mkdir -p /etc/apt/keyrings"]
+  - [
+      sh,
+      -c,
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg",
+    ]
+  - [
+      sh,
+      -c,
+      "echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
+    ]
+  - [sh, -c, "sudo apt-get update"]
+  - [
+      sh,
+      -c,
+      "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
+    ]
+  - [sh, -c, "sudo systemctl enable --now docker"]
+
+  - [sh, -c, "echo 'Ubuntu + Docker template ready.'"]
