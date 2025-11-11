@@ -3,8 +3,8 @@ locals {
   repo_features = {
     has_issues      = true
     has_wiki        = false
-    has_discussions = false
-    has_projects    = true
+    has_discussions = true
+    has_projects    = false
     auto_init       = true
   }
 

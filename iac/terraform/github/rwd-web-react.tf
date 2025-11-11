@@ -17,7 +17,7 @@ module "rwd_web_react" {
   description     = "Homepage for Real World Developers - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["react", "vite", "frontend"]
+  topics          = ["reactjs", "vite", "tailwindcss", "frontend"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki
