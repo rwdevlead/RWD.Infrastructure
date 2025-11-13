@@ -11,39 +11,36 @@ packer {
 }
 
 # ==========================================================
-# Proxmox Source Template (Ubuntu Base)
+# Proxmox Source Template (Ubuntu Base + Docker)
 # ==========================================================
-source "proxmox" "ubuntu" {
+source "proxmox" "ubuntu-docker" {
 
   # -------------------------------
   # Proxmox Connection Settings
   # -------------------------------
-  proxmox_url      = var.proxmox_url
-  username         = var.proxmox_user
-  token_id         = var.proxmox_token_id
-  token_secret     = var.proxmox_token_secret
+  proxmox_url  = var.proxmox_url
+  username     = var.proxmox_user
+  token_id     = var.proxmox_token_id
+  token_secret = var.proxmox_token_secret
 
   # -------------------------------
   # VM General Settings
   # -------------------------------
-  node             = "proxmox"
-  vm_id            = var.vm_id
-  template_name    = var.template_name
-
-  # -------------------------------
-  # VM OS / Installation Settings
-  # -------------------------------
-  iso_file         = var.iso_file
-  iso_storage_pool = "local"
-
-  cores            = 2
-  memory           = 2048
-  scsi_controller  = "virtio-scsi-pci"
-  bootdisk         = "scsi0"
+  node          = "proxmox"
+  vm_id         = var.vm_id
+  template_name = var.template_name
 
   # -------------------------------
   # Autoinstall / Unattended Settings
   # -------------------------------
+  iso_file         = var.iso_file
+  iso_storage_pool = "local"
+
+  cores           = 2
+  memory          = 2048
+  scsi_controller = "virtio-scsi-pci"
+  bootdisk        = "scsi0"
+
   boot_command = [
     "<enter><wait>",
     "/install/vmlinuz auto ",
@@ -53,11 +50,11 @@ source "proxmox" "ubuntu" {
     "<enter>"
   ]
 
-  cloud_init                  = true
-  cloud_init_user_data_file   = "iac/packer/ubuntu-server-focal/cloud-init/user-data"
-  cloud_init_storage_pool     = "local-lvm"
-  unmount_iso                 = true
-  os_type                     = "cloud-init"
+  cloud_init                = true
+  cloud_init_user_data_file = "iac/packer/ubuntu-server-focal-docker/cloud-init/user-data"
+  cloud_init_storage_pool   = "local-lvm"
+  unmount_iso               = true
+  os_type                   = "cloud-init"
 
   qemu_agent = true
 
@@ -76,8 +73,8 @@ source "proxmox" "ubuntu" {
   # Network Configuration
   # -------------------------------
   network_adapters {
-    model   = "virtio"
-    bridge  = "vmbr0"
+    model    = "virtio"
+    bridge   = "vmbr0"
     firewall = "false"
   }
 }
@@ -86,16 +83,8 @@ source "proxmox" "ubuntu" {
 # Build Section
 # ==========================================================
 build {
-  name    = "ubuntu-template"
-  sources = ["source.proxmox.ubuntu"]
+  name    = "ubuntu-docker-template"
+  sources = ["source.proxmox.ubuntu-docker"]
 
-  # -------------------------------
-  # Provisioners
-  # -------------------------------
-  provisioner "shell" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get -y upgrade"
-    ]
-  }
+  # No shell provisioner needed: Docker and QEMU Guest Agent handled by cloud-init
 }

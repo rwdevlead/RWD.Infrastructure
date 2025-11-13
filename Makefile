@@ -130,27 +130,6 @@ packer-fmt: ## Format Packer code
 		echo "No Packer templates found, skipping packer fmt."; \
 	fi
 
-# lint: ## Run validation and lint checks
-# 	@echo "Linting Terraform in $(TERRAFORM_DIR)..."
-# 	@if [ -f "$(TERRAFORM_DIR)/main.tf" ] || [ -d "$(TERRAFORM_DIR)/modules" ]; then \
-# 		cd $(TERRAFORM_DIR) && terraform validate; \
-# 	else \
-# 		echo "No Terraform files found, skipping terraform validate"; \
-# 	fi
-
-# 	@echo "Linting Packer templates..."
-# 	@if ls *.pkr.hcl 1> /dev/null 2>&1 || ls *.pkr.json 1> /dev/null 2>&1; then \
-# 		packer validate .; \
-# 	else \
-# 		echo "No Packer templates found, skipping packer validate"; \
-# 	fi
-
-# 	@echo "Linting Ansible playbooks..."
-# 	@if ls playbooks/*.yml 1> /dev/null 2>&1; then \
-# 		ansible-lint || true; \
-# 	else \
-# 		echo "No Ansible playbooks found, skipping ansible-lint"; \
-# 	fi
 
 clean: ## Clean up generated files in the selected Terraform target
 	@echo "Cleaning Terraform and Packer files in $(TERRAFORM_DIR)..."
