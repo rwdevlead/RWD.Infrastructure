@@ -166,3 +166,67 @@ check-vars: ## Display key Terraform env vars and outputs
 	@echo ""
 	@echo "=== Terraform Outputs (if any) ==="
 	@terraform -chdir=$(TERRAFORM_DIR) output 2>/dev/null || echo "No outputs found. Did you run 'terraform apply'?"
+
+
+
+
+
+
+
+	*********************************
+
+	.PHONY: help packer-validate packer-build packer-clean terraform-init terraform-plan terraform-apply terraform-destroy
+
+# ==========================================================
+# Variables
+# ==========================================================
+PACKER_DIR := iac/packer/ubuntu
+TERRAFORM_DIR := iac/terraform/proxmox
+TERRAFORM_VARS_FILE := $(TERRAFORM_DIR)/terraform.tfvars
+
+# ==========================================================
+# Help
+# ==========================================================
+help:
+	@echo "Available targets:"
+	@echo "  packer-validate   Validate the Packer template"
+	@echo "  packer-build      Build the Ubuntu template with Packer"
+	@echo "  packer-clean      Remove temporary Packer files"
+	@echo "  terraform-init    Initialize Terraform"
+	@echo "  terraform-plan    Plan Terraform changes"
+	@echo "  terraform-apply   Apply Terraform changes"
+	@echo "  terraform-destroy Destroy Terraform-managed resources"
+
+# ==========================================================
+# Packer Targets
+# ==========================================================
+packer-validate:
+	@echo "Validating Packer template..."
+	@cd $(PACKER_DIR) && packer validate ubuntu-template.pkr.hcl
+
+packer-build:
+	@echo "Building Packer template..."
+	@cd $(PACKER_DIR) && packer build ubuntu-template.pkr.hcl
+
+packer-clean:
+	@echo "Cleaning Packer cache and temporary files..."
+	@cd $(PACKER_DIR) && rm -rf packer_cache packer_build
+
+# ==========================================================
+# Terraform Targets
+# ==========================================================
+terraform-init:
+	@echo "Initializing Terraform..."
+	@cd $(TERRAFORM_DIR) && terraform init
+
+terraform-plan:
+	@echo "Planning Terraform deployment..."
+	@cd $(TERRAFORM_DIR) && terraform plan -var-file=$(TERRAFORM_VARS_FILE)
+
+terraform-apply:
+	@echo "Applying Terraform deployment..."
+	@cd $(TERRAFORM_DIR) && terraform apply -var-file=$(TERRAFORM_VARS_FILE) -auto-approve
+
+terraform-destroy:
+	@echo "Destroying Terraform-managed resources..."
+	@cd $(TERRAFORM_DIR) && terraform destroy -var-file=$(TERRAFORM_VARS_FILE) -auto-approve

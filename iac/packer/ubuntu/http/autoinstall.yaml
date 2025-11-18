@@ -1,0 +1,45 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+    variant: ""
+
+  timezone: America/New_York
+
+  identity:
+    hostname: ubuntu-template
+    username: ubuntu
+    # Temporary password; cloud-init will override on VM clone
+    # Password = "ubuntu"
+    password: "$6$rounds=4096$kJ1Z0o7kQp1I$RSsXqFqWnj7BxBn4pPmp0cZFY0btOQcZq62Yq7cT1TXpuPHsZXIp8ODdew31oLzdYRHxdvaQF6A/TaE/uc4II/"
+
+  ssh:
+    install-server: true
+    allow-pw: false # Packer never SSHs into the installer
+    authorized-keys: [] # Terraform will inject via cloud-init
+
+  storage:
+    layout:
+      name: direct # Single ext4 disk, no LVM, ideal for templates
+
+  packages:
+    - qemu-guest-agent
+    - cloud-init
+
+  late-commands:
+    # Enable qemu-guest-agent
+    - curtin in-target --target=/target systemctl enable qemu-guest-agent
+
+    # Ensure cloud-init is active on first boot
+    - curtin in-target --target=/target cloud-init clean
+
+  user-data:
+    disable_root: true
+    package_upgrade: false
+    fqdn: ubuntu-template.local
+
+  # Reboot after installation complete
+  reboot: true

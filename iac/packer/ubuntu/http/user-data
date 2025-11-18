@@ -1,0 +1,37 @@
+#cloud-config
+hostname: ubuntu-template
+preserve_hostname: false
+
+# System locale + keyboard + timezone
+locale: en_US.UTF-8
+keyboard:
+  layout: us
+  variant: ""
+timezone: America/New_York
+
+# Disable password SSH logins
+ssh_pwauth: false
+
+# Default user (customize username + ssh key)
+users:
+  - name: ubuntu
+    gecos: Ubuntu User
+    groups: [sudo, adm]
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA...REPLACE_WITH_YOUR_PUBLIC_KEY
+
+# Package behavior
+package_update: true
+package_upgrade: false
+package_reboot_if_required: true
+
+# Install qemu agent by default for Proxmox compatibility
+packages:
+  - qemu-guest-agent
+
+# Ensure qemu-guest-agent starts
+runcmd:
+  - systemctl enable --now qemu-guest-agent
