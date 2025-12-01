@@ -1,7 +1,0 @@
-2025/11/22 22:54:57 [INFO] Packer version: 1.14.2 [go1.23.2 darwin arm64]
-2025/11/22 22:54:57 [INFO] PACKER_CONFIG env var not set; checking the default config file path
-2025/11/22 22:54:57 [INFO] PACKER_CONFIG env var set; attempting to open config file: /Users/ka8kgj/.packerconfig
-2025/11/22 22:54:57 [WARN] Config file doesn't exist: /Users/ka8kgj/.packerconfig
-2025/11/22 22:54:57 [INFO] Setting cache directory: /Users/ka8kgj/.cache/packer
-2025/11/22 22:54:57 [INFO] (telemetry) Finalizing.
-2025/11/22 22:54:57 waiting for all plugin processes to complete...

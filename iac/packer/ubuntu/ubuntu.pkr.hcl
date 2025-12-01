@@ -1,10 +1,9 @@
 
 locals {
-  # ice_cream_flavor = "${var.flavor}-ice-cream"
+  # VM Hardware specifications
   cores           = 2
   memory          = 8192 # memory in MB → 8 GB
   scsi_controller = "virtio-scsi-pci"
-  qemu_agent      = false
   disk = {
     disk_size         = "20G"
     format            = "raw"
@@ -40,18 +39,12 @@ source "proxmox-iso" "ubuntu" {
   # -------------------------------
   # Proxmox Connection Settings
   # -------------------------------
+  # Proxmox connection settings from variables
   proxmox_url = var.proxmox_url
   username    = var.username
   token       = var.token
 
-
-
-  # ADD THIS LINE ONLY IN LOCAL USE
-  # insecure = true
-
-  # -------------------------------
-  # Destination
-  # -------------------------------
+  # Destination template settings
   node          = var.node
   vm_id         = var.vm_id
   template_name = var.template_name
@@ -84,83 +77,42 @@ source "proxmox-iso" "ubuntu" {
     firewall = local.network.firewall
   }
 
-  qemu_agent = local.qemu_agent
+  qemu_agent = true
 
-  # ssh_username = var.ssh_username
-  # # Set a generous SSH timeout to allow for full OS install and boot
-  # ssh_timeout = "15m"
-  # # Set the interval for retry attempts 
-  # ssh_wait_timeout = "10m" # Crucial: Allow 10 minutes for the VM to reboot and SSH to start
-
-
+  # SSH connection settings for provisioning
+  # Uses password auth during build; provisioners inject SSH key afterward
   ssh_username = "root"
-  # The plaintext password for the hash you provided (Password: "ubuntu")
   ssh_password = "ubuntu"
-
-  # 💥 CRITICAL: Empty the private key path to force Packer to use the password
   ssh_private_key_file = ""
 
-  ssh_timeout      = "15m"
-  ssh_wait_timeout = "10m"
-  ssh_port         = 22
+  ssh_timeout            = "30m"
+  ssh_wait_timeout       = "25m"
+  ssh_port               = 22
+  ssh_handshake_attempts = 200
 
-  # -------------------------------
-  # VM OS / Installation Settings v1.1.3
-  # -------------------------------
+  # Ubuntu Live Server ISO (proxmox-iso builder requires ISO file)
   iso_file         = var.iso_file
   unmount_iso      = true
   iso_storage_pool = "iso-images"
 
-
-  # -------------------------------
-  # VM OS / Installation Settings v1.2.3
-  # -------------------------------
-  # boot_iso {
-  #   type     = "ide"
-  #   iso_file = var.iso_file
-  #   unmount  = true
-  #   #iso_checksum = "sha512:33c08e56c83d13007e4a5511b9bf2c4926c4aa12fd5dd56d493c0653aecbab380988c5bf1671dbaea75c582827797d98c4a611f7fb2b131fbde2c677d5258ec9"
-  # }
-
-  # -------------------------------
-  # Autoinstall / Unattended Settings
-  # -------------------------------
-  # cloud_init              = true
-  # cloud_init_storage_pool = "local-lvm"
-
-  # PACKER Autoinstall Settings
+  # Cloud-init datasource configuration
+  # HTTP server serves user-data and meta-data files for autoinstall
   http_directory = "http"
 
   boot_wait         = "20s"
   boot_key_interval = "120ms"
 
-  # boot_command = [
-  #   "<esc><wait>",
-  #   "c<wait>",
-
-  #   # Use the correct paths and command line parameters
-  #   "linux /casper/vmlinuz autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ ci-cfgname=autoinstall ---<enter>",
-  #   "initrd /casper/initrd<enter>",
-  #   "boot<enter>"
-  # ]
-
-  # boot_command = [
-  #   "<esc><wait>",
-  #   "c<wait>",
-  #   # This command includes the 'break=top' parameter to force a pause/shell.
-  #   "linux /casper/vmlinuz console=ttyS0 autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ break=top ---<enter>",
-  #   "initrd /casper/initrd<enter>",
-  #   "boot<enter>"
-  # ]
-
-  # ➡️ Use this in your source block
+  # Boot kernel parameters:
+  # - autoinstall: enables unattended Ubuntu Server installation
+  # - ds=nocloud-net;s=http://IP:PORT/: cloud-init datasource over HTTP
+  # - console=ttyS0,115200n8: serial console output (for debugging)
+  # - systemd.log_level=debug: verbose system logging
   boot_command = [
     "<esc><wait>",
     "c<wait>",
-    # Hardcode the MacBook's IP (192.168.50.165) for the HTTP server location
-    "linux /casper/vmlinuz autoinstall ds=nocloud-net\\;s=http://192.168.50.165:{{ .HTTPPort }}/ ---<enter>",
-    "initrd /casper/initrd<enter>",
-    "boot<enter>"
+    "linux /casper/vmlinuz root=/casper/filesystem.squashfs ro autoinstall 'ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/' console=ttyS0,115200n8 systemd.log_level=debug <enter>",
+    "initrd /casper/initrd <enter>",
+    "boot <enter>"
   ]
 
 
@@ -174,35 +126,35 @@ build {
   name    = "ubuntu-template"
   sources = ["source.proxmox-iso.ubuntu"]
 
-  provisioner "file" {
-    source      = "http/autoinstall.yaml" // Adjust path if file is elsewhere
-    destination = "http/autoinstall.yaml"
-  }
-
-  # Wait for cloud-init to finish initialization
+  # Wait for system boot and services to stabilize
   provisioner "shell" {
     inline = [
-      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
-      "sudo truncate -s 0 /etc/machine-id",
-      "sudo cloud-init clean",
-      "sudo sync"
+      "echo 'System booted, waiting for services to start...'",
+      "sleep 10",
+      "echo 'System ready for provisioning!'"
     ]
   }
 
-
-  # ----------------------------------------------------------
-  # Install Proxmox cloud-init config
-  # ----------------------------------------------------------
-  provisioner "file" {
-    source      = "files/99-pve.cfg"
-    destination = "/tmp/99-pve.cfg"
-  }
-
+  # Inject SSH public key for key-based authentication
+  # (root password is disabled in favor of key auth for security)
   provisioner "shell" {
     inline = [
-      "sudo mv /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg",
-      "sudo chown root:root /etc/cloud/cloud.cfg.d/99-pve.cfg",
-      "sudo chmod 644 /etc/cloud/cloud.cfg.d/99-pve.cfg"
+      "mkdir -p /root/.ssh",
+      "chmod 700 /root/.ssh",
+      "echo '${var.ssh_pub_key}' >> /root/.ssh/authorized_keys",
+      "chmod 600 /root/.ssh/authorized_keys",
+      "echo 'SSH key added to root user'"
+    ]
+  }
+
+  # Clean up cloud-init state to prevent re-provisioning on clone/boot
+  # Truncate machine-id so each cloned VM gets a new unique ID
+  provisioner "shell" {
+    inline = [
+      "echo 'Cleaning up cloud-init and preparing template...'",
+      "sudo truncate -s 0 /etc/machine-id",
+      "sudo cloud-init clean --logs --seed",
+      "sudo sync"
     ]
   }
 
