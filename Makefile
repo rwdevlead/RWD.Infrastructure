@@ -1,4 +1,4 @@
-.PHONY: help init plan apply validate fmt lint clean
+.PHONY: help init plan apply validate fmt lint clean packer-fmt packer-init packer-validate packer-build
 
 # ==========================================================
 # Load .env file (if present)
@@ -17,6 +17,8 @@ TARGET ?= unassigned
 TEST_VAR ?= unassigned
 
 TERRAFORM_DIR := iac/terraform/$(TARGET)
+PACKER_DIR := iac/packer
+PACKER_VARS := ../build.pkrvars.hcl
 
 
 # ==========================================================
@@ -33,15 +35,56 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 # ==========================================================
+# Packer Commands
+# ==========================================================
+packer-fmt: ## Format Packer code
+	@echo "Formatting Packer templates in $(PACKER_DIR)..."
+	@if find $(PACKER_DIR) -type f \( -name "*.pkr.hcl" -o -name "*.pkr.json" \) | grep -q .; then \
+		packer fmt -recursive $(PACKER_DIR); \
+	else \
+		echo "No Packer templates found, skipping packer fmt."; \
+	fi
+
+packer-init: packer-fmt ## Initialize Packer working directory for all targets
+	@echo "Initializing all Packer template directories under $(PACKER_DIR)..."
+	@for dir in $(PACKER_DIR)/*; do \
+		if [ -d "$$dir" ] && find "$$dir" -maxdepth 1 -type f -name "*.pkr.hcl" | grep -q .; then \
+			echo "→ Initializing $$dir"; \
+			(cd "$$dir" && packer init -upgrade .) || exit 1; \
+		fi; \
+	done
+
+packer-validate: packer-init ## Validate all Packer templates
+	@echo "Validating Packer templates under $(PACKER_DIR)..."
+	@for dir in $(PACKER_DIR)/*; do \
+		if [ -d "$$dir" ] && find "$$dir" -maxdepth 1 -type f -name "*.pkr.hcl" | grep -q .; then \
+			echo "→ Validating configuration in $$dir"; \
+			(cd "$$dir" && packer validate .) || exit 1; \
+		fi; \
+	done
+
+packer-build: packer-validate ## Build all Packer templates
+	@echo "Building Packer templates under $(PACKER_DIR)..."
+	@for dir in $(PACKER_DIR)/*; do \
+		if [ -d "$$dir" ] && find "$$dir" -maxdepth 1 -type f -name "*.pkr.hcl" | grep -q .; then \
+			echo "→ Building configuration in $$dir"; \
+			SSH_KEY="$$(cat ~/.ssh/id_ed25519.pub)"; \
+			( cd "$$dir" && packer build -var "ssh_pub_key=$$SSH_KEY" . ) || exit 1; \
+		fi; \
+	done
+
+# ==========================================================
 # Terraform Commands
 # ==========================================================
+
 init: fmt ## Initialize Terraform working directory for selected target
 	@echo "Initializing Terraform in $(TERRAFORM_DIR)..."
 	@if [ -d "$(TERRAFORM_DIR)" ] && [ "$(wildcard $(TERRAFORM_DIR)/*.tf)" != "" ]; then \
-		cd $(TERRAFORM_DIR) && terraform init; \
+		cd $(TERRAFORM_DIR) && terraform init -upgrade; \
 	else \
 		echo "No Terraform files found in $(TERRAFORM_DIR), skipping terraform init"; \
 	fi
+
 
 plan: ## Create or update Terraform execution plan for selected target
 	@echo "Planning Terraform in $(TERRAFORM_DIR)..."
@@ -51,6 +94,8 @@ plan: ## Create or update Terraform execution plan for selected target
 		echo "No Terraform files found in $(TERRAFORM_DIR), skipping terraform plan"; \
 	fi
 
+
+
 apply: ## Apply Terraform execution plan for selected target
 	@echo "Applying Terraform plan in $(TERRAFORM_DIR)..."
 	@if [ -d "$(TERRAFORM_DIR)" ] && [ -f "$(TERRAFORM_DIR)/tfplan" ]; then \
@@ -58,6 +103,7 @@ apply: ## Apply Terraform execution plan for selected target
 	else \
 		echo "No Terraform plan found in $(TERRAFORM_DIR), skipping terraform apply"; \
 	fi
+
 
 validate: init ## Validate Terraform, Packer, and Ansible configs
 	@echo "Validating Terraform in $(TERRAFORM_DIR)..."
@@ -67,21 +113,8 @@ validate: init ## Validate Terraform, Packer, and Ansible configs
 		echo "No Terraform files found, skipping terraform validate"; \
 	fi
 
-	@echo "Validating Packer templates..."
-	@if ls *.pkr.hcl 1> /dev/null 2>&1 || ls *.pkr.json 1> /dev/null 2>&1; then \
-		packer validate .; \
-	else \
-		echo "No Packer templates found, skipping packer validate"; \
-	fi
 
-	@echo "Validating Ansible playbooks..."
-	@if ls playbooks/*.yml 1> /dev/null 2>&1; then \
-		ansible-playbook --syntax-check playbooks/*.yml || true; \
-	else \
-		echo "No Ansible playbooks found, skipping syntax check"; \
-	fi
-
-fmt: ## Format Terraform and Packer code
+fmt: ## Format Packer code
 	@echo "Formatting Terraform in $(TERRAFORM_DIR)..."
 	@if [ -f "$(TERRAFORM_DIR)/main.tf" ] || [ -d "$(TERRAFORM_DIR)/modules" ]; then \
 		cd $(TERRAFORM_DIR) && terraform fmt; \
@@ -89,34 +122,6 @@ fmt: ## Format Terraform and Packer code
 		echo "No Terraform files found, skipping terraform fmt"; \
 	fi
 
-	@echo "Formatting Packer templates..."
-	@if ls *.pkr.hcl 1> /dev/null 2>&1 || ls *.pkr.json 1> /dev/null 2>&1; then \
-		packer fmt .; \
-	else \
-		echo "No Packer templates found, skipping packer fmt"; \
-	fi
-
-lint: ## Run validation and lint checks
-	@echo "Linting Terraform in $(TERRAFORM_DIR)..."
-	@if [ -f "$(TERRAFORM_DIR)/main.tf" ] || [ -d "$(TERRAFORM_DIR)/modules" ]; then \
-		cd $(TERRAFORM_DIR) && terraform validate; \
-	else \
-		echo "No Terraform files found, skipping terraform validate"; \
-	fi
-
-	@echo "Linting Packer templates..."
-	@if ls *.pkr.hcl 1> /dev/null 2>&1 || ls *.pkr.json 1> /dev/null 2>&1; then \
-		packer validate .; \
-	else \
-		echo "No Packer templates found, skipping packer validate"; \
-	fi
-
-	@echo "Linting Ansible playbooks..."
-	@if ls playbooks/*.yml 1> /dev/null 2>&1; then \
-		ansible-lint || true; \
-	else \
-		echo "No Ansible playbooks found, skipping ansible-lint"; \
-	fi
 
 clean: ## Clean up generated files in the selected Terraform target
 	@echo "Cleaning Terraform and Packer files in $(TERRAFORM_DIR)..."
@@ -153,3 +158,10 @@ check-vars: ## Display key Terraform env vars and outputs
 	@echo ""
 	@echo "=== Terraform Outputs (if any) ==="
 	@terraform -chdir=$(TERRAFORM_DIR) output 2>/dev/null || echo "No outputs found. Did you run 'terraform apply'?"
+
+
+
+
+
+
+
