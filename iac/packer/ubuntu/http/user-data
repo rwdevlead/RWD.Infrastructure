@@ -1,0 +1,33 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+    hostname: ubuntu-template
+    username: ubuntu
+    password: "ubuntu"
+  storage:
+    layout:
+      name: direct
+  ssh:
+    install-server: true
+    allow-pw: true
+  packages:
+    - qemu-guest-agent
+  late-commands:
+    - |-
+      curtin in-target --target=/target -- bash -c "echo '=== Starting late-commands ==='"
+    - |-
+      curtin in-target --target=/target -- bash -c "echo 'root:ubuntu' | chpasswd"
+    - |-
+      curtin in-target --target=/target -- sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+    - |-
+      curtin in-target --target=/target -- sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    - |-
+      curtin in-target --target=/target -- systemctl enable ssh
+    - |-
+      curtin in-target --target=/target -- systemctl enable qemu-guest-agent
+    - |-
+      curtin in-target --target=/target -- systemctl start qemu-guest-agent || echo "Warning: qemu-guest-agent start failed"
+    - |-
+      curtin in-target --target=/target -- bash -c "echo '=== Late-commands completed ==='"
+  reboot: true
