@@ -11,9 +11,13 @@ keyboard:
 ssh_pwauth: false
 
 users:
-  - name: ubuntu
-    gecos: Ubuntu User
-    groups: [ sudo, adm ]
+  - name: root
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+  - name: ka8kgj
+    gecos: "Jim Stevens"
+    groups: [sudo, adm]
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock_passwd: true
@@ -22,7 +26,3 @@ users:
 
 packages:
   - qemu-guest-agent
-
-# Optional Docker installation (commented out)
-#runcmd:
-#  - echo "Docker installation placeholder"

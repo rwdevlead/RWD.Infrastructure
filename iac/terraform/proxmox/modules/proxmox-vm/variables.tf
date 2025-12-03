@@ -35,7 +35,6 @@ variable "disk_size" {
 variable "ssh_public_key" {
   type        = string
   description = "Public SSH key for accessing VMs"
-  default     = file("~/.ssh/id_rsa.pub")
 }
 
 variable "bridge" {
@@ -44,3 +43,22 @@ variable "bridge" {
   description = "Bridge for the VM network"
 }
 
+variable "ip_address" {
+  description = "Static IP address for the VM"
+  type        = string
+}
+
+variable "gateway" {
+  description = "Gateway for the VM"
+  type        = string
+}
+
+variable "netmask" {
+  description = "CIDR netmask (e.g. 24)"
+  type        = number
+}
+
+variable "vmid" {
+  description = "VM Id to use (will use next in sequence if null)"
+  type        = number
+}

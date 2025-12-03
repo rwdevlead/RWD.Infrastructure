@@ -1,5 +1,5 @@
 output "vm_id" {
-  value       = proxmox_vm_qemu.vm.id
+  value       = proxmox_vm_qemu.vm.vmid
   description = "ID of the deployed VM"
 }
 
@@ -9,6 +9,6 @@ output "vm_name" {
 }
 
 output "vm_node" {
-  value       = proxmox_vm_qemu.vm.node
+  value       = proxmox_vm_qemu.vm.target_node
   description = "Proxmox node the VM is deployed on"
 }
