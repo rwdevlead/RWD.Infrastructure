@@ -13,6 +13,12 @@ resource "proxmox_vm_qemu" "vm" {
   clone       = var.template_name
   full_clone  = true
   vmid        = var.vmid
+  agent       = 1
+
+  # os              = local.os
+  # machine         = local.machine
+  # bios            = local.bios
+  # see notes
 
   cpu {
     cores = var.cpu_cores
@@ -39,6 +45,5 @@ resource "proxmox_vm_qemu" "vm" {
   ipconfig0 = "ip=${var.ip_address}/${var.netmask},gw=${var.gateway}"
   cicustom  = "user=cloudinit.yaml.tpl"
 
-  # Enable template rendering
-  # template = true   # only needed if creating a template; leave false for deployment
+
 }

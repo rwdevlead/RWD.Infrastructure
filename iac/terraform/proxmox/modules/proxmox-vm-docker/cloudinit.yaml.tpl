@@ -2,6 +2,9 @@
 hostname: ${hostname}
 preserve_hostname: false
 
+# network:
+#   config: disabled
+
 timezone: America/New_York
 locale: en_US.UTF-8
 keyboard:
@@ -27,8 +30,32 @@ users:
 packages:
   - qemu-guest-agent
 
-# Optional Docker installation (uncommented for this module)
+write_files:
+  - path: /etc/netplan/98-static-netcfg.yaml
+    permissions: "0644"
+    content: |
+      network:
+        version: 2
+        renderer: networkd
+        ethernets:
+          ens18:
+            dhcp4: no
+            addresses:
+              - "${ip_address}/${netmask}"
+            routes:
+              - to: default
+                via: "${gateway}"
+            nameservers:
+              addresses:
+                - "${gateway}"
+                - "1.1.1.1"
+              search: []
+
 runcmd:
+  #activate static ip netplan
+  - netplan apply
+
+  # Docker installation
   - apt-get update
   - apt-get install -y \
     ca-certificates \
@@ -42,8 +69,7 @@ runcmd:
 
   - chmod a+r /etc/apt/keyrings/docker.gpg
 
-  - echo \
-    "deb [arch=$(dpkg --print-architecture) \
+  - echo "deb [arch=$(dpkg --print-architecture) \
     signed-by=/etc/apt/keyrings/docker.gpg] \
     https://download.docker.com/linux/ubuntu \
     $(lsb_release -cs) stable" \

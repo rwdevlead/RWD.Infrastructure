@@ -21,3 +21,5 @@ provider "proxmox" {
 
 // https://registry.terraform.io/providers/Telmate/proxmox/latest/docs#creating-the-connection-via-username-and-api-token
 // TODO need to pass token secrets same as packer / github uses
+
+// https://cloudinit.readthedocs.io/en/latest/reference/examples.html
