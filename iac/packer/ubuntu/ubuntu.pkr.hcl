@@ -5,17 +5,18 @@ locals {
   memory          = 8192 # memory in MB → 8 GB
   scsi_controller = "virtio-scsi-pci"
   disk = {
-    disk_size         = "24G"
-    format            = "raw"
-    storage_pool      = "local-lvm"
-    storage_pool_type = "lvm"
-    type              = "scsi"
+    disk_size    = "32G"
+    format       = "raw"
+    storage_pool = "local-lvm"
+    type         = "scsi"
   }
   network = {
     model    = "virtio"
     bridge   = "vmbr0"
     firewall = false
   }
+
+  buildtime = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
 
 }
 
@@ -39,15 +40,18 @@ source "proxmox-iso" "ubuntu" {
   # -------------------------------
   # Proxmox Connection Settings
   # -------------------------------
-  # Proxmox connection settings from variables
-  proxmox_url = var.proxmox_url
-  username    = var.username
-  token       = var.token
+  proxmox_url              = var.proxmox_url
+  username                 = var.username
+  token                    = var.token
+  insecure_skip_tls_verify = true
 
+  # -------------------------------
   # Destination template settings
-  node          = var.node
-  vm_id         = var.vm_id
-  template_name = var.template_name
+  # -------------------------------
+  node                 = var.node
+  vm_id                = var.vm_id
+  template_name        = var.template_name
+  template_description = "Ubuntu 24.04 Server Template, built with Packer on ${local.buildtime}"
 
   # -------------------------------
   # VM OS / Hardware Settings
@@ -57,6 +61,7 @@ source "proxmox-iso" "ubuntu" {
   scsi_controller = local.scsi_controller
 
 
+
   # -------------------------------
   # Disk Configuration
   # -------------------------------
@@ -64,9 +69,9 @@ source "proxmox-iso" "ubuntu" {
     disk_size    = local.disk.disk_size
     format       = local.disk.format
     storage_pool = local.disk.storage_pool
-    # storage_pool_type = local.disk.storage_pool_type
-    type = local.disk.type
+    type         = local.disk.type
   }
+
 
   # -------------------------------
   # Network Configuration
@@ -77,46 +82,44 @@ source "proxmox-iso" "ubuntu" {
     firewall = local.network.firewall
   }
 
-  #qemu_agent = false # default is true
+  qemu_agent = true
 
-  # --- Cloud-Init Drive Configuration ---
-  cloud_init = false
-  # cloud_init_storage_pool = local.disk.storage_pool # Use your LVM pool for consistency
-  # cloud_init_disk_type    = "scsi"                  # Standard attachment type (only v1.2.3)
 
-  # SSH connection settings for provisioning
-  # Uses password auth during build; provisioners inject SSH key afterward
-  ssh_username = "ubuntu"
-  ssh_password = "ubuntu"
-  # ssh_private_key_file = ""
+  # -------------------------------
+  # Cloud-Init Drive Configuration 
+  # ------------------------------- 
+  cloud_init              = false
+  cloud_init_storage_pool = local.disk.storage_pool # Use your LVM pool for consistency
+  cloud_init_disk_type    = "scsi"                  # Standard attachment type (only v1.2.3)
 
-  ssh_timeout            = "30m"
-  ssh_wait_timeout       = "25m"
-  ssh_port               = 22
-  ssh_handshake_attempts = 200
-
-  # Ubuntu Live Server ISO (proxmox-iso builder requires ISO file)
-  # iso_file         = var.iso_file
-  # unmount_iso      = true
-  # iso_storage_pool = "iso-images"
+  # -------------------------------
+  # Communicator Settings
+  # -------------------------------
+  ssh_username     = "ubuntu"
+  ssh_password     = "ubuntu"
+  ssh_timeout      = "30m"
+  ssh_wait_timeout = "20m"
+  # ssh_port               = 22
+  # ssh_handshake_attempts = 200
 
   boot_iso {
     iso_file = var.iso_file
-    unmount  = true
+    # iso_url          = var.iso_url
+    iso_checksum     = var.iso_checksum
+    iso_storage_pool = "iso-images"
+    unmount          = true
   }
 
   # Cloud-init datasource configuration
   # HTTP server serves user-data and meta-data files for autoinstall
   http_directory = "http"
 
+  # Explicitly set boot order to prefer scsi0 (installed disk) over ide devices
+  boot = "c"
+
+  # boot_disk_storage = "local-lvm:20,format=qcow2,scsi0"
   boot_wait         = "20s"
   boot_key_interval = "120ms"
-
-  # Boot kernel parameters:
-  # - autoinstall: enables unattended Ubuntu Server installation
-  # - ds=nocloud-net;s=http://IP:PORT/: cloud-init datasource over HTTP
-  # - console=ttyS0,115200n8: serial console output (for debugging)
-  # - systemd.log_level=debug: verbose system logging
   boot_command = [
     "<esc><wait>",
     "c<wait>",
@@ -124,7 +127,6 @@ source "proxmox-iso" "ubuntu" {
     "initrd /casper/initrd <enter>",
     "boot <enter>"
   ]
-
 
 }
 
@@ -136,96 +138,39 @@ build {
   name    = "ubuntu-template"
   sources = ["source.proxmox-iso.ubuntu"]
 
-  # QGA Wait Provisioner (Crucial for Reliability) ---
-  # provisioner "shell" {
-  #   # Wait for the QEMU Guest Agent to become responsive
-  #   inline = [
-  #     "echo 'Waiting for QEMU Guest Agent to start...'",
-  #     # Loop until the agent is accessible
-  #     "until systemctl is-active qemu-guest-agent; do sleep 5; done",
-  #     "echo 'QEMU Guest Agent is active.'"
-  #   ]
-  #   # Set a timeout in case the service never starts
-  #   timeout = "5m" 
-  # }
+  # Provisioning the VM Template
+  provisioner "shell" {
+    inline = [
+      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      "sudo systemctl enable qemu-guest-agent",
+      "sudo systemctl start qemu-guest-agent",
+      "sudo cloud-init clean",
+      "sudo rm -f /etc/cloud/cloud.cfg.d/subiquity-disable-cloudinit-networking.cfg",
+      "sudo rm -f /etc/netplan/00-installer-config.yaml",
+      "echo 'Ubuntu 24.04 Template by Packer - Creation Date: $(date)' | sudo tee /etc/issue"
+    ]
+  }
 
-  # Wait for system boot and services to stabilize
-  # provisioner "shell" {
-  #   inline = [
-  #     "echo 'Waiting for cloud-init and installer to finish...'",
+  # Added provisioner to forcibly eject ISO and prepare for reboot
+  provisioner "shell" {
+    inline = [
+      "echo 'Completed installation. Preparing for template conversion...'",
+      "echo 'Ejecting CD-ROM devices...'",
+      "sudo eject /dev/sr0 || true",
+      "sudo eject /dev/sr1 || true",
+      "echo 'Removing CD-ROM entries from fstab if present...'",
+      "sudo sed -i '/cdrom/d' /etc/fstab",
+      "sudo sync",
+      "echo 'Setting disk as boot device...'",
+      "sudo sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=1/' /etc/default/grub",
+      "sudo update-grub",
+      "echo 'Clearing cloud-init status to ensure fresh start on first boot...'",
+      "sudo cloud-init clean --logs",
+      "echo 'Installation and cleanup completed successfully!'"
+    ]
+    expect_disconnect = true
+  }
 
-  #     # 1. Wait for the final reboot to settle (needed after autoinstall)
-  #     "sleep 30",
-
-  #     # 2. Check for a file that is only present during the installation phase.
-  #     #    If /var/lib/cloud/instance/boot-finished is present, it means cloud-init is done.
-  #     "until [ -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for boot-finished file...'; sleep 5; done",
-
-  #     # 3. Final, long sleep to ensure all services are up and the agent is started.
-  #     "echo 'Cloud-init finished. Final 60-second wait for QGA and services.'",
-  #     "sleep 60"
-  #   ]
-  #   # Increase the overall connection timeout if necessary
-  #   timeout = "10m"
-  # }
-
-  # Inject SSH public key for key-based authentication
-  # (root password is disabled in favor of key auth for security)
-  # provisioner "shell" {
-  #   inline = [
-  #     "mkdir -p /root/.ssh",
-  #     "chmod 700 /root/.ssh",
-  #     "echo '${var.ssh_pub_key}' >> /root/.ssh/authorized_keys",
-  #     "chmod 600 /root/.ssh/authorized_keys",
-  #     "echo 'SSH key added to root user'"
-  #   ]
-  # }
-
-  # ------------------------------------------------------------------
-  # Provisioner: Enforce Static Netplan Precedence
-  # ------------------------------------------------------------------
-  # provisioner "shell" {
-  #   inline = [
-  #     "echo 'Writing Netplan configuration to disable DHCP...'",
-
-  #     # CRITICAL: Write a Netplan file to explicitly disable DHCP
-  #     # This prevents the VM from grabbing a DHCP lease when Terraform injects the static IP
-  #     "sudo bash -c 'cat << EOF > /etc/netplan/99-static-netcfg.yaml",
-  #     "network:",
-  #     "  version: 2",
-  #     "  renderer: networkd",
-  #     "  ethernets:",
-  #     "    ens18:", # **NOTE:** Adjust 'eth0' to your template's interface name (e.g., ens18)
-  #     "      dhcp4: no",
-  #     "EOF'",
-
-  #     # Ensure the Netplan service has the correct permissions
-  #     "sudo chmod 644 /etc/netplan/99-static-netcfg.yaml",
-
-  #     # Final cleanup before template conversion
-  #     "echo 'Agent installation and Netplan fix complete.'"
-  #   ]
-  # }
-
-  # Clean up cloud-init state to prevent re-provisioning on clone/boot
-  # Truncate machine-id so each cloned VM gets a new unique ID
-  # provisioner "shell" {
-  #   inline = [
-  #     "echo 'Finalizing cleanup and preparing template...'",
-  #     # Clean cloud-init state, remove logs, and unmount the config
-  #     "sudo cloud-init clean --logs --seed",
-  #     "sudo rm -rf /var/lib/cloud/*",
-
-  #     # Truncate machine-id so each cloned VM gets a new unique ID
-  #     "sudo truncate -s 0 /etc/machine-id",
-
-  #     # Zero out empty space for better compression/storage use (optional but recommended)
-  #     "sudo dd if=/dev/zero of=/EMPTY bs=1M || true",
-  #     "sudo rm -f /EMPTY",
-
-  #     "sudo sync",
-  #     "echo 'Template ready!'"
-  #   ]
-  # }
 
 }
+

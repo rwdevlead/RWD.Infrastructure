@@ -1,4 +1,4 @@
-#cloud-config
+# #cloud-config
 autoinstall:
   version: 1
 
@@ -6,69 +6,60 @@ autoinstall:
   # refresh-installer:
   #   update: true
 
-  # locale: "en_US.UTF-8"
-  # timezone: America/New_York
-  # keyboard:
-  #   layout: us
-
+  locale: en_US
+  keyboard:
+    layout: us
   identity:
     hostname: ubuntu-template
     username: ubuntu
-    password: ubuntu
-
+    password: "$6$rounds=4096$ntlX/dlo6b$HXaLN4RcLIGaEDdQdR2VTYi9pslSeXWL131MqaakqE285Nv0kW9KRontQYivCbycZerUMcjVsuLl2V8bbdadI1"
   # chpasswd:
   #   expire: false
   #   list:
   #     - ubuntu:ubuntu
-
   ssh:
-    allow-pw: true
     install-server: true
-
-  # network default is ens18 or eth0 to run dhcp4 true
-
+    allow-pw: true
+    ssh_quiet_keygen: true
+  network:
+    network:
+      version: 2
+      ethernets:
+        any:
+          match:
+            name: en*
+          dhcp4: true
+          dhcp6: false
   storage:
     layout:
       name: direct
-
+    swap:
+      size: 0
   packages:
     - qemu-guest-agent
-
+    - sudo
+    - openssh-server
+    - net-tools
+    - open-iscsi
+    - curl
+    - vim
+    - apt-transport-https
+    - ca-certificates
+    - lsb-release
+    - python3-pip
+    - jq
+    - cloud-init
+  user-data:
+    package_upgrade: false
+    timezone: America/New_York
+    disable_root: false
   late-commands:
-    # Logging start (Added --)
-    - curtin in-target --target=/target -- bash -c 'echo "=== Starting late-commands ==="'
-
-    # Set root password (Must be in bash -c due to the pipe)
-    - curtin in-target --target=/target -- bash -c 'echo "root:ubuntu" | chpasswd'
-
-    # Enable root SSH login (Must be in bash -c due to sed's quotes)
-    - curtin in-target --target=/target -- bash -c 'sed -i "s/#PermitRootLogin.*/PermitRootLogin yes/" /etc/ssh/sshd_config'
-    - curtin in-target --target=/target -- bash -c 'sed -i "s/#PasswordAuthentication.*/PasswordAuthentication yes/" /etc/ssh/sshd_config'
-
-    # Enable SSH server (Simple command - also add --)
-    - curtin in-target --target=/target -- systemctl enable ssh
-
-    # Enable & start QEMU Guest Agent
-    - curtin in-target --target=/target -- systemctl enable qemu-guest-agent
-    # Keep the bash -c for the '|| echo' logic
-    - curtin in-target --target=/target -- bash -c 'systemctl start qemu-guest-agent || echo "Warning qemu-guest-agent start failed"'
-
-    # ===== CLOUD-INIT CLEANUP =====
-    - curtin in-target --target=/target -- bash -c 'echo "Cleaning cloud-init state..."'
-    # Direct command call
-    - curtin in-target --target=/target -- cloud-init clean --logs --seed
-    # Remove command
-    - curtin in-target --target=/target -- bash -c 'rm -rf /var/lib/cloud/*'
-
-    # Truncate machine-id
-    - curtin in-target --target=/target -- bash -c 'truncate -s 0 /etc/machine-id'
-
-    # Zero empty space for compression
-    - curtin in-target --target=/target -- bash -c 'dd if=/dev/zero of=/EMPTY bs=1M || true'
-    - curtin in-target --target=/target -- rm -f /EMPTY
-
-    # Sync filesystem
-    - curtin in-target --target=/target -- sync
-
-    # Final log
-    - curtin in-target --target=/target -- bash -c 'echo "=== Late-commands completed ==="'
+    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+    - chmod 440 /target/etc/sudoers.d/ubuntu
+    - |
+      if [ -d /sys/firmware/efi ]; then
+        apt-get install -y efibootmgr
+        efibootmgr -o $(efibootmgr | perl -n -e '/Boot(.+)\* Ubuntu/ && print $1')
+      fi
+  # Force non-interactive installation
+  interactive-sections: []
