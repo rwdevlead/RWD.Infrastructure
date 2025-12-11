@@ -27,6 +27,9 @@ IMG_FILE = noble-server-cloudimg-amd64.img
 TEMPLATE_NAME = ubuntu-24.04-template
 SSH_KEY := $(shell cat /Users/ka8kgj/.ssh/id_ed25519.pub)
 SSH_KEY_ESCAPED := $(shell sed "s/'/'\\\\''/g" ~/.ssh/id_ed25519.pub)
+CI_USER := ka8kgj
+CI_PASSWORD := I.h@t3.w33Ds
+
 
 
 # ==========================================================
@@ -75,11 +78,134 @@ build-proxmox-template:
 		qm set $(VMID) --cipassword '\''I.h@t3.w33D$$'\'' && \
 		echo "== Setting DHCP network for CloudInit ==" && \
 		qm set $(VMID) --ipconfig0 ip=dhcp && \
+		echo "== Booting VM ONCE to initialize cloud-init ==" && \
+		qm start $(VMID) && \
+		echo "Waiting 90 seconds for cloud-init to run..." && \
+		sleep 90 && \
+		qm shutdown $(VMID) && \
+		echo "VM shut down, converting to template" && \
 		echo "== Converting VM to Proxmox template ==" && \
 		qm template $(VMID) && \
 		echo "== Cleaning up downloaded image file ==" && \
 		rm -f $(IMG_FILE) \
 	'
+
+
+
+# 1. Cleanup and Download
+.PHONY: setup-template-build
+setup-template-build:
+	@echo "--- 1. SETTING UP BUILD ENVIRONMENT ---"
+	ssh $(PROX_HOST) '\
+        echo "== 1.1 Checking if VM $(VMID) exists, destroying if it does ==" && \
+        if qm status $(VMID) >/dev/null 2>&1; then \
+            echo "VM $(VMID) exists — destroying..."; \
+            qm destroy $(VMID) --purge --skiplock; \
+        fi && \
+        echo "== 1.2 Checking for existing image $(IMG_FILE) ==" && \
+        if [ ! -f "$(IMG_FILE)" ]; then \
+            echo "Downloading $(IMG_FILE) from $(IMG_URL)..."; \
+            wget $(IMG_URL); \
+        else \
+            echo "Image already present: $(IMG_FILE)"; \
+        fi \
+    '
+	@echo "--- SETUP COMPLETE ---"
+
+# 2. Create VM and Configure Hardware
+.PHONY: create-vm-and-config
+create-vm-and-config: setup-template-build
+	@echo "--- 2. CREATING VM AND BASE CONFIGURATION ---"
+	ssh $(PROX_HOST) '\
+        echo "== 2.1 Creating VM $(VMID) ==" && \
+        qm create $(VMID) --memory 8192 --cores 2 --name $(TEMPLATE_NAME) \
+                         --net0 virtio,bridge=vmbr0 --machine q35 --bios ovmf --ostype l26 && \
+        echo "== 2.2 Setting Optimized Hardware/Agent/Console Options ==" && \
+        qm set $(VMID) --cpu host && \
+        qm set $(VMID) --agent 1 && \
+        qm set $(VMID) --serial0 socket --vga serial0 && \
+        echo "== 2.3 Verification: Displaying VM configuration ==" && \
+        qm config $(VMID) \
+    '
+	@echo "--- VM CONFIGURATION COMPLETE ---"
+
+# 3. Import Disk and Setup Storage
+.PHONY: import-disk-and-storage
+import-disk-and-storage: create-vm-and-config
+	@echo "--- 3. IMPORTING DISK AND SETTING UP STORAGE ---"
+	ssh $(PROX_HOST) '\
+        echo "== 3.1 Importing disk $(IMG_FILE) to local-lvm ==" && \
+        qm disk import $(VMID) $(IMG_FILE) local-lvm && \
+        echo "== 3.2 Attaching disk to VM ==" && \
+        qm set $(VMID) --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-$(VMID)-disk-0 && \
+        echo "== 3.3 Adding CloudInit drive ==" && \
+        qm set $(VMID) --ide2 local-lvm:cloudinit && \
+        echo "== 3.4 Setting boot options ==" && \
+        qm set $(VMID) --boot c --bootdisk scsi0 && \
+        echo "== 3.5 Verification: Checking Disk and Boot settings ==" && \
+        qm config $(VMID) | grep -E "scsi0|ide2|boot" \
+    '
+	@echo "--- DISK/STORAGE CONFIGURATION COMPLETE ---"
+
+# ... (Previous targets 1-3 remain the same) ...
+
+# Target to get the VM's IP address (needs QEMU agent to be working)
+# We will use this inline in the next step.
+# GET_VM_IP = $(shell ssh $(PROX_HOST) "qm agent $(VMID) network-get | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -1")
+
+# 4. Run Cloud-Init Initialization and Install Agent
+.PHONY: initialize-cloud-init
+initialize-cloud-init: import-disk-and-storage
+	@echo "--- STARTING REMOTE SCRIPT EXECUTION VIA init_vm.sh ---"
+	# Execute the local script remotely, passing shell variables as environment variables
+	ssh $(PROX_HOST) "export VMID=$(VMID); export CI_USER=$(CI_USER); export CI_PASSWORD='$(CI_PASSWORD)'; bash -s" < init_vm.sh
+	@echo "--- CLOUD-INIT INITIALIZATION COMPLETE ---"
+
+# 5. Finalize VM and Convert to Template
+.PHONY: finalize-template
+finalize-template: initialize-cloud-init finalize_template.sh
+	@echo "--- STARTING REMOTE SCRIPT EXECUTION VIA finalize_template.sh ---"
+	# Execute the local script remotely, passing required environment variables
+	ssh $(PROX_HOST) "export VMID=$(VMID); export IMG_FILE=$(IMG_FILE); bash -s" < finalize_template.sh
+	@echo "--- TEMPLATE FINALIZATION COMPLETE ---"
+
+
+# The main target to run the entire process
+# .PHONY: build-proxmox-template
+# build-proxmox-template: finalize-template
+# 	@echo "*****************************************************"
+# 	@echo "*** Proxmox Template $(TEMPLATE_NAME) ($(VMID)) built successfully! ***"
+# 	@echo "*****************************************************"
+
+# Clean target to only remove the VM (useful for re-runs)
+.PHONY: clean-vm
+clean-vm:
+	@echo "--- CLEANING UP VM $(VMID) ---"
+	ssh $(PROX_HOST) '\
+        if qm status $(VMID) >/dev/null 2>&1; then \
+            echo "VM $(VMID) found. Checking status..."; \
+            if qm status $(VMID) | grep -q "running"; then \
+                echo "VM is running. Shutting down gracefully..."; \
+                qm shutdown $(VMID); \
+                i=0; \
+                while qm status $(VMID) | grep -q "running"; do \
+                    if [ $$i -ge 12 ]; then \
+                        echo "VM failed to shut down gracefully after 60s. Stopping forcefully..."; \
+                        qm stop $(VMID); \
+                        break; \
+                    fi; \
+                    sleep 5; \
+                    i=$$((i+1)); \
+                done; \
+                echo "VM $(VMID) is now stopped."; \
+            fi; \
+            echo "Destroying VM $(VMID)..."; \
+            qm destroy $(VMID) --purge --skiplock; \
+        else \
+            echo "VM $(VMID) does not exist. No action required."; \
+        fi \
+    '
+	@echo "--- CLEANUP COMPLETE ---"
 
 # ==========================================================
 # Terraform Commands

@@ -20,9 +20,33 @@ variable "cpu_cores" {
   description = "Number of CPU cores for the VM"
 }
 
-variable "memory_mb" {
+variable "vm_os" {
+  type        = string
+  default     = "l26"
+  description = "OS for the VM"
+}
+
+variable "vm_machine" {
+  type        = string
+  default     = "q35"
+  description = "Chipset for the VM"
+}
+
+variable "vm_bios" {
+  type        = string
+  default     = "ovmf"
+  description = "Bios Type for the VM"
+}
+
+variable "memory_min_mb" {
   type        = number
   default     = 4096
+  description = "Memory in MB for the VM"
+}
+
+variable "memory_max_mb" {
+  type        = number
+  default     = 8192
   description = "Memory in MB for the VM"
 }
 
