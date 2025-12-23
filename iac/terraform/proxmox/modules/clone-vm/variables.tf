@@ -48,7 +48,7 @@ variable "vm_password" {
   # default     = null
 }
 
-variable "ssh_public_key" {
+variable "ssh_public_key_content" {
   description = "The content of the SSH public key to inject into the VM. [default is ~/.ssh/id_ed25519.pub]"
   type        = string
   # default     = file("~/.ssh/id_ed25519.pub")

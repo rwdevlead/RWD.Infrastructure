@@ -38,44 +38,44 @@ module "ubuntu_template" {
 
 }
 
-# module "Dev_Docker" {
-#   source = "./modules/clone-vm"
+module "Dev_Docker" {
+  source = "./modules/clone-vm"
 
-#   tempate_node_id   = module.ubuntu_template.template_id
-#   tempate_node_name = module.ubuntu_template.template_node_name
+  tempate_node_id   = module.ubuntu_template.template_id
+  tempate_node_name = module.ubuntu_template.template_node_name
 
-#   vm_id          = 101
-#   vm_node_name   = "proxmox"
-#   vm_name        = "Docker-vm01"
-#   vm_description = "Development Docker Instand"
-#   #   keyboard      
+  vm_id          = 101
+  vm_node_name   = "proxmox"
+  vm_name        = "Docker-vm01"
+  vm_description = "Development Docker Instand"
+  #   keyboard      
 
-#   vm_username = "ka8kgj"
-#   vm_password = "password123"
+  vm_username = "ka8kgj"
+  vm_password = "password123"
 
-#   vm_cores = 2
+  vm_cores = 2
 
-#   efi_storage_id = "local-lvm"
-#   vm_os          = "l26"
-#   vm_bios        = "ovmf"
-#   vm_machine     = "q35"
+  efi_storage_id = "local-lvm"
+  vm_os          = "l26"
+  vm_bios        = "ovmf"
+  vm_machine     = "q35"
 
-#   vm_memory_max = 8192
-#   vm_memory_min = 4096
+  vm_memory_max = 8192
+  vm_memory_min = 4096
 
-#   disk_interface  = "virtio0"
-#   disk_size       = 20
-#   disk_storage_id = "local-lvm"
+  disk_interface  = "virtio0"
+  disk_size       = 20
+  disk_storage_id = "local-lvm"
 
-#   network_gateway      = "192.168.50.1"
-#   vm_static_ip         = "192.168.50.14/24"
-#   network_device_model = "virtio"
+  network_gateway      = "192.168.50.1"
+  vm_static_ip         = "192.168.50.14/24"
+  network_device_model = "virtio"
 
-#   tags = ["vm", "dev", "docker"]
+  tags = ["vm", "dev", "docker"]
 
-#   ssh_public_key = local.ssh_key_content
+  ssh_public_key_content = local.ssh_public_key_content
 
-# }
+}
 
 # module "homeassistant" {
 #   source    = "./modules/homeassistant"
