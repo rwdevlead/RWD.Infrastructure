@@ -3,8 +3,8 @@
 
 locals {
   # Read the content of the key for direct injection (still the most effective method)
-  ssh_public_key_content  = file("~/.ssh/id_ed25519.pub")
-  ssh_private_key_content = file("~/.ssh/id_ed25519")
+  ssh_public_key_content = file("~/.ssh/id_ed25519.pub")
+  # ssh_private_key_content = file("~/.ssh/id_ed25519")
 }
 
 module "ubuntu_template" {
@@ -34,8 +34,7 @@ module "ubuntu_template" {
 
   tags = ["template", "linux"]
 
-  ssh_public_key_content  = local.ssh_public_key_content
-  ssh_private_key_content = local.ssh_private_key_content
+  ssh_public_key_content = local.ssh_public_key_content
 
 }
 

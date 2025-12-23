@@ -1,0 +1,1 @@
+clone a vm summary

@@ -5,10 +5,6 @@ terraform {
       source = "bpg/proxmox"
       # version = "0.89.1" # version = ">=0.66"
     }
-    null = {
-      source = "hashicorp/null"
-      # version = "~> 3.0"
-    }
   }
 }
 
@@ -24,7 +20,7 @@ resource "proxmox_virtual_environment_vm" "template" {
 
   machine     = var.vm_machine
   bios        = var.vm_bios
-  description = "Managed by Terraform"
+  description = "Ubuntu Template - Managed by Terraform"
 
   scsi_hardware = "virtio-scsi-pci"
 
@@ -61,7 +57,7 @@ resource "proxmox_virtual_environment_vm" "template" {
 
 
   initialization {
-    # The user account configuration (conflicts with user_data_file_id per the provider
+    # TODO The user account configuration (conflicts with user_data_file_id per the provider
     # user_account {
     #   keys     = [var.ssh_public_key_content]
     #   username = "ka8kgj"
@@ -80,8 +76,16 @@ resource "proxmox_virtual_environment_vm" "template" {
   }
 
   # onboot = false
-  tags = ["template"]
+  tags = ["template", "terraform"]
 
+  lifecycle {
+    ignore_changes = [
+      template,
+      started,
+      initialization,
+      network_device,
+    ]
+  }
 
 }
 
@@ -114,7 +118,7 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
 
 
 
-# resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
+# DELETEME resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
 #   content_type = "snippets"
 #   datastore_id = "local"
 #   node_name    = var.node_name
