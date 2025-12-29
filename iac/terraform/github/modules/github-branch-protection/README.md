@@ -1,32 +1,54 @@
-````md
-# terraform-github-classic-protection-module
+# GitHub Branch Protection Module
 
-This module adds a CODEOWNERS file (if missing) and applies _classic_ GitHub branch protection to a branch, with `enforce_admins` defaulting to `false` so repository admins can bypass the rules.
+This module configures classic GitHub branch protection rules for repositories, with `enforce_admins` defaulting to `false` to allow repository admins to bypass the rules.
 
-Usage example:
+## Features
+
+- Configures required status checks
+- Sets up pull request review requirements
+- Allows admin bypass by default
+- Supports code owner reviews
+
+## Usage
 
 ```hcl
-module "repo_protect" {
-  source = "./modules/github-classic-protection"
+module "branch_protection" {
+  source = "./modules/github-branch-protection"
 
-  repository = "org-name/repo-name"
-  branch     = "main"
+  repository_id = "org/repo-name"
+  branch        = "main"
 
-  # Provide CODEOWNERS content if you want the module to create it
-  codeowners_content = <<-EOT
-  # CODEOWNERS
-  * @org/owners-team
-  EOT
-
-  # Keep enforce_admins = false so admins can bypass
   enforce_admins = false
 
   required_status_check_contexts = ["ci/test", "ci/lint"]
+
+  dismiss_stale_reviews           = true
+  require_code_owner_reviews      = true
+  required_approving_review_count = 1
 }
 ```
-````
 
-Notes:
+## Notes
 
-- Manually ensure the GitHub provider is configured in the root module with credentials that have admin permissions for the repo.
-- This module is intentionally simple and uses classic branch protection to allow admins (repo owners) to bypass protections.
+- Ensure the GitHub provider is configured in the root module with credentials that have admin permissions for the repository.
+- This module uses classic branch protection to allow admins to bypass rules when needed.
+- For CODEOWNERS management, use the separate [GitHub CODEOWNERS module](../github-codeowners/README.md).
+
+## Inputs
+
+| Name                            | Description                            | Type           | Default | Required |
+| ------------------------------- | -------------------------------------- | -------------- | ------- | -------- |
+| repository_id                   | GitHub repository ID (org/repo)        | `string`       | n/a     | yes      |
+| branch                          | Branch pattern to protect              | `string`       | n/a     | yes      |
+| enforce_admins                  | Whether to enforce rules for admins    | `bool`         | `false` | no       |
+| strict_required_status_checks   | Require branches to be up to date      | `bool`         | `false` | no       |
+| required_status_check_contexts  | List of required status check contexts | `list(string)` | `[]`    | no       |
+| dismiss_stale_reviews           | Dismiss stale pull request reviews     | `bool`         | `false` | no       |
+| require_code_owner_reviews      | Require code owner reviews             | `bool`         | `false` | no       |
+| required_approving_review_count | Number of required approving reviews   | `number`       | `1`     | no       |
+
+## Outputs
+
+| Name              | Description                           |
+| ----------------- | ------------------------------------- |
+| branch_protection | The configured branch protection rule |

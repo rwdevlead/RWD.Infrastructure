@@ -1,4 +1,10 @@
-# Packer Templates
+# Update
+
+Due to ongoing difficulties getting Packer to work reliably—along with outdated plugin support and general instability—I’ve decided to discontinue this approach.
+
+See My Script in [Makefile](../../Makefile)
+
+## Packer Templates
 
 This directory contains Packer templates for building VM images on Proxmox.
 

@@ -1,12 +1,28 @@
 # ==========================================================
 # Proxmox provider
 # ==========================================================
-provider "proxmox" {
-  # Adjust your URL, token, and user
-  pm_api_url      = "https://proxmox.example.local:8006/api2/json"
-  pm_user         = "root@pam!rwd-iac"
-  pm_password     = ""   # optional if using token
-  pm_tls_insecure = true # adjust for prod
-  pm_token_id     = "packer@pve!tokenid"
-  pm_token_secret = var.proxmox_token_secret
+terraform {
+  required_version = ">= 1.13.1"
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = "0.89.1" # version = ">=0.66"
+    }
+  }
 }
+
+provider "proxmox" {
+  # using env endpoint  = var.virtual_environment_endpoint
+  # using env api_token = var.virtual_environment_token
+  insecure = true
+  ssh {
+    # agent       = true
+    username    = "root"
+    private_key = file("~/.ssh/id_ed25519")
+  }
+}
+
+
+// provider
+// https://registry.terraform.io/providers/bpg/proxmox/0.89.1
+

@@ -1,0 +1,26 @@
+#cloud-config
+hostname: ${hostname}
+timezone: America/New_York
+ssh_pwauth: true
+users:
+  - name: ka8kgj
+    groups: [sudo, adm]
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    passwd: "password123"
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+chpasswd:
+  list: |
+    ka8kgj:password123
+  expire: False
+package_update: true
+packages:
+  - qemu-guest-agent
+
+runcmd:
+  - echo "===== runcmd START ====="
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
+  - echo "===== runcmd END ====="
