@@ -47,7 +47,7 @@ module "Dev_Docker" {
   vm_id          = 101
   vm_node_name   = "proxmox"
   vm_name        = "Docker-vm01"
-  vm_description = "Development Docker Instand"
+  vm_description = "Development Docker Instance"
   #   keyboard      
 
   vm_username = "ka8kgj"
@@ -77,52 +77,30 @@ module "Dev_Docker" {
 
 }
 
-# module "homeassistant" {
-#   source    = "./modules/homeassistant"
-#   vm_id     = 102
-#   name      = "homeassistant"
-#   node      = var.pm_node
-#   qcow2_url = "https://github.com/home-assistant/operating-system/releases/latest/download/haos_ova-12.4.qcow2.xz"
-#   storage   = "local-lvm"
-# }
+module "homeassistant" {
+  source = "./modules/homeassistant"
+
+  vm_id          = 102
+  node_name      = "proxmox"
+  vm_name        = "homeassistant"
+  vm_description = "Home Assistance Instance"
+
+  vm_cores  = 2
+  vm_memory = 4096
+
+  efi_storage_id = "local-lvm"
+  vm_os          = "l26"
+  vm_bios        = "ovmf"
+  vm_machine     = "q35"
+
+  disk_interface  = "virtio0"
+  disk_size       = 32
+  disk_storage_id = "local-lvm"
+
+  network_bridge = "vmbr0"
+
+  tags = ["vm", "prod", "homeassistant"]
+
+}
 
 
-# ==========================================================
-# Normal Ubuntu VM (no Docker)
-# ==========================================================
-# module "Dev_Ubuntu" {
-#   source         = "./modules/proxmox-vm"
-#   providers      = { proxmox = proxmox }
-#   hostname       = "ubuntu-vm01"
-#   vmid           = 101
-#   node           = "proxmox"
-#   template_name  = "ubuntu-24.04-template"
-#   cpu_cores      = 2
-#   memory_min_mb  = 4096
-#   memory_max_mb  = 8192
-#   disk_size      = "20G"
-#   ssh_public_key = file("~/.ssh/id_ed25519.pub")
-#   ip_address     = "192.168.50.14"
-#   gateway        = "192.168.50.1"
-#   netmask        = 24
-# }
-
-
-# ==========================================================
-# Docker-enabled Ubuntu VM
-# ==========================================================
-# module "Dev_Docker" {
-#   source         = "./modules/proxmox-vm-docker"
-#   providers      = { proxmox = proxmox }
-#   hostname       = "docker-vm01"
-#   vmid           = 102
-#   node           = "proxmox"
-#   template_name  = "ubuntu-24.04-template"
-#   cpu_cores      = 2
-#   memory_mb      = 4096
-#   disk_size      = "20G"
-#   ssh_public_key = file("~/.ssh/id_ed25519.pub")
-#   ip_address     = "192.168.50.13"
-#   gateway        = "192.168.50.1"
-#   netmask        = 24
-# }

@@ -1,81 +1,75 @@
-This README provides a clear workflow for your "Golden Image" process: using Terraform to build the infrastructure and your script to perform the internal OS surgery and template locking.
+# Ubuntu Template Module
 
----
+This Terraform module creates Ubuntu VM templates on Proxmox using cloud-init for initial configuration.
 
-# Proxmox Ubuntu Template Automation
+## Features
 
-This project automates the creation of a "Golden Image" Ubuntu template on Proxmox. It uses **Terraform** to provision the VM and a **Makefile + Bash script** to seal the OS and convert it into a template.
+- Provisions Ubuntu VMs from cloud images
+- Configures cloud-init for user setup and package installation
+- Prepares VMs for template conversion
+- Supports UEFI boot configuration
 
-## The Workflow
+## Usage
 
-1. **Provision**: Terraform creates a "Base VM" from a cloud image.
-2. **Initialize**: Cloud-init installs the Guest Agent and sets up your user/SSH keys.
-3. **Seal**: A script logs into the VM, wipes unique IDs (Machine-ID, SSH keys, logs), and shuts it down.
-4. **Convert**: The script tells Proxmox to convert the stopped VM into a read-only template.
+```hcl
+module "ubuntu_template" {
+  source = "./modules/template-ubuntu"
 
----
+  node_name = "proxmox-node"
+  vm_id     = 9000
+  vm_name   = "ubuntu-template"
+
+  vm_cores  = 2
+  vm_memory = 4096
+}
+```
+
+## Workflow
+
+1. **Provision**: Terraform creates a "Base VM" from a cloud image
+2. **Initialize**: Cloud-init installs the Guest Agent and sets up SSH keys
+3. **Seal**: Use external scripts to clean the VM and convert to template
+4. **Convert**: The VM becomes a read-only template for cloning
 
 ## Prerequisites
 
-- **SSH Agent**: Your SSH key must be loaded in your local agent so it can be forwarded to the Proxmox host.
+- SSH agent with loaded keys for Proxmox access
+- Passwordless SSH access to Proxmox host as root
+- Public key configured in cloud-init for VM access
 
-```bash
-eval $(ssh-agent -s)
-ssh-add ~/.ssh/id_ed25519
+## Important Notes
 
-```
+- Include `ignore_changes = [template, started]` in lifecycle blocks
+- The module creates VMs in writable state initially
+- External scripts handle the sealing and templating process
 
-- **SSH Access**:
-- Passwordless SSH access to the Proxmox Host as `root`.
-- Your public key must be defined in the Terraform `initialization` block so the VM trusts you.
+## Inputs
 
----
+| Name                  | Description           | Type           | Default      | Required |
+| --------------------- | --------------------- | -------------- | ------------ | -------- |
+| node_name             | Proxmox node name     | `string`       | n/a          | yes      |
+| vm_id                 | Template VM ID        | `number`       | n/a          | yes      |
+| vm_name               | VM/template name      | `string`       | `"template"` | no       |
+| vm_os                 | Operating system type | `string`       | `"l26"`      | no       |
+| vm_bios               | BIOS type             | `string`       | `"ovmf"`     | no       |
+| vm_machine            | Machine type          | `string`       | `"q35"`      | no       |
+| vm_cores              | CPU cores             | `number`       | `2`          | no       |
+| vm_memory             | Memory in MB          | `number`       | `2048`       | no       |
+| efi_storage_id        | EFI storage location  | `string`       | n/a          | yes      |
+| disk_storage_id       | Disk storage location | `string`       | n/a          | yes      |
+| disk_size             | Disk size in GB       | `number`       | `20`         | no       |
+| cloud_init_storage_id | Cloud-init storage    | `string`       | n/a          | yes      |
+| cloud_init_user       | Cloud-init username   | `string`       | n/a          | yes      |
+| cloud_init_ssh_keys   | SSH public keys       | `list(string)` | n/a          | yes      |
+| cloud_init_packages   | Packages to install   | `list(string)` | `[]`         | no       |
 
-## Step 1: Provision the Base VM
+## Outputs
 
-Deploy the VM using Terraform. This VM is created in a "writable" state (`template = false`) so we can clean it.
-
-```bash
-terraform apply
-
-```
-
-**Note:** Ensure the `lifecycle` block in your Terraform code includes `ignore_changes = [ template, started ]`. This prevents Terraform from trying to "undo" the template conversion later.
-
----
-
-## Step 2: Seal and Convert
-
-Once the VM is running and reachable via the network, run the Makefile command.
-
-```bash
-make vm_to_template
-
-```
-
-### What happens during this step:
-
-1. **Direct Connection**: The Makefile SSHs into your **Proxmox Host** using the `-A` flag (Agent Forwarding).
-2. **OS Cleanup**: The script (running on Proxmox) SSHs into the **VM**, runs `cloud-init clean`, truncates `/etc/machine-id`, and deletes SSH host keys.
-3. **Shutdown**: The VM shuts itself down to ensure disk consistency.
-4. **Templating**: The script waits for the VM to stop, then runs `qm template <VMID>` on the Proxmox host.
+| Name               | Description        |
+| ------------------ | ------------------ |
+| template_id        | The template VM ID |
+| template_node_name | Proxmox node name  |
 
 ---
 
-## Step 3: Verify
-
-In the Proxmox Web UI, your VM icon should change from a standard VM to a **Template icon (sheet of paper)**. The VM will be in a stopped state and is now ready to be cloned.
-
----
-
-## Troubleshooting
-
-| Error                           | Cause                    | Solution                                                                      |
-| ------------------------------- | ------------------------ | ----------------------------------------------------------------------------- |
-| `Permission denied (publickey)` | SSH Agent not forwarded. | Run `ssh-add` on your laptop and ensure the Makefile uses `ssh -A`.           |
-| `sudo: command not found`       | Logged in as `root`.     | Ensure `CI_USER` in Makefile is set to your cloud-init user (e.g., `ka8kgj`). |
-| `Connection timed out`          | VM not finished booting. | Wait 60 seconds after `terraform apply` before running `make`.                |
-
----
-
-**Would you like me to add a "Testing" section to this README that shows the Terraform code for cloning a VM from this new template?**
+This module works in conjunction with external scripts for the template sealing process. See the main Terraform README for template creation workflows.

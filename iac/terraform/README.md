@@ -1,30 +1,46 @@
-Summerize all the terraform files and modules with links to each
+# Terraform Infrastructure
 
-each folder in the terraform folder is a destination. example github repositories or proxmox server.
+This repository contains Terraform configurations for managing infrastructure across multiple platforms:
 
-add a note that ubuntu no longer has qemu guest agent installed with img file. Highligh to bring to attention.
+- **GitHub**: Repository management, teams, branch protection, and CODEOWNERS files
+- **Proxmox**: Virtual machine provisioning, cloning, and template creation
 
-how to make a template in proxmox
-If you want to keep it all in Terraform, do this:
+## Modules
 
-1. Step A (The Build):
+### GitHub Modules
 
-- template = false
+- [GitHub Repository](./github/modules/github-repository/README.md) - Creates and manages GitHub repositories
+- [GitHub Teams](./github/modules/github-teams/README.md) - Manages GitHub teams and memberships
+- [GitHub Branch Protection](./github/modules/github-branch-protection/README.md) - Configures branch protection rules
+- [GitHub CODEOWNERS](./github/modules/github-codeowners/README.md) - Manages CODEOWNERS files for repositories
 
-- started = true
+### Proxmox Modules
 
-- Run terraform apply.
+- [Clone VM](./proxmox/modules/clone-vm/README.md) - Clones virtual machines from templates
+- [Home Assistant](./proxmox/modules/homeassistant/README.md) - Provisions Home Assistant virtual machines
+- [Ubuntu Template](./proxmox/modules/template-ubuntu/README.md) - Creates Ubuntu VM templates
 
-- Result: The VM boots, Cloud-Init runs, installs your tools, and runs your cleanup/sealing commands.
+## Important Notes
 
-Step B (The Seal):
+### Ubuntu Template Changes
 
-- Change the file to template = true and started = false.
+**Note**: Ubuntu templates no longer have the QEMU guest agent installed with the IMG file. This is a recent change that affects VM cloning and IP address retrieval.
 
-- Run terraform apply again.
+### Creating Templates in Proxmox
 
-- Result: Terraform sees the change, stops the VM, and converts it to a template.
+If you want to keep the template creation process within Terraform:
 
-A Warning on the Cleanup Script
+1. **Step A (The Build)**:
 
-If you include truncate -s 0 /etc/machine-id in your runcmd, the VM will technically be "broken" until it reboots (as the machine-id is cleared). This is perfect for a template, but it's why Step B (shutting it down immediately after the script runs) is so important.
+   - Set `template = false` and `started = true`
+   - Run `terraform apply`
+   - Result: The VM boots, Cloud-Init runs, installs tools, and executes cleanup/sealing commands
+
+2. **Step B (The Seal)**:
+   - Change to `template = true` and `started = false`
+   - Run `terraform apply` again
+   - Result: Terraform stops the VM and converts it to a template
+
+### Warning on Cleanup Scripts
+
+If your `runcmd` includes `truncate -s 0 /etc/machine-id`, the VM will be "broken" until reboot (as the machine-id is cleared). This is ideal for templates, which is why Step B (immediate shutdown after script execution) is critical.

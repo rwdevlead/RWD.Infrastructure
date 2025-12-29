@@ -7,34 +7,81 @@ terraform {
   }
 }
 
-resource "proxmox_virtual_environment_storage_file" "haos" {
-  node         = var.node
-  datastore_id = var.storage
-  download_url = var.qcow2_url
-  file_name    = "${var.name}.qcow2"
+
+# resource "proxmox_virtual_environment_download_file" "ha_image" {
+#   content_type = "iso"
+#   datastore_id = "local"
+#   node_name    = var.node_name
+#   url          = var.qcow2_url
+
+#   # This is the magic line for .xz files
+#   decompression_algorithm = "xz"
+
+#   # Ensure the destination filename ends in .img or .qcow2 
+#   # so Proxmox recognizes it as a disk image after decompression
+#   file_name = var.qcow2_filename
+# }
+
+resource "proxmox_virtual_environment_file" "ha_image" {
+  content_type = "iso"
+  datastore_id = "local"
+  node_name    = var.node_name
+
+  source_file {
+    # Ensure you have unzipped the .xz file to this path
+    path = "${path.module}/files/haos_ova-16.3.img"
+  }
 }
 
-resource "proxmox_virtual_environment_vm" "ha" {
-  vm_id = var.vm_id
-  name  = var.name
-  node  = var.node
+resource "proxmox_virtual_environment_vm" "home_assistant" {
+  name        = var.vm_name
+  description = var.vm_description
+  node_name   = var.node_name
+  vm_id       = var.vm_id
 
-  disk {
-    datastore_id = var.storage
-    file_id      = proxmox_virtual_environment_storage_file.haos.id
-  }
+  # Home Assistant OS requires UEFI
+  bios    = var.vm_bios
+  machine = var.vm_machine
 
-  operating_system {
-    type = "l26"
+  agent {
+    enabled = true
   }
 
   cpu {
-    cores = 2
+    cores = var.vm_cores
+    type  = "host"
   }
 
   memory {
-    dedicated = 4096
+    dedicated = var.vm_memory
   }
 
-  network_device {}
+  network_device {
+    bridge = var.network_bridge
+  }
+
+  # EFI Disk (Required for UEFI boot)
+  efi_disk {
+    datastore_id = var.efi_storage_id
+    type         = "4m"
+  }
+
+  # The Main Disk imported from the image
+  disk {
+    datastore_id = var.disk_storage_id
+    file_id      = proxmox_virtual_environment_file.ha_image.id
+    interface    = var.disk_interface
+    size         = var.disk_size
+  }
+
+  operating_system {
+    type = var.vm_os
+  }
+
+  # Ensure the VM starts on boot
+  on_boot = true
+
+  tags = var.tags
+
 }
+
