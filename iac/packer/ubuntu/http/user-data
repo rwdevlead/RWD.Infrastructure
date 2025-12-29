@@ -1,33 +1,65 @@
-#cloud-config
+# #cloud-config
 autoinstall:
   version: 1
+
+  # Controls whether the installer updates to a new version if available
+  # refresh-installer:
+  #   update: true
+
+  locale: en_US
+  keyboard:
+    layout: us
   identity:
     hostname: ubuntu-template
     username: ubuntu
-    password: "ubuntu"
-  storage:
-    layout:
-      name: direct
+    password: "$6$rounds=4096$ntlX/dlo6b$HXaLN4RcLIGaEDdQdR2VTYi9pslSeXWL131MqaakqE285Nv0kW9KRontQYivCbycZerUMcjVsuLl2V8bbdadI1"
+  # chpasswd:
+  #   expire: false
+  #   list:
+  #     - ubuntu:ubuntu
   ssh:
     install-server: true
     allow-pw: true
+    ssh_quiet_keygen: true
+  network:
+    network:
+      version: 2
+      ethernets:
+        any:
+          match:
+            name: en*
+          dhcp4: true
+          dhcp6: false
+  storage:
+    layout:
+      name: direct
+    swap:
+      size: 0
   packages:
     - qemu-guest-agent
+    - sudo
+    - openssh-server
+    - net-tools
+    - open-iscsi
+    - curl
+    - vim
+    - apt-transport-https
+    - ca-certificates
+    - lsb-release
+    - python3-pip
+    - jq
+    - cloud-init
+  user-data:
+    package_upgrade: false
+    timezone: America/New_York
+    disable_root: false
   late-commands:
-    - |-
-      curtin in-target --target=/target -- bash -c "echo '=== Starting late-commands ==='"
-    - |-
-      curtin in-target --target=/target -- bash -c "echo 'root:ubuntu' | chpasswd"
-    - |-
-      curtin in-target --target=/target -- sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-    - |-
-      curtin in-target --target=/target -- sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-    - |-
-      curtin in-target --target=/target -- systemctl enable ssh
-    - |-
-      curtin in-target --target=/target -- systemctl enable qemu-guest-agent
-    - |-
-      curtin in-target --target=/target -- systemctl start qemu-guest-agent || echo "Warning: qemu-guest-agent start failed"
-    - |-
-      curtin in-target --target=/target -- bash -c "echo '=== Late-commands completed ==='"
-  reboot: true
+    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+    - chmod 440 /target/etc/sudoers.d/ubuntu
+    - |
+      if [ -d /sys/firmware/efi ]; then
+        apt-get install -y efibootmgr
+        efibootmgr -o $(efibootmgr | perl -n -e '/Boot(.+)\* Ubuntu/ && print $1')
+      fi
+  # Force non-interactive installation
+  interactive-sections: []
