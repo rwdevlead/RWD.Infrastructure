@@ -1,0 +1,35 @@
+version: "3.9"
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: true
+
+services:
+  traefik:
+    image: traefik:{{ traefik_version }}
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "{{ traefik_config_dir }}/traefik.yml:/traefik.yml:ro"
+      - "{{ traefik_letsencrypt_dir }}:/letsencrypt"
+    command:
+      - "--configFile=/traefik.yml"
+{% if traefik_dashboard_enabled %}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`{{ traefik_dashboard_domain }}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+{% endif %}
+    networks:
+      - proxy
+      - internal
+
+# TODO compare to existing compose

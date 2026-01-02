@@ -1,0 +1,5 @@
+- name: Deploy Homepage
+  hosts: homepage
+  become: true
+  roles:
+    - apps/homepage

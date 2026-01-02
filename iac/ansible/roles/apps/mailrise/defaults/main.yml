@@ -1,0 +1,9 @@
+---
+mailrise_version: latest
+
+mailrise_base_dir: /opt/containers/mailrise
+mailrise_config_dir: "{{ mailrise_base_dir }}/config"
+
+mailrise_smtp_port: 8025
+
+mailrise_update: true

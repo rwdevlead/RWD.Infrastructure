@@ -1,0 +1,43 @@
+version: "3.9"
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: true
+
+services:
+  postgres:
+    image: postgres:{{ postgres_version }}
+    container_name: semaphore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: {{ semaphore_db_name }}
+      POSTGRES_USER: {{ semaphore_db_user }}
+      POSTGRES_PASSWORD: {{ semaphore_db_password }}
+    volumes:
+      - "{{ semaphore_db_dir }}:/var/lib/postgresql/data"
+    networks:
+      - internal
+
+  semaphore:
+    image: semaphoreui/semaphore:{{ semaphore_version }}
+    container_name: semaphore
+    restart: unless-stopped
+    env_file:
+      - .env
+{% if traefik_enabled | default(false) %}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.semaphore.rule=Host(`semaphore.example.com`)"
+      - "traefik.http.routers.semaphore.entrypoints=websecure"
+      - "traefik.http.routers.semaphore.tls.certresolver=letsencrypt"
+{% else %}
+    ports:
+      - "{{ semaphore_port }}:3000"
+{% endif %}
+    depends_on:
+      - postgres
+    networks:
+      - proxy
+      - internal

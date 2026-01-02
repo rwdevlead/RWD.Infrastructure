@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:{{ homepage_version }}
+    container_name: homepage
+    restart: unless-stopped
+    ports:
+      - "{{ homepage_port }}:3000"
+    volumes:
+      - "{{ homepage_config_dir }}:/app/config"
+
+# TODO compare to existing compose

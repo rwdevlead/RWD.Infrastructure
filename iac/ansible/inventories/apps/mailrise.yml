@@ -1,0 +1,4 @@
+# inventories/apps/mailrise.yml
+mailrise:
+  hosts:
+    docker01:

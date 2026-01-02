@@ -1,0 +1,16 @@
+---
+pihole_version: latest
+
+pihole_base_dir: /opt/containers/pihole
+pihole_etc_dir: "{{ pihole_base_dir }}/etc-pihole"
+pihole_dnsmasq_dir: "{{ pihole_base_dir }}/etc-dnsmasq.d"
+
+# DNS ports (must be 53 on host if this is your primary DNS)
+pihole_dns_tcp_port: 53
+pihole_dns_udp_port: 53
+
+# Web UI
+pihole_web_port: 8081 # used only if Traefik disabled
+
+pihole_timezone: "America/New_York"
+pihole_update: true

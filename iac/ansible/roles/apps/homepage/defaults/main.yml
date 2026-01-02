@@ -1,0 +1,9 @@
+---
+homepage_version: latest
+
+homepage_base_dir: /opt/containers/homepage
+homepage_config_dir: "{{ homepage_base_dir }}/config"
+
+homepage_port: 3000
+
+homepage_update: true

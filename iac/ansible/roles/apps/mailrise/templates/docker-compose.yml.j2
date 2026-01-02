@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  mailrise:
+    image: ghcr.io/yoctozepto/mailrise:{{ mailrise_version }}
+    container_name: mailrise
+    restart: unless-stopped
+    ports:
+      - "{{ mailrise_smtp_port }}:{{ mailrise_smtp_port }}"
+    volumes:
+      - "{{ mailrise_config_dir }}/mailrise.yml:/mailrise.yml:ro"
+    command:
+      - "--config=/mailrise.yml"

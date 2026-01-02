@@ -1,0 +1,21 @@
+Port {{ ssh_port }}
+Protocol 2
+
+PermitRootLogin {{ ssh_permit_root_login }}
+PasswordAuthentication {{ 'yes' if ssh_password_authentication else 'no' }}
+PubkeyAuthentication {{ 'yes' if ssh_pubkey_authentication else 'no' }}
+PermitEmptyPasswords {{ 'yes' if ssh_permit_empty_passwords else 'no' }}
+
+MaxAuthTries {{ ssh_max_auth_tries }}
+LoginGraceTime {{ ssh_login_grace_time }}
+
+UsePAM yes
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+
+{% if ssh_allow_users is defined and ssh_allow_users | length > 0 %}
+AllowUsers {{ ssh_allow_users | join(' ') }}
+{% endif %}
+
+Subsystem sftp /usr/lib/openssh/sftp-server

@@ -1,0 +1,7 @@
+- name: Apply baseline configuration
+  hosts: all
+  become: true
+  roles:
+    - common
+    - users
+# TODO no calls to base, docker or apps ?

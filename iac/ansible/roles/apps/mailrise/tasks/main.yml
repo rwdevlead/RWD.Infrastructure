@@ -1,0 +1,30 @@
+---
+- name: Create MailRise directories
+  ansible.builtin.file:
+    path: "{{ mailrise_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Render mailrise.yml
+  ansible.builtin.template:
+    src: mailrise.yml.j2
+    dest: "{{ mailrise_config_dir }}/mailrise.yml"
+    owner: root
+    group: root
+    mode: "0640"
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ mailrise_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy MailRise
+  community.docker.docker_compose_v2:
+    project_src: "{{ mailrise_base_dir }}"
+    pull: "{{ mailrise_update }}"
+    recreate: smart

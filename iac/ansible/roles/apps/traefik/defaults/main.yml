@@ -1,0 +1,14 @@
+---
+traefik_version: v3.0
+
+traefik_base_dir: /opt/containers/traefik
+traefik_config_dir: "{{ traefik_base_dir }}/config"
+traefik_letsencrypt_dir: "{{ traefik_base_dir }}/letsencrypt"
+
+traefik_domain: example.com
+traefik_email: admin@example.com
+
+traefik_dashboard_enabled: true
+traefik_dashboard_domain: traefik.example.com
+
+traefik_update: true

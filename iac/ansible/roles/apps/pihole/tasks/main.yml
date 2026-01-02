@@ -1,0 +1,34 @@
+---
+- name: Create Pi-hole directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ pihole_base_dir }}"
+    - "{{ pihole_etc_dir }}"
+    - "{{ pihole_dnsmasq_dir }}"
+
+- name: Render environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ pihole_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ pihole_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy Pi-hole
+  community.docker.docker_compose_v2:
+    project_src: "{{ pihole_base_dir }}"
+    pull: "{{ pihole_update }}"
+    recreate: smart
