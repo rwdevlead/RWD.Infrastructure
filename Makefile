@@ -1,4 +1,7 @@
-.PHONY: help init plan apply validate fmt lint clean packer-fmt packer-init packer-validate packer-build
+# .PHONY: help init plan apply validate fmt lint clean packer-fmt packer-init packer-validate packer-build
+
+# Automatically mark all targets as PHONY so Make doesn't confuse them with files
+.PHONY: $(MAKECMDGOALS)
 
 # ==========================================================
 # Load .env file (if present)
@@ -119,3 +122,39 @@ clean: ## Clean up generated files in the selected Terraform target
 	rm -f *.retry
 	
 
+# ==========================================================
+# Ansible Commands
+# ==========================================================
+
+ANSIBLE=ansible-playbook
+ANSIBLE_DIR=iac/ansible
+
+ansible-config:
+	ansible-config dump --only-changed
+
+base-check:
+	ansible-playbook iac/ansible/playbooks/base.yml \
+		-i iac/ansible/inventories/docker.yml \
+		--check --diff
+
+base:
+	ansible-playbook iac/ansible/playbooks/base.yml \
+		-i iac/ansible/inventories/docker.yml
+
+docker-check:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+docker:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+portainer-check:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker-portainer.yml \
+		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml \
+		--check --diff
+
+portainer:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker-portainer.yml \
+		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml

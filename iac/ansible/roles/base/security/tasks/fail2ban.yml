@@ -20,8 +20,9 @@
       enabled = true
   notify: Restart fail2ban
 
-- name: Enable and start fail2ban
-  ansible.builtin.service:
+- name: Enable and start fail2ban service
+  ansible.builtin.systemd:
     name: fail2ban
-    enabled: true
+    enabled: yes
     state: started
+  when: ansible_facts.packages['fail2ban'] is defined

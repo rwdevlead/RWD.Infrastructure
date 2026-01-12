@@ -1,0 +1,5 @@
+portainer:
+  hosts:
+    docker01:
+      portainer_port: 9443
+      traefik_enabled: false

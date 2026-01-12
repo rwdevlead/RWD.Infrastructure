@@ -1,5 +1,6 @@
 ---
 - name: Restart fail2ban
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: fail2ban
     state: restarted
+  when: not ansible_check_mode # Skip during --check/dry-run
