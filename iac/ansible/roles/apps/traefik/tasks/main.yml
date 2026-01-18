@@ -1,5 +1,5 @@
 ---
-- name: Create Traefik directories
+- name: Ensure Traefik directories exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -8,43 +8,36 @@
     mode: "0755"
   loop:
     - "{{ traefik_base_dir }}"
-    - "{{ traefik_config_dir }}"
-    - "{{ traefik_letsencrypt_dir }}"
+    - "{{ traefik_data_dir }}/config"
+    - "{{ traefik_data_dir }}/acme"
 
-- name: Create ACME storage file
+- name: Ensure acme.json exists
   ansible.builtin.file:
-    path: "{{ traefik_letsencrypt_dir }}/acme.json"
+    path: "{{ traefik_data_dir }}/acme/acme.json"
     state: touch
     owner: root
     group: root
     mode: "0600"
 
-- name: Render traefik.yml
+- name: Ensure Traefik docker network exists
+  community.docker.docker_network:
+    name: "{{ traefik_network }}"
+    state: present
+
+- name: Render Traefik dynamic config
   ansible.builtin.template:
-    src: traefik.yml.j2
-    dest: "{{ traefik_config_dir }}/traefik.yml"
-    owner: root
-    group: root
+    src: dynamic.yml.j2
+    dest: "{{ traefik_data_dir }}/config/dynamic.yml"
     mode: "0644"
 
-- name: Ensure Docker networks exist
-  community.docker.docker_network:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - proxy
-    - internal
-
-- name: Render docker-compose.yml
+- name: Render Traefik docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2
     dest: "{{ traefik_base_dir }}/docker-compose.yml"
-    owner: root
-    group: root
     mode: "0644"
 
-- name: Deploy Traefik
+- name: Deploy Traefik via Docker Compose
   community.docker.docker_compose_v2:
     project_src: "{{ traefik_base_dir }}"
-    pull: "{{ traefik_update }}"
-    recreate: smart
+    state: present
+  when: not ansible_check_mode

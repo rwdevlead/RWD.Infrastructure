@@ -1,0 +1,26 @@
+- name: Install NFS client packages
+  ansible.builtin.package:
+    name: nfs-common
+    state: present
+
+- name: Create mount point directory
+  ansible.builtin.file:
+    path: "{{ nfs_mount_point }}"
+    state: directory
+    mode: "0755"
+
+- name: Mount the base NFS share
+  ansible.builtin.mount:
+    path: "{{ nfs_mount_point }}"
+    src: "{{ nfs_server }}:{{ nfs_export_path }}"
+    fstype: nfs
+    opts: "{{ nfs_mount_options }}"
+    state: mounted
+
+- name: Set permissions on the mounted share
+  ansible.builtin.file:
+    path: "{{ nfs_mount_point }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0777" # Allows Docker containers to create sub-directories easily

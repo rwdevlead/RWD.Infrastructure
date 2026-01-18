@@ -21,3 +21,14 @@ Deploys Portainer CE using Docker Compose.
 
 - No firewall rules applied
 - Designed as a template for app roles
+
+## Networking
+
+- Exposed via Traefik (when deployed)
+- No host ports published
+- Docker network: `traefik`
+
+## Access
+
+- URL: https://portainer.local.rwdevs.com
+- Requires Traefik to be running

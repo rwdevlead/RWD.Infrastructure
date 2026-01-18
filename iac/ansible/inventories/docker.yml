@@ -6,3 +6,5 @@ docker_hosts:
       ansible_user: ka8kgj
       docker_users:
         - ka8kgj
+portainer:
+  children: docker_hosts

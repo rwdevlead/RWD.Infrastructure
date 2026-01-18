@@ -4,4 +4,4 @@
   become: true
 
   roles:
-    - docker/portainer
+    - apps/portainer

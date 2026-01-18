@@ -1,35 +1,65 @@
-version: "3.9"
-
-networks:
-  proxy:
-    external: true
-  internal:
-    external: true
-
 services:
   traefik:
-    image: traefik:{{ traefik_version }}
+    image: {{ traefik_image }}:{{ traefik_tag }}
     container_name: traefik
     restart: unless-stopped
+
+    command:
+      - --log.level=INFO
+
+      - --api=true
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --ping=true
+
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network={{ traefik_network }}
+
+      - --entryPoints.web.address=:80
+
+      - --entryPoints.websecure.address=:443
+      - --entryPoints.websecure.asDefault=true
+      - --entryPoints.websecure.http.tls.certResolver={{ traefik_acme_resolver }}
+      - --entryPoints.websecure.http.tls.domains[0].main=local.rwdevs.com
+      - --entryPoints.websecure.http.tls.domains[0].sans=*.local.rwdevs.com
+
+      - --serversTransport.insecureSkipVerify=true
+
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge=true
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge.resolvers=1.1.1.1:53
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge.resolvers=1.0.0.1:53
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.email={{ traefik_acme_email }}
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.storage=/acme/acme.json
+
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - "{{ traefik_config_dir }}/traefik.yml:/traefik.yml:ro"
-      - "{{ traefik_letsencrypt_dir }}:/letsencrypt"
-    command:
-      - "--configFile=/traefik.yml"
-{% if traefik_dashboard_enabled %}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`{{ traefik_dashboard_domain }}`)"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
-{% endif %}
-    networks:
-      - proxy
-      - internal
+      - "8080:8080"
 
-# TODO compare to existing compose
+    environment:
+      CF_DNS_API_TOKEN: "{{ cloudflare_dns_api_token }}"
+      DOCKER_API_VERSION: "1.52"
+
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - {{ traefik_data_dir }}/config:/config
+      - {{ traefik_data_dir }}/acme:/acme
+
+    networks:
+      - {{ traefik_network }}
+
+    labels:
+      - traefik.enable=false
+
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  {{ traefik_network }}:
+    external: true

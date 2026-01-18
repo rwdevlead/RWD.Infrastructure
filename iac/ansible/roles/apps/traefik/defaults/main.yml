@@ -1,14 +1,15 @@
 ---
-traefik_version: v3.0
+traefik_image: "traefik"
+traefik_tag: "v3.6.1"
 
-traefik_base_dir: /opt/containers/traefik
-traefik_config_dir: "{{ traefik_base_dir }}/config"
-traefik_letsencrypt_dir: "{{ traefik_base_dir }}/letsencrypt"
+traefik_base_dir: "/opt/traefik"
+traefik_data_dir: "/mnt/docker/traefik"
 
-traefik_domain: example.com
-traefik_email: admin@example.com
+traefik_network: "traefik"
 
-traefik_dashboard_enabled: true
-traefik_dashboard_domain: traefik.example.com
+traefik_dashboard_domain: "proxy.local.rwdevs.com"
 
-traefik_update: true
+traefik_acme_email: "srdevlead@outlook.com"
+traefik_acme_resolver: "cloudflare"
+
+cloudflare_dns_api_token: "{{ lookup('env', 'CF_DNS_API_TOKEN') }}"
