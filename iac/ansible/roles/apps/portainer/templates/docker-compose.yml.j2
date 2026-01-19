@@ -17,6 +17,7 @@ services:
       # Router
       - "traefik.http.routers.portainer.rule=Host(`{{ portainer_domain }}`)"
       - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls.certresolver=cloudflare"
       - "traefik.http.routers.portainer.tls=true"
 
       # Service

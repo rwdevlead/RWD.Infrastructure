@@ -1,7 +1,6 @@
-# .PHONY: help init plan apply validate fmt lint clean packer-fmt packer-init packer-validate packer-build
-
-# Automatically mark all targets as PHONY so Make doesn't confuse them with files
-.PHONY: $(MAKECMDGOALS)
+.PHONY: help init plan apply validate fmt clean destroy cleanup-vm convert-to-template \
+	ansible-config base base-check docker docker-check storage storage-check \
+	traefik traefik-check portainer portainer-check site site-check
 
 # ==========================================================
 # Load .env file (if present)
@@ -33,7 +32,7 @@ help: ## Show this help message
 	@echo '  make apply TARGET=proxmox'
 	@echo
 	@echo 'Targets:'
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 
 # ==========================================================
@@ -151,10 +150,37 @@ docker:
 		-i $(ANSIBLE_DIR)/inventories/docker.yml
 
 portainer-check:
-	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker-portainer.yml \
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
 		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml \
 		--check --diff
 
 portainer:
-	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker-portainer.yml \
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
 		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml
+
+storage-check: ## Check storage configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/storage.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+storage: ## Deploy storage configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/storage.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+traefik-check: ## Check Traefik configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/traefik.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+traefik: ## Deploy Traefik reverse proxy
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/traefik.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+site-check: ## Check all site configurations
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/site.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+site: ## Deploy all site configurations
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/site.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
