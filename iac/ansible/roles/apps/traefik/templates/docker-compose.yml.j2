@@ -16,6 +16,8 @@ services:
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network={{ traefik_network }}
 
+      - --entryPoints.smtp.address=:8025
+      
       - --entryPoints.web.address=:80
 
       - --entryPoints.websecure.address=:443

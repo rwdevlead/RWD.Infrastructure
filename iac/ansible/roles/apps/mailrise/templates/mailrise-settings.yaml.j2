@@ -1,0 +1,7 @@
+configs:
+  alerts:
+    urls:
+      - "mailto://{{ mailrise_icloud_user }}:{{ mailrise_icloud_pass }}@smtp.mail.me.com:587?from={{ mailrise_icloud_user }}@icloud.com&to={{ mailrise_target_email }}&mode=starttls"
+      
+smtp:
+  port: {{ mailrise_smtp_port }}

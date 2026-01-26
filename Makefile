@@ -1,6 +1,6 @@
 .PHONY: help init plan apply validate fmt clean destroy cleanup-vm convert-to-template \
 	ansible-config base base-check docker docker-check storage storage-check \
-	traefik traefik-check portainer portainer-check site site-check
+	traefik traefik-check portainer portainer-check site site-check mailrise mailrise-check
 
 # ==========================================================
 # Load .env file (if present)
@@ -184,3 +184,14 @@ site-check: ## Check all site configurations
 site: ## Deploy all site configurations
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/site.yml \
 		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+
+
+mailrise:
+	ansible-playbook iac/ansible/playbooks/mailrise.yml \
+		-i iac/ansible/inventories/apps/mailrise.yml
+
+mailrise-check:
+	ansible-playbook iac/ansible/playbooks/mailrise.yml \
+		-i iac/ansible/inventories/apps/mailrise.yml
+		--check --diff

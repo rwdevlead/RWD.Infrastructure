@@ -1,0 +1,7 @@
+---
+- name: Deploy Mailrise
+  hosts: mailrise_host
+  become: true
+
+  roles:
+    - apps/mailrise
