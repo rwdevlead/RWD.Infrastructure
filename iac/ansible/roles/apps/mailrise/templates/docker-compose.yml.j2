@@ -8,7 +8,7 @@ services:
       - "8081:8080"    
     volumes:
       - "{{ mailrise_data_dir }}/config/mailrise.conf:/etc/mailrise.conf:ro"
-    command: ["-vv", "/etc/mailrise.conf"]
+    command: ["/etc/mailrise.conf"]
     networks:
       - traefik
     labels:
