@@ -195,3 +195,11 @@ mailrise-check:
 	ansible-playbook iac/ansible/playbooks/mailrise.yml \
 		-i iac/ansible/inventories/apps/mailrise.yml
 		--check --diff
+
+# Run the base security setup & postfix relay
+setup-updates:
+	ansible-playbook iac/ansible/playbooks/system_updates.yml -i iac/ansible/inventories/ubuntu.yml
+
+# Run the manual full system upgrade (non-security + reboot)
+run-upgrade:
+	ansible-playbook iac/ansible/playbooks/system_updates.yml -i iac/ansible/inventories/ubuntu.yml --tags "manual_upgrade"
