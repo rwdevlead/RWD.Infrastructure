@@ -1,16 +1,23 @@
----
-pihole_version: latest
+# Container
+pihole_container_name: pihole
+pihole_image: pihole/pihole:latest
 
-pihole_base_dir: /opt/containers/pihole
-pihole_etc_dir: "{{ pihole_base_dir }}/etc-pihole"
-pihole_dnsmasq_dir: "{{ pihole_base_dir }}/etc-dnsmasq.d"
+# Paths
+pihole_base_dir: /opt/docker/pihole
 
-# DNS ports (must be 53 on host if this is your primary DNS)
-pihole_dns_tcp_port: 53
-pihole_dns_udp_port: 53
+# Locale
+pihole_timezone: America/New_York
 
-# Web UI
-pihole_web_port: 8081 # used only if Traefik disabled
+# Web / DNS
+pihole_domain: pihole.local.rwdevs.com
+pihole_password: changeme
 
-pihole_timezone: "America/New_York"
-pihole_update: true
+pihole_dns1: 1.1.1.1
+pihole_dns2: 8.8.8.8
+
+# Promotion control
+pihole_bind_dns: false # <-- THIS is the key switch
+
+# Integrations
+traefik_network: traefik
+watchtower_enable: true

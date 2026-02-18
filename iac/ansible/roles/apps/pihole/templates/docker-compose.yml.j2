@@ -1,38 +1,52 @@
-version: "3.9"
-
-networks:
-  proxy:
-    external: true
-  internal:
-    external: true
-
 services:
   pihole:
-    image: pihole/pihole:{{ pihole_version }}
-    container_name: pihole
+    container_name: {{ pihole_container_name }}
+    image: {{ pihole_image }}
+    hostname: pihole
     restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "{{ pihole_dns_tcp_port }}:53/tcp"
-      - "{{ pihole_dns_udp_port }}:53/udp"
-{% if traefik_enabled | default(false) %}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pihole.rule=Host(`pihole.example.com`)"
-      - "traefik.http.routers.pihole.entrypoints=websecure"
-      - "traefik.http.routers.pihole.tls.certresolver=letsencrypt"
-      - "traefik.http.services.pihole.loadbalancer.server.port=80"
-{% else %}
-    ports:
-      - "{{ pihole_web_port }}:80"
-{% endif %}
-    volumes:
-      - "{{ pihole_etc_dir }}:/etc/pihole"
-      - "{{ pihole_dnsmasq_dir }}:/etc/dnsmasq.d"
-    dns:
-      - 127.0.0.1
-      - 1.1.1.1
+
     networks:
-      - proxy
-      - internal
+      - {{ traefik_network }}
+
+{% if pihole_bind_dns %}
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+{% endif %}
+
+    environment:
+      VIRTUAL_HOST: "{{ pihole_domain }}"
+      FTLCONF_webserver_api_allowedHosts: "{{ pihole_domain }}"
+      TZ: "{{ pihole_timezone }}"
+      FTLCONF_webserver_api_password: "{{ pihole_password }}"
+      DNS1: "{{ pihole_dns1 }}"
+      DNS2: "{{ pihole_dns2 }}"
+
+    volumes:
+      - "{{ pihole_base_dir }}/etc-pihole:/etc/pihole"
+      - "{{ pihole_base_dir }}/etc-dnsmasq.d:/etc/dnsmasq.d"
+
+    cap_add:
+      - NET_ADMIN
+
+    healthcheck:
+      test: ["CMD-SHELL", "pihole status | grep -q 'FTL is listening on port 53'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network={{ traefik_network }}
+      - traefik.http.routers.pihole.rule=Host(`{{ pihole_domain }}`)
+      - traefik.http.routers.pihole.entrypoints=websecure
+      - traefik.http.routers.pihole.tls=true
+      - traefik.http.services.pihole.loadbalancer.server.port=80
+{% if watchtower_enable %}
+      - com.centurylinklabs.watchtower.enable=true
+{% endif %}
+
+networks:
+  {{ traefik_network }}:
+    external: true
