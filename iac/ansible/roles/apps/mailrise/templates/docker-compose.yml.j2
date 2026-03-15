@@ -1,0 +1,23 @@
+services:
+  mailrise:
+    image: {{ mailrise_image }}:{{ mailrise_tag }}
+    container_name: mailrise
+    restart: unless-stopped
+    ports:
+      - "{{ mailrise_smtp_port }}:8025"
+      - "8081:8080"    
+    volumes:
+      - "{{ mailrise_data_dir }}/config/mailrise.conf:/etc/mailrise.conf:ro"
+    command: ["/etc/mailrise.conf"]
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.mailrise.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.mailrise.entrypoints=smtp"
+      - "traefik.tcp.routers.mailrise.service=mailrise"
+      - "traefik.tcp.services.mailrise.loadbalancer.server.port=8025"
+
+networks:
+  traefik:
+    external: true

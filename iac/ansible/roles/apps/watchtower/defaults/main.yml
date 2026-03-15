@@ -1,0 +1,10 @@
+watchtower_image: containrrr/watchtower
+watchtower_name: watchtower
+watchtower_network: traefik # or any network your containers are on
+watchtower_schedule: "0 0 4 * * *"
+watchtower_monitor_only: true
+watchtower_cleanup: true
+watchtower_email_from: watchtower@rwdevs.com
+watchtower_email_to: alerts@mailrise.xyz
+watchtower_email_server: mailrise
+watchtower_email_port: "8025"

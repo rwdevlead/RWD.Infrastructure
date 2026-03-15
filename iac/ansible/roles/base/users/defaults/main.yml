@@ -1,0 +1,15 @@
+---
+base_user_name: ansible
+base_user_shell: /bin/bash
+
+base_user_groups:
+  - sudo
+
+# Password must be a pre-hashed value (mkpasswd --method=SHA-512)
+base_user_password_hash: null
+
+# List of SSH public keys
+base_user_ssh_keys: []
+
+# If true, user gets passwordless sudo
+base_user_sudo_nopasswd: false

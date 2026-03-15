@@ -1,0 +1,12 @@
+---
+# Portainer defaults
+
+portainer_image: "portainer/portainer-ce"
+portainer_tag: "latest"
+
+portainer_base_dir: "/opt/portainer"
+portainer_data_dir: "/mnt/docker/portainer/data"
+
+portainer_domain: "portainer1.local.rwdevs.com"
+
+portainer_docker_network: "traefik"

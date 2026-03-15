@@ -1,0 +1,23 @@
+---
+- name: Check current hostname
+  ansible.builtin.command: hostnamectl --static
+  register: current_hostname
+  changed_when: false
+
+- name: Set hostname if different (safe)
+  ansible.builtin.hostname:
+    name: "{{ new_hostname }}"
+  when: current_hostname.stdout != new_hostname
+
+- name: Ensure /etc/hosts has updated hostname
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '127\.0\.1\.1\s+'
+    line: "127.0.1.1 {{ new_hostname }}"
+    state: present
+  when: current_hostname.stdout != new_hostname
+
+- name: Inform user to reconnect if hostname changed
+  ansible.builtin.debug:
+    msg: "Hostname changed from {{ current_hostname.stdout }} to {{ new_hostname }}. You may need to reconnect via new hostname."
+  when: current_hostname.stdout != new_hostname

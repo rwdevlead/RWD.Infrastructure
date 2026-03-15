@@ -1,0 +1,39 @@
+- name: Ensure Mailrise directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ mailrise_base_dir }}"
+    - "{{ mailrise_data_dir }}"
+    - "{{ mailrise_data_dir }}/config" # <-- add config dir
+
+- name: Verify required environment variables are set
+  ansible.builtin.assert:
+    that:
+      - mailrise_icloud_pass != ""
+      - mailrise_ha_token != ""
+    fail_msg: "ERROR: Make sure ICLOUD_PASS and HA_TOKEN are defined in your .env file!"
+
+- name: Render Mailrise config
+  ansible.builtin.template:
+    src: mailrise-settings.yaml.j2
+    dest: "{{ mailrise_data_dir }}/config/mailrise.conf" # Changed .config to .conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Mailrise
+
+- name: Render Mailrise docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ mailrise_base_dir }}/docker-compose.yml"
+    mode: "0644"
+  notify: Restart Mailrise # Also restart if the compose file changes (e.g. new ports)
+
+- name: Deploy Mailrise
+  community.docker.docker_compose_v2:
+    project_src: "{{ mailrise_base_dir }}"
+    state: present

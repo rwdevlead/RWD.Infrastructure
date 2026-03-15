@@ -1,0 +1,16 @@
+mailrise_image: "yoryan/mailrise"
+mailrise_tag: "latest"
+
+mailrise_base_dir: "/opt/mailrise"
+mailrise_data_dir: "/mnt/docker/mailrise"
+mailrise_smtp_port: 8025
+mailrise_http_port: 8080
+
+# Use the exact variable names from your .env file
+mailrise_icloud_user: "{{ lookup('env', 'ICLOUD_MAIL_USER') }}"
+mailrise_icloud_pass: "{{ lookup('env', 'ICLOUD_MAIL_PASS') }}"
+mailrise_ha_token: "{{ lookup('env', 'HA_TOKEN') }}"
+
+# Non-sensitive defaults
+mailrise_target_email: "AlertsRWD@outlook.com"
+mailrise_ha_host: "192.168.50.14" # Or your HA IP
