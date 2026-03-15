@@ -1,0 +1,14 @@
+---
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+
+docker_daemon_config:
+  log-driver: json-file
+  log-opts:
+    max-size: "10m"
+    max-file: "3"
+
+docker_manage_user: true
+docker_user: "{{ base_user_name }}"

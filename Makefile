@@ -1,4 +1,6 @@
-.PHONY: help init plan apply validate fmt lint clean packer-fmt packer-init packer-validate packer-build
+.PHONY: help init plan apply validate fmt clean destroy cleanup-vm convert-to-template \
+	ansible-config base base-check docker docker-check storage storage-check \
+	traefik traefik-check portainer portainer-check site site-check mailrise mailrise-check
 
 # ==========================================================
 # Load .env file (if present)
@@ -30,7 +32,7 @@ help: ## Show this help message
 	@echo '  make apply TARGET=proxmox'
 	@echo
 	@echo 'Targets:'
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 
 # ==========================================================
@@ -119,3 +121,114 @@ clean: ## Clean up generated files in the selected Terraform target
 	rm -f *.retry
 	
 
+# ==========================================================
+# Ansible Commands
+# ==========================================================
+
+ANSIBLE=ansible-playbook
+ANSIBLE_DIR=iac/ansible
+
+ansible-config:
+	ansible-config dump --only-changed
+
+base-check:
+	ansible-playbook iac/ansible/playbooks/base.yml \
+		-i iac/ansible/inventories/docker.yml \
+		--check --diff
+
+base:
+	ansible-playbook iac/ansible/playbooks/base.yml \
+		-i iac/ansible/inventories/docker.yml
+
+docker-check:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+docker:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+portainer-check:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
+		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml \
+		--check --diff
+
+portainer:
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
+		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml
+
+storage-check: ## Check storage configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/storage.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+storage: ## Deploy storage configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/storage.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+traefik-check: ## Check Traefik configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/traefik.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+traefik: ## Deploy Traefik reverse proxy
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/traefik.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+site-check: ## Check all site configurations
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/site.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		--check --diff
+
+site: ## Deploy all site configurations
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/site.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
+
+
+
+mailrise: ## installs mailrise notification service
+	ansible-playbook iac/ansible/playbooks/mailrise.yml \
+		-i iac/ansible/inventories/apps/mailrise.yml
+
+mailrise-check:
+	ansible-playbook iac/ansible/playbooks/mailrise.yml \
+		-i iac/ansible/inventories/apps/mailrise.yml
+		--check --diff
+
+
+setup-updates: ## Run the base security setup & postfix relay
+	ansible-playbook iac/ansible/playbooks/system_updates.yml -i iac/ansible/inventories/ubuntu.yml
+
+
+run-upgrade: ## Run the manual full system upgrade (non-security + reboot)
+	ansible-playbook iac/ansible/playbooks/system_updates.yml -i iac/ansible/inventories/ubuntu.yml --tags "manual_upgrade"
+
+
+
+pihole: ## installs pihole DNS service
+	ansible-playbook iac/ansible/playbooks/pihole.yml \
+		-i iac/ansible/inventories/apps/pihole.yml
+
+pihole-check:
+	ansible-playbook iac/ansible/playbooks/pihole.yml \
+		-i iac/ansible/inventories/apps/pihole.yml \
+		--check --diff
+
+homepage: ## installs Homepage service
+	ansible-playbook iac/ansible/playbooks/homepage.yml \
+		-i iac/ansible/inventories/apps/homepage.yml
+
+homepage-check: ## checks Homepage deployment (dry-run)
+	ansible-playbook iac/ansible/playbooks/homepage.yml \
+		-i iac/ansible/inventories/apps/homepage.yml \
+		--check --diff
+
+watchtower: ## installs Watchtower service
+	ansible-playbook iac/ansible/playbooks/watchtower.yml \
+		-i iac/ansible/inventories/apps/watchtower.yml
+
+watchtower-check: ## checks Watchtower deployment (dry-run)
+	ansible-playbook iac/ansible/playbooks/watchtower.yml \
+		-i iac/ansible/inventories/apps/watchtower.yml \
+		--check --diff

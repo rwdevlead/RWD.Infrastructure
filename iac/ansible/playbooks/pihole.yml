@@ -1,0 +1,6 @@
+- name: Deploy Pi-hole
+  hosts: docker_hosts
+  become: true
+
+  roles:
+    - apps/pihole

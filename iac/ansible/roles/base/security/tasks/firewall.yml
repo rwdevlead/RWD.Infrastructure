@@ -1,0 +1,23 @@
+---
+- name: Install UFW
+  ansible.builtin.package:
+    name: ufw
+    state: present
+
+- name: Allow SSH
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ ssh_port }}"
+    proto: tcp
+  when: firewall_allow_ssh
+
+- name: Allow additional ports
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ item }}"
+  loop: "{{ firewall_allow_ports }}"
+
+- name: Enable UFW
+  ansible.builtin.ufw:
+    state: enabled
+    policy: allow

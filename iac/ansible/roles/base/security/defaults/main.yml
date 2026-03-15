@@ -1,0 +1,22 @@
+---
+# Enable components
+security_fail2ban_enabled: true
+security_sysctl_enabled: true
+security_firewall_enabled: false # OFF by default (important)
+
+# Fail2ban
+fail2ban_bantime: 1h
+fail2ban_findtime: 10m
+fail2ban_maxretry: 5
+
+# Firewall (UFW)
+firewall_allow_ssh: true
+firewall_allow_ports: []
+
+# Sysctl hardening (light)
+sysctl_settings:
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.default.send_redirects: 0
+  net.ipv4.icmp_echo_ignore_broadcasts: 1

@@ -1,0 +1,90 @@
+---
+- name: Configure Security Updates, Notifications, and Smart Reboots
+  hosts: ubuntu_hosts
+  become: true
+
+  tasks:
+    - name: Perform a full system upgrade (All Packages)
+      apt:
+        upgrade: dist
+        update_cache: yes
+        autoremove: yes
+        purge: yes
+      register: upgrade_output
+      tags: [never, manual_upgrade]
+
+    - name: Display upgraded packages
+      debug:
+        msg: "{{ upgrade_output.stdout_lines }}"
+      when: upgrade_output.changed
+      tags: [never, manual_upgrade]
+
+    - name: Install required notification packages
+      apt:
+        name: [unattended-upgrades, bsd-mailx, postfix]
+        state: present
+        update_cache: yes
+
+    - name: Configure Postfix Relay
+      lineinfile:
+        path: /etc/postfix/main.cf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - {
+            regexp: "^relayhost =",
+            line: "relayhost = [{{ mailrise_ip }}]:8025",
+          }
+        - {
+            regexp: "^smtp_tls_security_level =",
+            line: "smtp_tls_security_level = none",
+          }
+      register: postfix_config
+      notify: Restart Postfix
+
+    - name: Enable Unattended Email Alerts
+      lineinfile:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+        regexp: "^//Unattended-Upgrade::Mail "
+        line: 'Unattended-Upgrade::Mail "{{ alert_email }}";'
+
+    - name: Configure Smart Automatic Reboots
+      blockinfile:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+        block: |
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+          Unattended-Upgrade::Remove-Unused-Dependencies "true";
+
+    - name: Check if a reboot is currently required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_file
+      tags: [always, manual_upgrade]
+
+    - name: Reboot the server if required (Manual Trigger)
+      reboot:
+        msg: "Rebooting to apply software updates"
+      when: reboot_file.stat.exists
+      tags: [never, manual_upgrade]
+
+    - name: Send an email via Mailrise
+      shell: |
+        echo "Ansible just updated the update/reboot configuration on {{ inventory_hostname }}." | mail -s "Ansible Config Success" {{ alert_email }}
+      when: postfix_config.changed | default(false)
+      args:
+        executable: /bin/bash
+
+    - name: Send Summary Email after Manual Upgrade
+      shell: |
+        echo "Manual upgrade completed on {{ inventory_hostname }}. 
+        Summary:
+        {{ upgrade_output.stdout_lines | last }}" | mail -s "Upgrade Summary: {{ inventory_hostname }}" {{ alert_email }}
+      when: upgrade_output.changed
+      tags: [never, manual_upgrade]
+
+  handlers:
+    - name: Restart Postfix
+      service:
+        name: postfix
+        state: restarted

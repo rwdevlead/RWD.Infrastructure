@@ -1,0 +1,21 @@
+---
+semaphore_version: latest
+postgres_version: 15
+
+semaphore_base_dir: /opt/containers/semaphore
+semaphore_data_dir: "{{ semaphore_base_dir }}/data"
+semaphore_db_dir: "{{ semaphore_base_dir }}/db"
+
+semaphore_port: 3001
+
+# Database
+semaphore_db_name: semaphore
+semaphore_db_user: semaphore
+semaphore_db_password: changeme
+
+# Semaphore admin
+semaphore_admin: admin
+semaphore_admin_password: changeme
+semaphore_admin_email: admin@example.com
+
+semaphore_update: true

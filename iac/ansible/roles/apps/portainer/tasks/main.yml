@@ -1,0 +1,35 @@
+---
+- name: Ensure Portainer data directory exists
+  ansible.builtin.file:
+    path: "{{ portainer_data_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure Portainer base directory exists
+  ansible.builtin.file:
+    path: "{{ portainer_base_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure Traefik docker network exists
+  community.docker.docker_network:
+    name: "{{ portainer_docker_network }}"
+    state: present
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ portainer_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy Portainer via Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ portainer_base_dir }}"
+    state: present
+  when: not ansible_check_mode

@@ -1,0 +1,34 @@
+---
+- name: Ensure required groups exist
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ base_user_groups }}"
+
+- name: Ensure base user exists
+  ansible.builtin.user:
+    name: "{{ base_user_name }}"
+    shell: "{{ base_user_shell }}"
+    groups: "{{ base_user_groups }}"
+    append: true
+    state: present
+    create_home: true
+    password: "{{ base_user_password_hash | default(omit) }}"
+
+- name: Set authorized SSH keys for base user
+  ansible.builtin.authorized_key:
+    user: "{{ base_user_name }}"
+    key: "{{ item }}"
+    state: present
+  loop: "{{ base_user_ssh_keys }}"
+  when: base_user_ssh_keys | length > 0
+
+- name: Configure sudoers file for base user
+  ansible.builtin.copy:
+    dest: "{{ sudoers_dir }}/{{ base_user_name }}"
+    content: |
+      {{ base_user_name }} ALL=(ALL) {{ 'NOPASSWD:' if base_user_sudo_nopasswd else '' }}ALL
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"

@@ -1,0 +1,6 @@
+---
+nfs_server: 192.168.50.12
+nfs_export_path: /mnt/TrueNAS-Pool/docker
+nfs_mount_point: /mnt/docker
+
+nfs_mount_options: "rw,hard,noatime,nfsvers=4,_netdev"

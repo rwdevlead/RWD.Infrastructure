@@ -1,0 +1,14 @@
+---
+ssh_port: 22
+
+ssh_permit_root_login: "yes" # explicitly allowed per your requirement
+ssh_password_authentication: false
+ssh_pubkey_authentication: true
+ssh_permit_empty_passwords: false
+
+ssh_max_auth_tries: 3
+ssh_login_grace_time: 30
+
+ssh_allow_users:
+  - "{{ base_user_name }}"
+  - root

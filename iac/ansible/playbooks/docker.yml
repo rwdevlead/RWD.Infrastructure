@@ -1,0 +1,8 @@
+---
+- name: Install Docker platform
+  hosts: docker_hosts
+  become: true
+
+  roles:
+    - docker/engine
+    - docker/compose

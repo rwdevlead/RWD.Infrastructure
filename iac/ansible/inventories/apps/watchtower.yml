@@ -1,0 +1,5 @@
+watchtower_host:
+  hosts:
+    docker-vm01:
+      ansible_host: 192.168.50.14
+      ansible_user: ka8kgj

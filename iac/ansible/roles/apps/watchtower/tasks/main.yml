@@ -1,0 +1,24 @@
+- name: Deploy Watchtower (notify-only, self-monitoring)
+  community.docker.docker_container:
+    name: "{{ watchtower_name }}"
+    image: "{{ watchtower_image }}"
+    restart_policy: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      {% if watchtower_cleanup %} --cleanup {% endif %}
+      --label-enable
+      {% if watchtower_monitor_only %} --monitor-only {% endif %}
+      --schedule "{{ watchtower_schedule }}"
+    env:
+      DOCKER_API_VERSION: "1.44" # Set this to 1.44 for maximum compatibility
+      WATCHTOWER_NOTIFICATIONS: email
+      WATCHTOWER_NOTIFICATION_EMAIL_FROM: "{{ watchtower_email_from }}"
+      WATCHTOWER_NOTIFICATION_EMAIL_TO: "{{ watchtower_email_to }}"
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: "{{ watchtower_email_server }}"
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: "{{ watchtower_email_port }}"
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    networks:
+      - name: "{{ watchtower_network }}"
+    state: started

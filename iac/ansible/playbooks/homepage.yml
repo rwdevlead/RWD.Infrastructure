@@ -1,0 +1,6 @@
+- name: Deploy Homepage
+  hosts: homepage_host
+  become: true
+  roles:
+    - role: apps/homepage
+      when: homepage_enabled | default(false)

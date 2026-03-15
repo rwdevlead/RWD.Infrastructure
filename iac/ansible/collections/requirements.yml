@@ -1,0 +1,4 @@
+# ansible-galaxy install -r iac/ansible/collections/requirements.yml
+---
+collections:
+  - community.docker

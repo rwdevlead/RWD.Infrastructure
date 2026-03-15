@@ -1,0 +1,50 @@
+- name: Create Pi-hole directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ pihole_base_dir }}"
+    - "{{ pihole_base_dir }}/etc-pihole"
+    - "{{ pihole_base_dir }}/etc-dnsmasq.d"
+
+- name: Deploy Pi-hole docker-compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ pihole_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+
+# -----------------------
+# Start container only if not in check mode
+# -----------------------
+- name: Start Pi-hole container
+  community.docker.docker_compose_v2:
+    project_src: "{{ pihole_base_dir }}"
+    state: present
+  when: not ansible_check_mode
+
+# -------------------------------
+# Post-deploy health assertion
+# -------------------------------
+- name: Wait for Pi-hole container to become healthy
+  community.docker.docker_container_info:
+    name: "pihole"
+  register: pihole_container_info
+  # This loop re-runs the INFO command every 10 seconds
+  until:
+    - pihole_container_info.container is defined
+    - pihole_container_info.container.State.Health.Status == "healthy"
+  retries: 15
+  delay: 10
+  when: not ansible_check_mode
+
+- name: Final health assertion
+  ansible.builtin.assert:
+    that:
+      - pihole_container_info.container.State.Health.Status == "healthy"
+    fail_msg: "Pi-hole failed to reach healthy state. Current status: {{ pihole_container_info.container.State.Health.Status | default('Unknown') }}"
+  when: not ansible_check_mode

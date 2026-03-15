@@ -1,0 +1,7 @@
+---
+- name: Deploy Portainer
+  hosts: portainer_hosts
+  become: true
+
+  roles:
+    - apps/portainer
