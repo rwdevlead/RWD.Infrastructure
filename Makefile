@@ -214,3 +214,21 @@ pihole-check:
 	ansible-playbook iac/ansible/playbooks/pihole.yml \
 		-i iac/ansible/inventories/apps/pihole.yml \
 		--check --diff
+
+homepage: ## installs Homepage service
+	ansible-playbook iac/ansible/playbooks/homepage.yml \
+		-i iac/ansible/inventories/apps/homepage.yml
+
+homepage-check: ## checks Homepage deployment (dry-run)
+	ansible-playbook iac/ansible/playbooks/homepage.yml \
+		-i iac/ansible/inventories/apps/homepage.yml \
+		--check --diff
+
+watchtower: ## installs Watchtower service
+	ansible-playbook iac/ansible/playbooks/watchtower.yml \
+		-i iac/ansible/inventories/apps/watchtower.yml
+
+watchtower-check: ## checks Watchtower deployment (dry-run)
+	ansible-playbook iac/ansible/playbooks/watchtower.yml \
+		-i iac/ansible/inventories/apps/watchtower.yml \
+		--check --diff

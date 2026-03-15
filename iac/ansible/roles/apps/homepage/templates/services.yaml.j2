@@ -1,0 +1,88 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services
+
+- Infrastructure:
+    - Portainer:
+        href: https://portainer.yourdomain.com
+        description: Container Management
+
+    - Traefik:
+        href: https://traefik.yourdomain.com
+        description: Reverse Proxy
+
+    - Pi-hole:
+        href: https://pihole.yourdomain.com
+        description: DNS Filtering
+- Network:
+    - Pi-Hole1:
+        icon: pi-hole.svg
+        href: {{ homepage_var_pihole_url }}
+        description: pi-hole DNS on Docker
+        server: omv-docker # The docker server that was configured
+        container: pihole # The name of the container you'd like to connect
+    - traefik:
+        icon: traefik.svg
+        href: {{ homepage_var_proxy_url }}
+        server: omv-docker # The docker server that was configured
+        container: traefik # The name of the container you'd like to connect
+        description: Reverse Proxy
+        widget:
+            type: traefik
+            url: {{ homepage_var_proxy_url }}
+            # username: admin # optional
+            # password: {{ homepage_var_proxy_password }}
+
+- Local Services:
+    - Proxmox:
+        statusStyle: "basic"
+        icon: proxmox.svg
+        href: {{ homepage_var_proxmox_url }}
+        description: proxmox
+        siteMonitor: https://proxmox.local.rwdevs.com
+        widget:
+              type: proxmox
+              url: {{ homepage_var_proxmox_url }}
+              username:  {{ homepage_var_proxmox_user }}
+              password:  {{ homepage_var_proxmox_api_key }}
+    - TrueNAS:
+        statusStyle: "basic"
+        icon: truenas.svg
+        href: {{ homepage_var_truenas_url }}
+        description: backups on NAS
+        siteMonitor: {{ homepage_var_truenas_url }}
+        widget:
+            type: truenas
+            url: {{ homepage_var_truenas_url }}
+            # username: user # not required if using api key
+            # password: pass # not required if using api key
+            key: {{ homepage_var_truenas_key }} # not required if using username / password
+            enablePools: true # optional, defaults to false
+            nasType: scale # defaults to scale, must be set to 'core' if using enablePools with TrueNAS Core
+    - OMV:
+        statusStyle: "basic"
+        icon: openmediavault.svg
+        href: {{ homepage_var_omv_url }}
+        description: Open Media Vault
+        siteMonitor: {{ homepage_var_omv_url }}
+        widget:
+            type: openmediavault
+            url: {{ homepage_var_omv_url }}
+            username: {{ homepage_var_omv_usr }}
+            password: {{ homepage_var_omv_pwd }}
+            method: services.getStatus # required
+    - portainer-dev:
+        statusStyle: "basic"
+        icon: portainer.svg
+        href: {{ homepage_var_portainer_dev_url }}
+        #href: https://192.168.50.14:9443
+        description: Container Management 
+        siteMonitor: {{ homepage_var_portainer_dev_url }}
+        #siteMonitor: https://192.168.50.14:9443
+        widget:
+            type: portainer
+            #url: https://192.168.50.14:9443
+            url: {{ homepage_var_portainer_dev_url }}
+            env: 3
+            key: {{ homepage_var_portainer_dev_key }}
+            #key: ptr_FdP+k0xwP+qyvRHknVfcOr4+P33j35FZ9I97UqXuqSQ=

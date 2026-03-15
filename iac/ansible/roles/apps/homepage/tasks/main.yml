@@ -1,22 +1,83 @@
----
-- name: Create Homepage directories
-  ansible.builtin.file:
+- name: Create homepage base directory
+  file:
+    path: "{{ homepage_base_dir }}"
+    state: directory
+    owner: root
+    group: docker
+    mode: "0755"
+
+- name: Create config directory
+  file:
     path: "{{ homepage_config_dir }}"
     state: directory
     owner: root
-    group: root
+    group: docker
     mode: "0755"
 
-- name: Render docker-compose.yml
-  ansible.builtin.template:
-    src: docker-compose.yml.j2
-    dest: "{{ homepage_base_dir }}/docker-compose.yml"
+- name: Ensure public images directory exists
+  file:
+    path: "{{ homepage_config_dir }}/public/images"
+    state: directory
     owner: root
-    group: root
+    group: docker
+    mode: "0755"
+
+- name: Ensure public icons directory exists
+  file:
+    path: "{{ homepage_config_dir }}/public/icons"
+    state: directory
+    owner: root
+    group: docker
+    mode: "0755"
+
+- name: Deploy homepage logo
+  copy:
+    src: RWDevs-NuGet.png
+    dest: "{{ homepage_config_dir }}/public/images/RWDevs-NuGet.png"
+    owner: root
+    group: docker
     mode: "0644"
 
-- name: Deploy Homepage
+- name: Deploy homepage favicon
+  copy:
+    src: favicon.ico
+    dest: "{{ homepage_config_dir }}/public/icons/favicon.ico"
+    owner: root
+    group: docker
+    mode: "0644"
+
+- name: Deploy docker compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ homepage_base_dir }}/docker-compose.yml"
+
+- name: Deploy Homepage configs
+  template:
+    src: "{{ item }}"
+    dest: "{{ homepage_config_dir }}/{{ item | regex_replace('.j2','') }}"
+  loop:
+    - settings.yaml.j2
+    - services.yaml.j2
+    - bookmarks.yaml.j2
+    - widgets.yaml.j2
+  loop_control:
+    label: "{{ item }}"
+
+- name: Start Homepage container
   community.docker.docker_compose_v2:
     project_src: "{{ homepage_base_dir }}"
-    pull: "{{ homepage_update }}"
-    recreate: smart
+    state: present
+  check_mode: false
+  when: not ansible_check_mode
+
+- name: Wait for Homepage to respond via Traefik
+  uri:
+    url: "https://{{ homepage_domain }}"
+    status_code: 200
+    validate_certs: false
+  register: homepage_health
+  retries: 10
+  delay: 5
+  until: homepage_health.status == 200
+  check_mode: false
+  when: not ansible_check_mode

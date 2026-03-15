@@ -1,9 +1,44 @@
 ---
+# Homepage Role Defaults
+
+# Homepage Docker image version
 homepage_version: latest
 
+# Base directory on host where Homepage will live
 homepage_base_dir: /opt/containers/homepage
+
+# Config directory inside base directory
 homepage_config_dir: "{{ homepage_base_dir }}/config"
 
+# Port Homepage listens on inside container
 homepage_port: 3000
 
+# Timezone for container
+homepage_timezone: "America/New_York"
+
+# Whether to update container automatically with Watchtower
 homepage_update: true
+
+# Domain for Traefik routing (must exist in inventory/group_vars)
+homepage_domain: "homepage.local.rwdevs.com"
+
+# Optional: additional Traefik labels
+homepage_extra_labels: []
+
+# Optional: homepage enabled toggle
+homepage_enabled: true
+
+# Homepage service variables (used in services.yaml.j2)
+homepage_var_pihole_url: "https://pihole.local.rwdevs.com"
+homepage_var_proxy_url: "https://traefik.local.rwdevs.com"
+homepage_var_proxy_password: "{{ lookup('env', 'HOMEPAGE_PROXY_PASSWORD') }}"
+homepage_var_proxmox_url: "https://proxmox.local.rwdevs.com:8006"
+homepage_var_proxmox_user: "admin@pam"
+homepage_var_proxmox_api_key: "{{ lookup('env', 'HOMEPAGE_PROXMOX_API_KEY') }}"
+homepage_var_truenas_url: "https://truenas.local.rwdevs.com"
+homepage_var_truenas_key: "{{ lookup('env', 'HOMEPAGE_TRUENAS_KEY') }}"
+homepage_var_omv_url: "https://omv.local.rwdevs.com"
+homepage_var_omv_usr: "admin"
+homepage_var_omv_pwd: "{{ lookup('env', 'HOMEPAGE_OMV_PASSWORD') }}"
+homepage_var_portainer_dev_url: "https://portainer-dev.local.rwdevs.com"
+homepage_var_portainer_dev_key: "{{ lookup('env', 'HOMEPAGE_PORTAINER_DEV_KEY') }}"

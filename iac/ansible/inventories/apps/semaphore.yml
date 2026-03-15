@@ -1,4 +1,0 @@
-# inventories/apps/semaphore.yml
-semaphore:
-  hosts:
-    docker01:
