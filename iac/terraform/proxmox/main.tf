@@ -3,8 +3,8 @@
 
 locals {
   # Read the content of the key for direct injection (still the most effective method)
-  ssh_public_key_content = file("~/.ssh/id_ed25519.pub")
-  # ssh_private_key_content = file("~/.ssh/id_ed25519")
+  ssh_public_key_content  = file("~/.ssh/id_ed25519.pub")
+  ssh_private_key_content = file("~/.ssh/id_ed25519")
 }
 
 module "ubuntu_template" {
@@ -106,13 +106,20 @@ module "homeassistant" {
 module "truenas_vm" {
   source = "./modules/truenas-vm" # Adjust path to your module folder
 
-  vm_name      = "dev-truenas-01"
-  vm_id        = 200
-  proxmox_node = "proxmox"
+  vm_name           = "dev-truenas-01"
+  vm_id             = 200
+  vm_description    = "TrueNAS SCALE - Managed by Terraform"
+  proxmox_node_name = "proxmox"
+  proxmox_node_ip   = "192.168.50.11"
 
   # Resource Allocation
-  cpu_cores = 2
-  memory_mb = 8192
+  vm_cores = 2
+
+  vm_bios    = "ovmf"
+  vm_machine = "q35"
+
+  vm_memory_max = 8192
+  vm_memory_min = 8192
 
   # Storage & Media
   boot_datastore = "local-lvm"
@@ -120,8 +127,16 @@ module "truenas_vm" {
   iso_file_id = "none"
 
   # Physical Disk Passthrough (sdb)
-  data_disk_id = "ata-ST1000DM003-1ER162_Z4YCRN9L"
+  data_disk_id   = "ata-ST1000DM003-1ER162_Z4YCRN9L"
+  disk_interface = "scsi0"
+  disk_size      = 32
 
-  tags = ["vm", "prod", "truenas"]
+  network_gateway = "192.168.50.1"
+  vm_static_ip    = "192.168.50.13/24"
+
+  tags = ["vm", "dev", "truenas"]
+
+  ssh_private_key_content = local.ssh_private_key_content
+
 
 }

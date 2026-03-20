@@ -9,28 +9,29 @@ terraform {
 
 resource "proxmox_virtual_environment_vm" "truenas_scale" {
   name        = var.vm_name
-  description = "TrueNAS SCALE - Managed by Terraform"
-  node_name   = var.proxmox_node
+  description = var.vm_description
+  node_name   = var.proxmox_node_name
   vm_id       = var.vm_id
 
-  machine = "q35"
-  bios    = "ovmf"
+  scsi_hardware = "virtio-scsi-pci"
+  machine       = var.vm_machine
+  bios          = var.vm_bios
 
+  # virtio is the modern standard for Linux VMs
+  # 128MB is plenty big
   vga {
-    # virtio is the modern standard for Linux VMs
-    type = "virtio"
-    # 128MB is plenty for a text/web-based OS installer 
+    type   = "virtio"
     memory = 128
   }
 
   cpu {
-    cores = var.cpu_cores
+    cores = var.vm_cores
     type  = "host"
   }
 
   memory {
-    dedicated = var.memory_mb
-    floating  = var.memory_mb # Disable ballooning for ZFS
+    dedicated = var.vm_memory_max
+    floating  = var.vm_memory_min
   }
 
   network_device {
@@ -38,19 +39,31 @@ resource "proxmox_virtual_environment_vm" "truenas_scale" {
     model  = "virtio"
   }
 
-  # OS Boot Drive (Virtual Disk)
-  disk {
-    datastore_id = var.boot_datastore
-    interface    = "scsi0"
-    size         = 32
-    file_format  = "raw"
-    ssd          = true
-    discard      = "on"
-  }
-
+  # 1. The Installer (Keep this for the first run)
   cdrom {
     file_id   = var.iso_file_id
     interface = "ide2"
+  }
+
+  # 2. The Cloud-Init "Static IP" Drive
+  initialization {
+    datastore_id = var.boot_datastore
+    interface    = "sata0" # Using SATA prevents the IDE conflict
+  }
+
+  # 3. Define the Boot Order clearly
+  # During install: [cdrom, scsi0] | After install: [scsi0]
+  boot_order = ["ide2", "scsi0"]
+
+  # OS Boot Drive (Virtual Disk)
+  disk {
+    datastore_id = var.boot_datastore
+    interface    = var.disk_interface
+    size         = var.disk_size
+    file_format  = "raw"
+    ssd          = true
+    discard      = "on"
+    serial       = "BOOTDISK001"
   }
 
   efi_disk {
@@ -79,16 +92,17 @@ resource "null_resource" "assign_passthrough_disk" {
   provisioner "remote-exec" {
     inline = [
       "sleep 10",
-      "qm set ${var.vm_id} -scsi1 /dev/disk/by-id/${var.data_disk_id}"
+      # Using the explicit variable for the ID often prevents string/int type mismatches
+      "qm set ${var.vm_id} -scsi1 /dev/disk/by-id/${var.data_disk_id},serial=1,backup=0"
     ]
 
     connection {
       type = "ssh"
       user = "root"
-      host = "192.168.50.11"
+      host = var.proxmox_node_ip
       # Match the key from your provider block
-      private_key = file("~/.ssh/id_ed25519")
-      agent       = false # Keeps it clean
+      private_key = var.ssh_private_key_content #file("~/.ssh/id_ed25519")
+      agent       = false                       # Keeps it clean
       timeout     = "1m"
     }
   }
