@@ -103,4 +103,25 @@ module "homeassistant" {
 
 }
 
+module "truenas_vm" {
+  source = "./modules/truenas-vm" # Adjust path to your module folder
 
+  vm_name      = "dev-truenas-01"
+  vm_id        = 200
+  proxmox_node = "proxmox"
+
+  # Resource Allocation
+  cpu_cores = 2
+  memory_mb = 8192
+
+  # Storage & Media
+  boot_datastore = "local-lvm"
+  # iso_file_id    = "iso-images:iso/TrueNAS-SCALE-25.10.2.1.iso"
+  iso_file_id = "none"
+
+  # Physical Disk Passthrough (sdb)
+  data_disk_id = "ata-ST1000DM003-1ER162_Z4YCRN9L"
+
+  tags = ["vm", "prod", "truenas"]
+
+}
