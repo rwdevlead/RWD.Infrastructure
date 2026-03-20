@@ -47,6 +47,14 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
     enabled = true
   }
 
+  # HAOS is very picky about the SCSI controller type. 
+  # 'virtio-scsi-single' is the most stable for HAOS.
+  scsi_hardware = "virtio-scsi-single"
+
+  # THIS IS THE CRITICAL ADDITION:
+  # 'scsi0' (or whatever var.disk_interface is) must be first.
+  boot_order = [var.disk_interface, "net0"]
+
   cpu {
     cores = var.vm_cores
     type  = "host"
@@ -72,6 +80,8 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
     file_id      = proxmox_virtual_environment_file.ha_image.id
     interface    = var.disk_interface
     size         = var.disk_size
+    ssd          = true
+    discard      = "on"
   }
 
   operating_system {
