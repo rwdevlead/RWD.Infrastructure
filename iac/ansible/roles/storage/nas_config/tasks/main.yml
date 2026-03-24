@@ -1,0 +1,90 @@
+---
+- name: Handle existing pool (Wipe if requested)
+  when: wipe_existing_pool | default(false)
+  block:
+    - name: Check if pool exists
+      shell: "zpool list {{ pool_name }}"
+      register: pool_check
+      failed_when: false
+      changed_when: false
+
+    - name: Destroy existing pool
+      shell: "zpool destroy -f {{ pool_name }}"
+      when: pool_check.rc == 0
+
+- name: Check if pool exists
+  shell: "zpool list {{ pool_name }}"
+  register: pool_exists
+  failed_when: false
+  changed_when: false
+
+- name: Clean up LVM configurations
+  shell: "lvremove -f $(lvs -o lv_path 2>/dev/null | grep {{ data_disk | basename }} || echo '') || true"
+  when: pool_exists.rc != 0
+  changed_when: false
+  failed_when: false
+
+- name: Remove device from existing pools
+  shell: "for pool in $(zpool list -H -o name); do zpool remove $pool {{ data_disk }} 2>/dev/null || true; done"
+  when: pool_exists.rc != 0
+  changed_when: false
+  failed_when: false
+
+- name: Detach device from any pools
+  shell: "zpool detach boot-pool {{ data_disk }} 2>/dev/null || true"
+  when: pool_exists.rc != 0
+  changed_when: false
+  failed_when: false
+
+- name: Clean up MD RAID configurations
+  shell: "mdadm --stop /dev/md* 2>/dev/null || true && mdadm --remove /dev/md* 2>/dev/null || true"
+  when: pool_exists.rc != 0
+  changed_when: false
+  failed_when: false
+
+- name: Settle udev after cleanup
+  shell: "udevadm settle && sleep 2"
+  when: pool_exists.rc != 0
+  changed_when: false
+  failed_when: false
+
+- name: Force clear disk before creation
+  shell: "wipefs -a -f {{ data_disk }}"
+  when: pool_exists.rc != 0
+  register: wipefs_result
+  changed_when: false
+  failed_when: false
+
+- name: Partition table removal
+  shell: "dd if=/dev/zero of={{ data_disk }} bs=512 count=100 2>/dev/null || true"
+  when: pool_exists.rc != 0
+  changed_when: false
+  failed_when: false
+
+- name: Settle udev again
+  shell: "udevadm settle && sleep 1"
+  when: pool_exists.rc != 0
+  changed_when: false
+  failed_when: false
+
+- name: Create ZFS Pool
+  shell: "zpool create -f -o altroot=/mnt {{ pool_name }} {{ data_disk }}"
+  when: pool_exists.rc != 0
+  register: zpool_result
+  changed_when: true
+
+- name: Create Datasets
+  shell: "zfs create -p {{ item.path }}"
+  loop: "{{ datasets }}"
+  when: pool_exists.rc == 0 or zpool_result.changed
+  register: dataset_create
+  failed_when: dataset_create.rc not in [0, 1]
+  changed_when: dataset_create.rc == 0
+
+- name: Start NFS Service
+  shell: "systemctl enable --now nfs-server"
+  when: datasets | selectattr('type', 'equalto', 'nfs') | list | length > 0
+
+- name: Start SMB Service
+  shell: "systemctl enable --now smbd"
+  when: datasets | selectattr('type', 'equalto', 'smb') | list | length > 0
