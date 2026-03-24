@@ -29,3 +29,14 @@ Because the Proxmox API occasionally restricts raw disk mapping, this module use
 ## Usage
 
 After `terraform apply`, access the Proxmox console to complete the TrueNAS installation. Set the Static IP and SSL certificates via the TrueNAS Web UI to ensure they are saved to the internal configuration database.
+
+## Provisioning Workflow
+
+1. **Terraform:** Creates VM shell and handles physical disk passthrough (`qm set`).
+2. **Manual:** OS installation and Web UI network/SSL setup.
+3. **Pi-hole:** Map `truenas.local.rwdevs.com` to the static IP.
+4. **Ansible:** Configure ZFS pools, datasets, and shares.
+
+## Networking Note
+
+This module does not inject networking via Cloud-Init to avoid conflicts with the TrueNAS configuration database. Static IPs must be set manually in the TrueNAS UI.

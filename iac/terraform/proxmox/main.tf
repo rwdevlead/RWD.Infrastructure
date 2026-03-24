@@ -123,7 +123,7 @@ module "truenas_vm" {
 
   # Storage & Media
   boot_datastore = "local-lvm"
-  # iso_file_id    = "iso-images:iso/TrueNAS-SCALE-25.10.2.1.iso"
+  # iso_file_id    = "local:iso/TrueNAS-SCALE-25.10.2.1.iso"
   iso_file_id = "none"
 
   # Physical Disk Passthrough (sdb)
@@ -137,6 +137,5 @@ module "truenas_vm" {
   tags = ["vm", "dev", "truenas"]
 
   ssh_private_key_content = local.ssh_private_key_content
-
 
 }

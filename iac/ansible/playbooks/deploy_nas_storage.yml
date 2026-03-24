@@ -1,0 +1,20 @@
+---
+- name: Configure TrueNAS Storage
+  hosts: truenas_hosts
+  gather_facts: false
+  become: true
+  vars:
+    pool_name: "tank"
+    data_disk: "/dev/sdb"
+    wipe_existing_pool: false
+    datasets:
+      - { path: "tank/docker", type: "nfs" }
+      - { path: "tank/iso", type: "nfs" }
+      - { path: "tank/backups", type: "nfs" }
+      - { path: "tank/media/music", type: "smb" } # Nested structure
+      - { path: "tank/media/pictures", type: "smb" } # Nested structure
+      - { path: "tank/media/video", type: "smb" } # Nested structure
+      - { path: "tank/media/software", type: "smb" } # Nested structure
+      - { path: "tank/documents", type: "smb" }
+  roles:
+    - storage/nas_config

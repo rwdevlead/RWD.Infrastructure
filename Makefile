@@ -1,6 +1,7 @@
 .PHONY: help init plan apply validate fmt clean destroy cleanup-vm convert-to-template \
 	ansible-config base base-check docker docker-check storage storage-check \
-	traefik traefik-check portainer portainer-check site site-check mailrise mailrise-check
+	traefik traefik-check portainer portainer-check site site-check mailrise mailrise-check \
+	truenas truenas-check
 
 # ==========================================================
 # Load .env file (if present)
@@ -231,4 +232,13 @@ watchtower: ## installs Watchtower service
 watchtower-check: ## checks Watchtower deployment (dry-run)
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \
 		-i iac/ansible/inventories/apps/watchtower.yml \
+		--check --diff
+
+truenas: ## Configures TrueNAS pools, datasets, and shares
+	ansible-playbook iac/ansible/playbooks/deploy_nas_storage.yml \
+		-i iac/ansible/inventories/truenas.yml
+
+truenas-check: ## Dry-run for TrueNAS storage
+	ansible-playbook iac/ansible/playbooks/deploy_nas_storage.yml \
+		-i iac/ansible/inventories/truenas.yml \
 		--check --diff
