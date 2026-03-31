@@ -1,0 +1,9 @@
+---
+# NFS configuration for Docker mounts
+nfs_mounts:
+  - src: "192.168.50.13:/mnt/tank/docker"
+    path: "/mnt/docker"
+    opts: "defaults,_netdev"
+  - src: "192.168.50.13:/mnt/tank/backups"
+    path: "/mnt/backups"
+    opts: "defaults,_netdev"

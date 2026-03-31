@@ -1,0 +1,41 @@
+---
+- name: Install NFS client packages
+  ansible.builtin.package:
+    name: nfs-common
+    state: present
+
+- name: Create NFS mount point directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "0777"
+  loop: "{{ nfs_mounts }}"
+
+- name: Mount NFS shares
+  ansible.builtin.mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: nfs
+    opts: "{{ item.opts }}"
+    state: mounted
+  loop: "{{ nfs_mounts }}"
+
+- name: Set permissions on mounted shares
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0777"
+  loop: "{{ nfs_mounts }}"
+
+- name: Create Docker subdirectories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /mnt/docker/volumes
+    - /mnt/docker/stacks

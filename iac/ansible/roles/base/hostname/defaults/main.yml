@@ -1,0 +1,4 @@
+---
+# Default hostname if not overridden per host in inventory
+# To override: set new_hostname variable for specific host in inventory
+new_hostname: "{{ inventory_hostname }}"

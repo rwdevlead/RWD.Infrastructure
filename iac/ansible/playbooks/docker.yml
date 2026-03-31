@@ -4,5 +4,6 @@
   become: true
 
   roles:
+    - docker/nfs-mounts
     - docker/engine
     - docker/compose
