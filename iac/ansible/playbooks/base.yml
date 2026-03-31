@@ -2,12 +2,11 @@
 - name: Configure Base Server
   hosts: all
   become: yes
-  vars:
-    new_hostname: "{{ inventory_hostname }}" # Default, can override per host
-    # users_to_create:
-    #   - name: youruser
-    #     groups: sudo,docker
-    #     ssh_key: "ssh-rsa AAAA..." # Put actual public key here
+  # new_hostname can be overridden per host in inventory, defaults to inventory_hostname in role
+  # users_to_create:
+  #   - name: youruser
+  #     groups: sudo,docker
+  #     ssh_key: "ssh-rsa AAAA..." # Put actual public key here
 
   roles:
     - base/hostname

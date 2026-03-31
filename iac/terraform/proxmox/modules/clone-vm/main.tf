@@ -17,6 +17,7 @@ data "proxmox_virtual_environment_vm" "template_vm" {
 resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
   name      = var.vm_name
   node_name = var.vm_node_name
+  vm_id     = var.vm_id
 
   description = var.vm_description
 
