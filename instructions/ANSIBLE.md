@@ -215,6 +215,116 @@ Example from pihole role:
       - container_info.container.State.Health.Status == "healthy"
 ```
 
+## Template Parameterization for Reusability
+
+**STANDARD PRACTICE:** All hardcoded values in templates should be defined as variables in `defaults/main.yml`. This allows the same role to be deployed multiple times with different configurations without modifying templates.
+
+### Variable Hierarchy
+
+1. **defaults/main.yml** - Sensible defaults (fallback values)
+2. **Inventory variables** - Per-host or per-environment overrides (takes precedence)
+3. **Playbook vars** - Runtime overrides (highest precedence)
+
+Always define parameterizable values in inventory to enable:
+
+- Multi-host deployments with different configurations
+- Easy scaling (add new servers with inventory entries)
+- Environment-specific settings (staging vs production)
+- No template modifications needed for new deployments
+
+### Guideline for Parameterization
+
+When creating or modifying templates, identify all hardcoded values:
+
+- **Domain names** → Create `{app}_domain` variables
+- **URLs and ports** → Create `{app}_port_*` and `{app}_url_*` variables
+- **API endpoints** → Create `{app}_api_*` variables
+- **Security headers** (HSTS max-age, etc.) → Create `{app}_*_max_age` variables
+- **IP whitelists, DNS servers** → Create as list variables for Jinja2 loops
+- **Container names** → Always use variable (allows multiple instances on same host)
+- **Version numbers** → Create `{app}_docker_api_version` style variables
+
+### Example: Traefik Parameterization
+
+**Variables defined in defaults/main.yml:**
+
+```yaml
+traefik_container_name: "traefik-d01"
+traefik_port_http: 80
+traefik_port_https: 443
+traefik_port_api: 8080
+traefik_acme_domain_main: "local.rwdevs.com"
+traefik_acme_domain_sans: "*.local.rwdevs.com"
+traefik_dns_resolvers:
+  - "1.1.1.1:53"
+  - "1.0.0.1:53"
+traefik_docker_api_version: "1.52"
+traefik_hsts_max_age: 15552000
+traefik_ip_whitelist:
+  - "10.0.0.0/8"
+  - "192.168.50.0/24"
+  - "172.18.0.0/16"
+```
+
+**Usage in docker-compose.yml.j2:**
+
+```yaml
+container_name: { { traefik_container_name } } # Instead of: "traefik-d01"
+ports:
+  - "{{ traefik_port_http }}:{{ traefik_port_http }}" # Instead of: "80:80"
+DOCKER_API_VERSION: "{{ traefik_docker_api_version }}" # Instead of: "1.52"
+domains[0].main: { { traefik_acme_domain_main } } # Instead of: "local.rwdevs.com"
+```
+
+**Usage in dynamic.yml.j2 with loops:**
+
+```yaml
+{% for resolver in traefik_dns_resolvers %}
+  - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers={{ resolver }}
+{% endfor %}
+
+{% for ip in traefik_ip_whitelist %}
+  - "{{ ip }}"
+{% endfor %}
+```
+
+**Benefits:**
+
+- Same role deployed across environments by changing inventory variables
+- Easy to scale (add/remove DNS resolvers, IPs, ports)
+- Self-documenting defaults show configuration options
+- Enables inventory-driven customization per environment
+
+### Inventory Structure for App Deployments
+
+**Standard inventory layout for host-specific app variables:**
+
+```yaml
+docker_hosts:
+  hosts:
+    docker-vm01:
+      ansible_host: 192.168.50.12
+      ansible_user: deployment
+
+      # App-specific variables (override role defaults)
+      traefik_container_name: "traefik-d01"
+      traefik_dashboard_domain: "traefik-d01.local.rwdevs.com"
+      traefik_port_http: 80
+      traefik_port_https: 443
+
+    docker-vm02: # Future expansion
+      ansible_host: 192.168.50.13
+      ansible_user: deployment
+
+      # Different config for this host
+      traefik_container_name: "traefik-d02"
+      traefik_dashboard_domain: "traefik-d02.staging.rwdevs.com"
+      traefik_port_http: 80
+      traefik_port_https: 443
+```
+
+Example for adding a second Traefik instance: just add a new inventory host with different variable values. No code changes needed!
+
 ## NFS Mount Pattern
 
 Standard pattern for mounting NFS shares:
@@ -290,6 +400,73 @@ Standard pattern for mounting NFS shares:
 ```bash
 ansible-playbook playbooks/feature.yml --check -i inventories/ubuntu.yml -l hostname
 ```
+
+## Docker Application Deployment Patterns
+
+### Health Check Pattern (Standard for All Docker Apps)
+
+All Docker application deployments must include post-deployment health checks. This ensures containers are not just running, but actually available to serve requests.
+
+**Required Steps After Docker Compose Deployment:**
+
+1. **Wait for container to become healthy**
+
+   ```yaml
+   - name: Wait for {{ app_name }} container to be healthy
+     community.docker.docker_container_info:
+       name: "{{ app_name }}"
+     register: container_info
+     until:
+       - container_info.container is defined
+       - container_info.container.State.Health.Status == "healthy"
+     retries: 30
+     delay: 2
+     when: not ansible_check_mode
+   ```
+
+2. **Verify service endpoint is responsive**
+
+   ```yaml
+   - name: Verify {{ app_name }} API/endpoint is responsive
+     ansible.builtin.uri:
+       url: "{{ app_health_endpoint }}"
+       method: GET
+     register: health_check
+     until: health_check.status in [200, 301, 302]
+     retries: 10
+     delay: 1
+     when: not ansible_check_mode
+   ```
+
+3. **Assert both conditions pass**
+   ```yaml
+   - name: Final health assertion for {{ app_name }}
+     ansible.builtin.assert:
+       that:
+         - container_info.container.State.Health.Status == "healthy"
+         - health_check.status in [200, 301, 302]
+       fail_msg: "{{ app_name }} failed to reach healthy state"
+     when: not ansible_check_mode
+   ```
+
+**Why This Pattern:**
+
+- Docker health checks (in compose files) don't guarantee service availability
+- Actual endpoint verification confirms the application is operational
+- `when: not ansible_check_mode` prevents failures during dry-runs
+- Three-step pattern ensures both Docker health AND application readiness
+
+**Implementation Steps:**
+
+1. Add health check to Docker Compose template (ping endpoint, startup probe)
+2. Include the three tasks above in role's `tasks/main.yml`
+3. Define `app_health_endpoint` in role's `defaults/main.yml`
+4. Test with `ansible-playbook --check` to verify it skips health checks
+5. Apply and verify health checks execute successfully
+
+**Examples in Codebase:**
+
+- [Traefik Health Checks](../roles/apps/traefik/tasks/main.yml) - Reference implementation
 
 ## Collections & Dependencies
 

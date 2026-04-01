@@ -4,12 +4,38 @@ traefik_tag: "v3.6.1"
 
 traefik_base_dir: "/opt/traefik"
 traefik_data_dir: "/mnt/docker/traefik"
+traefik_volumes_dir: "{{ traefik_data_dir }}/volumes"
+traefik_logs_dir: "{{ traefik_data_dir }}/logs"
 
 traefik_network: "traefik"
 
-traefik_dashboard_domain: "proxy.local.rwdevs.com"
+traefik_container_name: "traefik-d01"
+traefik_dashboard_domain: "traefik-d01.local.rwdevs.com"
+
+proxmox_domain: "proxmox.local.rwdevs.com"
+proxmox_url: "https://192.168.50.11:8006"
 
 traefik_acme_email: "srdevlead@outlook.com"
 traefik_acme_resolver: "cloudflare"
+traefik_acme_domain_main: "rwdevs.com"
+traefik_acme_domain_sans: "*.rwdevs.com,*.local.rwdevs.com"
+traefik_acme_server: "https://acme-v02.api.letsencrypt.org/directory"
+
+traefik_port_http: 80
+traefik_port_https: 443
+traefik_port_api: 8080
+
+traefik_dns_resolvers:
+  - "1.1.1.1:53"
+  - "1.0.0.1:53"
+
+traefik_docker_api_version: "1.52"
+traefik_insecure_skip_verify: true
+traefik_hsts_max_age: 15552000
+
+traefik_ip_whitelist:
+  - "10.0.0.0/8"
+  - "192.168.50.0/24"
+  - "172.18.0.0/16"
 
 cloudflare_dns_api_token: "{{ lookup('env', 'CF_DNS_API_TOKEN') }}"
