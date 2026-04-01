@@ -6,5 +6,33 @@ docker_hosts:
       ansible_user: ka8kgj
       docker_users:
         - ka8kgj
+
+      # Traefik configuration
+      traefik_container_name: "traefik-d01"
+      traefik_dashboard_domain: "traefik-d01.local.rwdevs.com"
+      traefik_acme_domain_main: "rwdevs.com"
+      traefik_acme_domain_sans: "*.rwdevs.com,*.local.rwdevs.com"
+      traefik_acme_server: "https://acme-v02.api.letsencrypt.org/directory"
+
+      proxmox_domain: "proxmox.local.rwdevs.com"
+      proxmox_url: "https://192.168.50.11:8006"
+
+      traefik_port_http: 80
+      traefik_port_https: 443
+      traefik_port_api: 8080
+
+      traefik_dns_resolvers:
+        - "1.1.1.1:53"
+        - "1.0.0.1:53"
+
+      traefik_docker_api_version: "1.52"
+      traefik_insecure_skip_verify: true
+      traefik_hsts_max_age: 15552000
+
+      traefik_ip_whitelist:
+        - "10.0.0.0/8"
+        - "192.168.50.0/24"
+        - "172.18.0.0/16"
+
 portainer:
   children: docker_hosts

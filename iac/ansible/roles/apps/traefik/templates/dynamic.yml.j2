@@ -1,5 +1,55 @@
 http:
+  routers:
+    dashboard:
+      entryPoints:
+        - "websecure"
+      rule: "Host(`{{ traefik_dashboard_domain }}`)"
+      middlewares:
+        - default-headers
+      tls:
+        certResolver: "{{ traefik_acme_resolver }}"
+        domains:
+          - main: "{{ traefik_acme_domain_main }}"
+            sans:
+{% for sans in traefik_acme_domain_sans.split(',') %}
+              - "{{ sans | trim }}"
+{% endfor %}
+      service: api@internal
+    dashboard-http:
+      entryPoints:
+        - "web"
+      rule: "Host(`{{ traefik_dashboard_domain }}`)"
+      middlewares:
+        - https-redirectscheme
+      service: api@internal
+    proxmox:
+      entryPoints:
+        - "web"
+        - "websecure"
+      rule: "Host(`{{ proxmox_domain }}`)"
+      middlewares:
+        - https-redirectscheme
+        - default-headers
+      tls:
+        certResolver: "{{ traefik_acme_resolver }}"
+        domains:
+          - main: "{{ traefik_acme_domain_main }}"
+            sans:
+{% for sans in traefik_acme_domain_sans.split(',') %}
+              - "{{ sans | trim }}"
+{% endfor %}
+      service: proxmox
+  services:
+    proxmox:
+      loadBalancer:
+        servers:
+          - url: "{{ proxmox_url }}"
+        passHostHeader: true
   middlewares:
+    https-redirectscheme:
+      redirectScheme:
+        scheme: https
+        permanent: true
     default-headers:
       headers:
         frameDeny: true
@@ -8,24 +58,19 @@ http:
         forceSTSHeader: true
         stsIncludeSubdomains: true
         stsPreload: true
-        stsSeconds: 15552000
+        stsSeconds: {{ traefik_hsts_max_age }}
         customFrameOptionsValue: SAMEORIGIN
         customRequestHeaders:
           X-Forwarded-Proto: https
-
     default-whitelist:
       ipAllowList:
         sourceRange:
-          - "10.0.0.0/8"
-          - "192.168.0.0/16"
-          - "172.16.0.0/12"
-          - "127.0.0.1/32"
-          - "::1/128"
-
+{% for ip in traefik_ip_whitelist %}
+          - "{{ ip }}"
+{% endfor %}   
     # Secured middleware for services - includes IP whitelist
     secured:
       chain:
         middlewares:
           - default-whitelist
           - default-headers
-  #endregion

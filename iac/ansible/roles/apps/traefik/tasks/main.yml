@@ -10,6 +10,8 @@
     - "{{ traefik_base_dir }}"
     - "{{ traefik_data_dir }}/config"
     - "{{ traefik_data_dir }}/acme"
+    - "{{ traefik_data_dir }}/volumes"
+    - "{{ traefik_data_dir }}/logs"
 
 - name: Ensure acme.json exists
   ansible.builtin.file:
@@ -40,4 +42,37 @@
   community.docker.docker_compose_v2:
     project_src: "{{ traefik_base_dir }}"
     state: present
+  when: not ansible_check_mode
+
+# ========================
+# Health Checks & Assertions
+# ========================
+
+- name: Wait for Traefik container to be healthy
+  community.docker.docker_container_info:
+    name: "{{ traefik_container_name }}"
+  register: traefik_container
+  until:
+    - traefik_container.container is defined
+    - traefik_container.container.State.Health.Status == "healthy"
+  retries: 30
+  delay: 2
+  when: not ansible_check_mode
+
+- name: Verify Traefik API ping endpoint is responsive
+  ansible.builtin.uri:
+    url: "http://localhost:{{ traefik_port_api }}/ping"
+    method: GET
+  register: ping_result
+  until: ping_result.status == 200
+  retries: 10
+  delay: 1
+  when: not ansible_check_mode
+
+- name: Final health assertion for Traefik
+  ansible.builtin.assert:
+    that:
+      - traefik_container.container.State.Health.Status == "healthy"
+      - ping_result.status == 200
+    fail_msg: "Traefik failed to reach healthy state. Container status: {{ traefik_container.container.State.Health.Status | default('Unknown') }}"
   when: not ansible_check_mode

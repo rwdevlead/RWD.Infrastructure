@@ -1,20 +1,23 @@
 services:
   traefik:
     image: {{ traefik_image }}:{{ traefik_tag }}
-    container_name: traefik
+    container_name: {{ traefik_container_name }}
     restart: unless-stopped
 
     command:
-      - --log.level=INFO
+      - --log.level=DEBUG
 
       - --api=true
       - --api.dashboard=true
-      - --api.insecure=true
+      - --api.insecure=false
       - --ping=true
 
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network={{ traefik_network }}
+
+      - --providers.file.filename=/config/dynamic.yml
+      - --providers.file.watch=true
 
       - --entryPoints.smtp.address=:8025
       
@@ -23,26 +26,26 @@ services:
       - --entryPoints.websecure.address=:443
       - --entryPoints.websecure.asDefault=true
       - --entryPoints.websecure.http.tls.certResolver={{ traefik_acme_resolver }}
-      - --entryPoints.websecure.http.tls.domains[0].main=local.rwdevs.com
-      - --entryPoints.websecure.http.tls.domains[0].sans=*.local.rwdevs.com
+      - --entryPoints.websecure.http.tls.domains[0].main={{ traefik_acme_domain_main }}
+      - --entryPoints.websecure.http.tls.domains[0].sans={{ traefik_acme_domain_sans }}
 
-      - --serversTransport.insecureSkipVerify=true
+      - --serversTransport.insecureSkipVerify={{ traefik_insecure_skip_verify | lower }}
 
       - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge=true
       - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge.provider=cloudflare
-      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge.resolvers=1.1.1.1:53
-      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge.resolvers=1.0.0.1:53
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.dnschallenge.resolvers={{ traefik_dns_resolvers | join(',') }}
       - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.email={{ traefik_acme_email }}
+      - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.caserver={{ traefik_acme_server }}
       - --certificatesresolvers.{{ traefik_acme_resolver }}.acme.storage=/acme/acme.json
 
     ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
+      - "{{ traefik_port_http }}:{{ traefik_port_http }}"
+      - "{{ traefik_port_https }}:{{ traefik_port_https }}"
+      - "{{ traefik_port_api }}:{{ traefik_port_api }}"
 
     environment:
       CF_DNS_API_TOKEN: "{{ cloudflare_dns_api_token }}"
-      DOCKER_API_VERSION: "1.52"
+      DOCKER_API_VERSION: "{{ traefik_docker_api_version }}"
 
     volumes:
       - /etc/localtime:/etc/localtime:ro
