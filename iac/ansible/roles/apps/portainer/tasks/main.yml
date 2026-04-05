@@ -32,4 +32,5 @@
   community.docker.docker_compose_v2:
     project_src: "{{ portainer_base_dir }}"
     state: present
+    pull: always
   when: not ansible_check_mode

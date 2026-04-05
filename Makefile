@@ -220,12 +220,12 @@ traefik: ## Deploy Traefik reverse proxy for container routing
 
 portainer-check: ## Dry-run: Review Portainer container management deployment
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
-		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml \
+		-i $(ANSIBLE_DIR)/inventories/docker.yml \
 		--check --diff
 
 portainer: ## Deploy Portainer container management platform
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
-		-i $(ANSIBLE_DIR)/inventories/apps/portainer.yml
+		-i $(ANSIBLE_DIR)/inventories/docker.yml
 
 # === Application Services ===
 
