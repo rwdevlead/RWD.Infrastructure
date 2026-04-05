@@ -1,8 +1,15 @@
 services:
   portainer:
     image: {{ portainer_image }}:{{ portainer_tag }}
-    container_name: portainer
+    container_name: {{ portainer_container_name }}
     restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "/portainer", "--version"]
+      interval: {{ portainer_healthcheck_interval }}
+      timeout: {{ portainer_healthcheck_timeout }}
+      retries: {{ portainer_healthcheck_retries }}
+      start_period: 15s
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -13,8 +20,10 @@ services:
 
     labels:
       - "traefik.enable=true"
+      # Watchtower Label
+      - "com.centurylinklabs.watchtower.enable={{ portainer_watchtower_enable }}"
 
-      # Router
+      # Traefik Router
       - "traefik.http.routers.portainer.rule=Host(`{{ portainer_domain }}`)"
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.tls.certresolver=cloudflare"

@@ -1,6 +1,6 @@
 ---
 - name: Deploy Portainer
-  hosts: portainer_hosts
+  hosts: docker_hosts
   become: true
 
   roles:

@@ -7,6 +7,12 @@ portainer_tag: "latest"
 portainer_base_dir: "/opt/portainer"
 portainer_data_dir: "/mnt/docker/portainer/data"
 
-portainer_domain: "portainer1.local.rwdevs.com"
+portainer_container_name: "portainer"
+portainer_domain: "portainer.local.rwdevs.com"
 
 portainer_docker_network: "traefik"
+
+portainer_watchtower_enable: "true"
+portainer_healthcheck_interval: "30s"
+portainer_healthcheck_timeout: "10s"
+portainer_healthcheck_retries: 3
