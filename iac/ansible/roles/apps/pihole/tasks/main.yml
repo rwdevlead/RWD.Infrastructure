@@ -1,3 +1,4 @@
+---
 - name: Create Pi-hole directories
   file:
     path: "{{ item }}"
@@ -32,19 +33,20 @@
 # -------------------------------
 - name: Wait for Pi-hole container to become healthy
   community.docker.docker_container_info:
-    name: "pihole"
+    name: "{{ pihole_container_name }}"
   register: pihole_container_info
-  # This loop re-runs the INFO command every 10 seconds
   until:
-    - pihole_container_info.container is defined
-    - pihole_container_info.container.State.Health.Status == "healthy"
+    - pihole_container_info.container is not none
+    - pihole_container_info.container.State is defined
+    - pihole_container_info.container.State.Health.Status | default('') == "healthy"
   retries: 15
   delay: 10
   when: not ansible_check_mode
 
 - name: Final health assertion
   ansible.builtin.assert:
+    # Use the same variable here to keep the error message accurate
     that:
       - pihole_container_info.container.State.Health.Status == "healthy"
-    fail_msg: "Pi-hole failed to reach healthy state. Current status: {{ pihole_container_info.container.State.Health.Status | default('Unknown') }}"
+    fail_msg: "Container {{ pihole_container_name }} failed to reach healthy state."
   when: not ansible_check_mode

@@ -240,12 +240,12 @@ mailrise: ## Deploy Mailrise email notification service
 
 pihole-check: ## Dry-run: Review Pi-hole DNS/ad-blocker deployment
 	ansible-playbook iac/ansible/playbooks/pihole.yml \
-		-i iac/ansible/inventories/apps/pihole.yml \
+		-i iac/ansible/inventories/docker.yml \
 		--check --diff
 
 pihole: ## Deploy Pi-hole DNS and ad-blocking service
 	ansible-playbook iac/ansible/playbooks/pihole.yml \
-		-i iac/ansible/inventories/apps/pihole.yml
+		-i iac/ansible/inventories/docker.yml
 
 homepage-check: ## Dry-run: Review Homepage dashboard deployment
 	ansible-playbook iac/ansible/playbooks/homepage.yml \

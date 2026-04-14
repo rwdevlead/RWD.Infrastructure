@@ -7,6 +7,12 @@ docker_hosts:
       docker_users:
         - ka8kgj
 
+      # PiHole configuration
+      pihole_container_name: pihole-d01
+      pihole_domain: pihole-d01.local.rwdevs.com
+      pihole_password: "{{ lookup('ansible.builtin.env', 'PIHOLE_PASSWORD') }}"
+      pihole_bind_dns: true
+
       # Traefik configuration
       traefik_container_name: "traefik-d01"
       traefik_dashboard_domain: "traefik-d01.local.rwdevs.com"
