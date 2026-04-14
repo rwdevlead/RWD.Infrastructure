@@ -1,5 +1,5 @@
-- name: Deploy Lab Monitoring Stack
-  hosts: watchtower_host
+- name: Deploy Lab Package Monitor
+  hosts: docker_hosts
   become: true
   roles:
     - apps/watchtower

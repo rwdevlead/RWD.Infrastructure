@@ -258,12 +258,12 @@ homepage: ## Deploy Homepage dashboard service
 
 watchtower-check: ## Dry-run: Review Watchtower auto-update service
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \
-		-i iac/ansible/inventories/apps/watchtower.yml \
+		-i iac/ansible/inventories/docker.yml \
 		--check --diff
 
 watchtower: ## Deploy Watchtower automated container updates service
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \
-		-i iac/ansible/inventories/apps/watchtower.yml
+		-i iac/ansible/inventories/docker.yml
 
 # === System Updates & Maintenance ===
 

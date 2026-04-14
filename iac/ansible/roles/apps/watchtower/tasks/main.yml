@@ -11,7 +11,7 @@
       {% if watchtower_monitor_only %} --monitor-only {% endif %}
       --schedule "{{ watchtower_schedule }}"
     env:
-      DOCKER_API_VERSION: "1.44" # Set this to 1.44 for maximum compatibility
+      DOCKER_API_VERSION: "{{ shared_docker_api_version }}"
       WATCHTOWER_NOTIFICATIONS: email
       WATCHTOWER_NOTIFICATION_EMAIL_FROM: "{{ watchtower_email_from }}"
       WATCHTOWER_NOTIFICATION_EMAIL_TO: "{{ watchtower_email_to }}"
