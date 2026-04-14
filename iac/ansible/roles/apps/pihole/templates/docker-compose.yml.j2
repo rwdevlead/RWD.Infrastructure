@@ -12,6 +12,7 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
+      - "8888:80/tcp"  # Map host port 8080 to Pi-hole port 80
 {% endif %}
 
     environment:
@@ -19,6 +20,7 @@ services:
       FTLCONF_webserver_api_allowedHosts: "{{ pihole_domain }}"
       TZ: "{{ pihole_timezone }}"
       FTLCONF_webserver_api_password: "{{ pihole_password }}"
+      FTLCONF_webserver_tls_enabled: "false"
       DNS1: "{{ pihole_dns1 }}"
       DNS2: "{{ pihole_dns2 }}"
 
@@ -50,3 +52,4 @@ services:
 networks:
   {{ traefik_network }}:
     external: true
+    

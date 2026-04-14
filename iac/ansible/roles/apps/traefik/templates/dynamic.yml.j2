@@ -45,6 +45,10 @@ http:
         servers:
           - url: "{{ proxmox_url }}"
         passHostHeader: true
+        serversTransport: true
+  serversTransports:
+    proxmox-transport:
+      insecureSkipVerify: true
   middlewares:
     https-redirectscheme:
       redirectScheme:
