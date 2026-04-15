@@ -1,7 +1,6 @@
 ---
-- name: Deploy Mailrise
-  hosts: mailrise_host
+- name: Deploy Mailrise Alerts
+  hosts: docker_hosts
   become: true
-
   roles:
     - apps/mailrise

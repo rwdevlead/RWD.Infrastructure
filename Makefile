@@ -231,12 +231,12 @@ portainer: ## Deploy Portainer container management platform
 
 mailrise-check: ## Dry-run: Review Mailrise email notification service
 	ansible-playbook iac/ansible/playbooks/mailrise.yml \
-		-i iac/ansible/inventories/apps/mailrise.yml \
+		-i iac/ansible/inventories/docker.yml \
 		--check --diff
 
 mailrise: ## Deploy Mailrise email notification service
 	ansible-playbook iac/ansible/playbooks/mailrise.yml \
-		-i iac/ansible/inventories/apps/mailrise.yml
+		-i iac/ansible/inventories/docker.yml
 
 pihole-check: ## Dry-run: Review Pi-hole DNS/ad-blocker deployment
 	ansible-playbook iac/ansible/playbooks/pihole.yml \

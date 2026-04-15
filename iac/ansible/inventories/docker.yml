@@ -48,6 +48,14 @@ docker_hosts:
       # Watchtower
       watchtower_name: watchtower-d01
       watchtower_network: "{{ shared_docker_network }}"
+      watchtower_notification_url: "smtp://mailrise-d01:8025/?to={{ mailrise_target_email }}&encryption=none"
+
+      # Mailrise
+      mailrise_smtp_port: 8025
+      mailrise_http_port: 8080
+      mailrise_ha_host: "192.168.50.12"
+      mailrise_target_email: "AlertsRWD@outlook.com"
+      mailrise_container_name: mailrise-d01
 
 # Grouping for easy playbook targeting
 portainer:
