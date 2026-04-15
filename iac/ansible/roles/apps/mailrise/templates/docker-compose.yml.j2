@@ -1,7 +1,7 @@
 services:
   mailrise:
     image: {{ mailrise_image }}:{{ mailrise_tag }}
-    container_name: mailrise
+    container_name: {{ mailrise_container_name }}
     restart: unless-stopped
     ports:
       - "{{ mailrise_smtp_port }}:8025"
@@ -9,8 +9,12 @@ services:
     volumes:
       - "{{ mailrise_data_dir }}/config/mailrise.conf:/etc/mailrise.conf:ro"
     command: ["/etc/mailrise.conf"]
+    environment:
+      - MAILRISE_GUI_ENABLED=true  # Note: It's GUI, not WEB
+      - MAILRISE_GUI_PORT=8080
+      - PYTHONUNBUFFERED=1
     networks:
-      - traefik
+      - {{ shared_docker_network }}
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.mailrise.rule=HostSNI(`*`)"
@@ -19,5 +23,5 @@ services:
       - "traefik.tcp.services.mailrise.loadbalancer.server.port=8025"
 
 networks:
-  traefik:
+  {{ shared_docker_network }}:
     external: true

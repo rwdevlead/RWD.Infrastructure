@@ -1,5 +1,6 @@
 mailrise_image: "yoryan/mailrise"
-mailrise_tag: "latest"
+mailrise_container_name: mailrise
+mailrise_tag: "1.4.0"
 
 mailrise_base_dir: "/opt/mailrise"
 mailrise_data_dir: "/mnt/docker/mailrise"

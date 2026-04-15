@@ -9,6 +9,7 @@
     - "{{ mailrise_base_dir }}"
     - "{{ mailrise_data_dir }}"
     - "{{ mailrise_data_dir }}/config" # <-- add config dir
+  check_mode: no
 
 - name: Verify required environment variables are set
   ansible.builtin.assert:
@@ -20,10 +21,11 @@
 - name: Render Mailrise config
   ansible.builtin.template:
     src: mailrise-settings.yaml.j2
-    dest: "{{ mailrise_data_dir }}/config/mailrise.conf" # Changed .config to .conf
+    dest: "{{ mailrise_data_dir }}/config/mailrise.conf"
     owner: root
     group: root
     mode: "0644"
+  check_mode: no
   notify: Restart Mailrise
 
 - name: Render Mailrise docker-compose.yml
@@ -31,7 +33,8 @@
     src: docker-compose.yml.j2
     dest: "{{ mailrise_base_dir }}/docker-compose.yml"
     mode: "0644"
-  notify: Restart Mailrise # Also restart if the compose file changes (e.g. new ports)
+  check_mode: no
+  notify: Restart Mailrise
 
 - name: Deploy Mailrise
   community.docker.docker_compose_v2:
