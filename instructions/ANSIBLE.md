@@ -92,7 +92,6 @@ iac/ansible/
 
 - Prefix with role or feature: `pihole_base_dir`, `docker_users`
 - Snake_case for all variable names
-- Use descriptive names: `homepage_enabled` not `he`
 
 ## Development Workflow
 

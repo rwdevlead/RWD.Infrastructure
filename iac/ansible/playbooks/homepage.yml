@@ -1,6 +1,5 @@
 - name: Deploy Homepage
-  hosts: homepage_host
+  hosts: docker_hosts
   become: true
   roles:
     - role: apps/homepage
-      when: homepage_enabled | default(false)

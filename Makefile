@@ -249,12 +249,12 @@ pihole: ## Deploy Pi-hole DNS and ad-blocking service
 
 homepage-check: ## Dry-run: Review Homepage dashboard deployment
 	ansible-playbook iac/ansible/playbooks/homepage.yml \
-		-i iac/ansible/inventories/apps/homepage.yml \
+		-i iac/ansible/inventories/docker.yml \
 		--check --diff
 
 homepage: ## Deploy Homepage dashboard service
 	ansible-playbook iac/ansible/playbooks/homepage.yml \
-		-i iac/ansible/inventories/apps/homepage.yml
+		-i iac/ansible/inventories/docker.yml
 
 watchtower-check: ## Dry-run: Review Watchtower auto-update service
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \

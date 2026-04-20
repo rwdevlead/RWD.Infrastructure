@@ -10,10 +10,9 @@ Deploys Homepage using Docker Compose.
 
 ## Variables
 
-| Variable        | Description       |
-| --------------- | ----------------- |
-| homepage_port   | Port exposed      |
-| homepage_update | Pull latest image |
+| Variable      | Description  |
+| ------------- | ------------ |
+| homepage_port | Port exposed |
 
 ## Notes
 
