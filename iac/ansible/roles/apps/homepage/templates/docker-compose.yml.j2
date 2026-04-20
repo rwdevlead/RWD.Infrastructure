@@ -1,10 +1,11 @@
 services:
   homepage:
     image: ghcr.io/gethomepage/homepage:{{ homepage_version }}
-    container_name: homepage
+    container_name: {{ homepage_container_name }}
     restart: unless-stopped
     environment:
       - TZ={{ homepage_timezone }}
+      - HOMEPAGE_ALLOWED_HOSTS={{ homepage_domain }}
     volumes:
       - ./config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -15,9 +16,6 @@ services:
       - "traefik.http.routers.homepage.tls=true"
       - "traefik.http.services.homepage.loadbalancer.server.port={{ homepage_port }}"
       - "com.centurylinklabs.watchtower.enable=true"
-{% for label in homepage_extra_labels -%}
-      - "{{ label }}"
-{% endfor %}
     networks:
       - traefik
 

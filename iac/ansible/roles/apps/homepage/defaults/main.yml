@@ -16,17 +16,8 @@ homepage_port: 3000
 # Timezone for container
 homepage_timezone: "America/New_York"
 
-# Whether to update container automatically with Watchtower
-homepage_update: true
-
 # Domain for Traefik routing (must exist in inventory/group_vars)
 homepage_domain: "homepage.local.rwdevs.com"
-
-# Optional: additional Traefik labels
-homepage_extra_labels: []
-
-# Optional: homepage enabled toggle
-homepage_enabled: true
 
 # Homepage service variables (used in services.yaml.j2)
 homepage_var_pihole_url: "https://pihole.local.rwdevs.com"
