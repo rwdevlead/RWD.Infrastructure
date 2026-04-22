@@ -6,6 +6,10 @@ services:
     environment:
       - TZ={{ homepage_timezone }}
       - HOMEPAGE_ALLOWED_HOSTS={{ homepage_domain }}
+      - PROXMOX_API_USER={{ lookup('ansible.builtin.env', 'PROXMOX_API_USER') }}
+      - PROXMOX_API_TOKEN={{ lookup('ansible.builtin.env', 'PROXMOX_API_TOKEN') }}
+      - PVE_P01_API_USER={{ lookup('ansible.builtin.env', 'PVE_P01_API_USER') }}
+      - PVE_P01_API_TOKEN={{ lookup('ansible.builtin.env', 'PVE_P01_API_TOKEN') }}
     volumes:
       - ./config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
