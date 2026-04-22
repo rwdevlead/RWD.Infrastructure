@@ -1,5 +1,0 @@
-homepage_host:
-  hosts:
-    docker-vm01:
-      ansible_host: 192.168.50.12
-      ansible_user: ka8kgj

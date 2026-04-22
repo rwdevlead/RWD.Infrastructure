@@ -23,8 +23,6 @@ docker_hosts:
       traefik_acme_domain_main: "rwdevs.com"
       traefik_acme_domain_sans: "*.rwdevs.com,*.local.rwdevs.com"
       traefik_acme_server: "https://acme-v02.api.letsencrypt.org/directory"
-      proxmox_domain: "proxmox.local.rwdevs.com"
-      proxmox_url: "https://192.168.50.11:8006"
       traefik_port_http: 80
       traefik_port_https: 443
       traefik_port_api: 8080
@@ -38,6 +36,13 @@ docker_hosts:
         - "10.0.0.0/8"
         - "192.168.50.0/24"
         - "172.18.0.0/16"
+      proxmox_instances:
+        - name: "proxmox"
+          domain: "proxmox.local.rwdevs.com"
+          url: "https://192.168.50.11:8006"
+        - name: "pve-p01"
+          domain: "pve-p01.local.rwdevs.com"
+          url: "https://192.168.50.10:8006"
 
       # Portainer configuration
       portainer_container_name: "portainer-d01"

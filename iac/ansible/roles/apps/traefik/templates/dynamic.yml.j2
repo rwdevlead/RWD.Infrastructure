@@ -22,11 +22,12 @@ http:
       middlewares:
         - https-redirectscheme
       service: api@internal
-    proxmox:
+{% for pve in proxmox_instances %}
+    {{ pve.name }}:
       entryPoints:
         - "web"
         - "websecure"
-      rule: "Host(`{{ proxmox_domain }}`)"
+      rule: "Host(`{{ pve.domain }}`)"
       middlewares:
         - https-redirectscheme
         - default-headers
@@ -38,14 +39,17 @@ http:
 {% for sans in traefik_acme_domain_sans.split(',') %}
               - "{{ sans | trim }}"
 {% endfor %}
-      service: proxmox
+      service: {{ pve.name }}
+{% endfor %}
   services:
-    proxmox:
+{% for pve in proxmox_instances %}
+    {{ pve.name }}:
       loadBalancer:
         servers:
-          - url: "{{ proxmox_url }}"
+          - url: "{{ pve.url }}"
         passHostHeader: true
-        serversTransport: true
+        serversTransport: proxmox-transport
+{% endfor %}  
   serversTransports:
     proxmox-transport:
       insecureSkipVerify: true
