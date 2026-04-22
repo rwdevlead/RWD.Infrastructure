@@ -34,17 +34,19 @@
             # password: {{ homepage_var_proxy_password }}
 
 - Local Services:
-    - Proxmox:
-        statusStyle: "basic"
+{% for pve in proxmox_instances %}
+    - {{ pve.name }}:
         icon: proxmox.svg
-        href: {{ homepage_var_proxmox_url }}
-        description: proxmox
-        siteMonitor: https://proxmox.local.rwdevs.com
+        href: {{ pve.url }}
+        description: Proxmox Virtual Environment
+        siteMonitor: {{ pve.url }}
         widget:
-              type: proxmox
-              url: {{ homepage_var_proxmox_url }}
-              username:  {{ homepage_var_proxmox_user }}
-              password:  {{ homepage_var_proxmox_api_key }}
+            type: proxmox
+            url: {{ pve.url }}
+            # Using your existing global user/key for all nodes
+            username: "{{ lookup('ansible.builtin.env', pve.env_user_key) }}"
+            password: "{{ lookup('ansible.builtin.env', pve.env_token_key) }}"
+{% endfor %}
     - TrueNAS:
         statusStyle: "basic"
         icon: truenas.svg
