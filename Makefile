@@ -41,7 +41,7 @@ TARGET ?= unassigned
 
 TEST_VAR ?= unassigned
 
-TERRAFORM_DIR := iac/terraform/$(TARGET)
+TERRAFORM_DIR := iac/terraform/environments/$(TARGET)
 
 
 # ==========================================================
@@ -96,9 +96,9 @@ convert-to-template: ## Convert cleanup VM to a reusable Proxmox template for cl
 # ==========================================================
 # Terraform Commands (Infrastructure Provisioning)
 # ==========================================================
-# Usage: make [target] TARGET=github|proxmox ENV=environment_name
-# Example: make plan TARGET=github ENV=dev
-# Example: make apply TARGET=proxmox
+# Usage: make [target] TARGET=github|proxmox/[instance] 
+# Example: make plan TARGET=github
+# Example: make apply TARGET=proxmox/pve-p01
 
 destroy: ## Destroy all infrastructure for selected TARGET (use with caution!)
 	@echo "Running Terraform Destroy in $(TERRAFORM_DIR)..."
@@ -168,6 +168,8 @@ clean: ## Delete generated Terraform files (plan, .terraform dir) but preserve s
 # Configuration and Diagnostics
 ANSIBLE=ansible-playbook
 ANSIBLE_DIR=iac/ansible
+
+# TODO make TARGET and INV var like with Terraform above
 
 ansible-config: ## Display current Ansible configuration settings
 	ansible-config dump --only-changed

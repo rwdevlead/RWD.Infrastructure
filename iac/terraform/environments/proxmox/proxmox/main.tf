@@ -8,10 +8,12 @@ locals {
 }
 
 module "ubuntu_template" {
-  source    = "./modules/template-ubuntu"
-  vm_id     = 901
-  vm_name   = "ubuntu-2404-template"
-  node_name = "proxmox"
+  source        = "../../../modules/proxmox/template-ubuntu"
+  vm_id         = 901
+  vm_name       = "ubuntu-2404-template"
+  node_name     = "proxmox"
+  template_mode = false
+  vm_startup    = false
 
   efi_storage_id = "local-lvm"
   vm_bios        = "ovmf"
@@ -38,47 +40,8 @@ module "ubuntu_template" {
 
 }
 
-module "Dev_Docker" {
-  source = "./modules/clone-vm"
-
-  tempate_node_id   = module.ubuntu_template.template_id
-  tempate_node_name = module.ubuntu_template.template_node_name
-
-  vm_id          = 101
-  vm_node_name   = "proxmox"
-  vm_name        = "Docker-vm01"
-  vm_description = "Development Docker Instance"
-  #   keyboard      
-
-  vm_username = "ka8kgj"
-  vm_password = "password123"
-
-  vm_cores = 2
-
-  efi_storage_id = "local-lvm"
-  vm_os          = "l26"
-  vm_bios        = "ovmf"
-  vm_machine     = "q35"
-
-  vm_memory_max = 8192
-  vm_memory_min = 4096
-
-  disk_interface  = "virtio0"
-  disk_size       = 20
-  disk_storage_id = "local-lvm"
-
-  network_gateway      = "192.168.50.1"
-  vm_static_ip         = "192.168.50.14/24"
-  network_device_model = "virtio"
-
-  tags = ["vm", "dev", "docker"]
-
-  ssh_public_key_content = local.ssh_public_key_content
-
-}
-
 module "Dev_Docker_01" {
-  source = "./modules/clone-vm"
+  source = "../../../modules/proxmox/clone-vm"
 
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
@@ -117,7 +80,7 @@ module "Dev_Docker_01" {
 }
 
 module "homeassistant" {
-  source = "./modules/homeassistant"
+  source = "../../../modules/proxmox/homeassistant"
 
   vm_id          = 102
   node_name      = "proxmox"
@@ -143,8 +106,7 @@ module "homeassistant" {
 }
 
 module "truenas_vm" {
-  source = "./modules/truenas-vm" # Adjust path to your module folder
-
+  source            = "../../../modules/proxmox/truenas-vm"
   vm_name           = "dev-truenas-01"
   vm_id             = 200
   vm_description    = "TrueNAS SCALE - Managed by Terraform"

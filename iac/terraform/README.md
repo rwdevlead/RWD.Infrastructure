@@ -31,10 +31,11 @@ This repository contains Terraform configurations for managing infrastructure ac
 If you want to keep the template creation process within Terraform:
 
 1. **Step A (The Build)**:
-
    - Set `template = false` and `started = true`
    - Run `terraform apply`
-   - Result: The VM boots, Cloud-Init runs, installs tools, and executes cleanup/sealing commands
+     - Result: The VM boots, Cloud-Init runs,
+   - Run "make cleanup-vm" and "make convert-to-template"
+     - Resuslt: Scripts installs tools and executes cleanup/sealing commands
 
 2. **Step B (The Seal)**:
    - Change to `template = true` and `started = false`
@@ -44,3 +45,8 @@ If you want to keep the template creation process within Terraform:
 ### Warning on Cleanup Scripts
 
 If your `runcmd` includes `truncate -s 0 /etc/machine-id`, the VM will be "broken" until reboot (as the machine-id is cleared). This is ideal for templates, which is why Step B (immediate shutdown after script execution) is critical.
+
+TODO should talk about the big picture here
+
+- include where state files are at
+- talk about child folders and whats in them
