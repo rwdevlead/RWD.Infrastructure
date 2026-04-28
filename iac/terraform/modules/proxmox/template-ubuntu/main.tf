@@ -15,8 +15,8 @@ resource "proxmox_virtual_environment_vm" "template" {
   name  = var.vm_name
   vm_id = var.vm_id
 
-  template = false
-  started  = false
+  template = var.template_mode
+  started  = var.vm_startup
 
   machine     = var.vm_machine
   bios        = var.vm_bios

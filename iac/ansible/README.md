@@ -5,6 +5,7 @@ This directory contains Ansible playbooks and roles for provisioning and configu
 ## Overview
 
 Ansible is used to:
+
 - Configure base system settings (hostname, users, SSH, security)
 - Install and configure Docker engine and Docker Compose
 - Deploy containerized applications and services
@@ -109,17 +110,20 @@ ansible-playbook iac/ansible/playbooks/portainer.yml -i iac/ansible/inventories/
 The `base.yml` playbook applies fundamental system configuration via the following roles:
 
 ### hostname
+
 - Sets the system hostname and updates `/etc/hosts`
 - Configures domain name resolutions
 - Ensures hostname persistence across reboots
 
 ### users
+
 - Creates unprivileged user accounts
 - Configures SSH key-based authentication
 - Sets up sudo access for administrative tasks
 - Manages group memberships
 
 ### ssh
+
 - Hardens SSH daemon configuration (`/etc/ssh/sshd_config`)
 - Disables password authentication (key-only)
 - Disables root login
@@ -127,6 +131,7 @@ The `base.yml` playbook applies fundamental system configuration via the followi
 - Manages SSH banner and logging
 
 ### security
+
 - Applies system hardening policies
 - Configures firewall rules (UFW)
 - Sets up fail2ban for intrusion prevention
@@ -138,6 +143,7 @@ The `base.yml` playbook applies fundamental system configuration via the followi
 The `docker.yml` playbook sets up Docker and related infrastructure:
 
 ### docker/engine
+
 - Installs Docker Community Edition from official repository
 - Configures Docker daemon (`/etc/docker/daemon.json`)
 - Enables Docker service for automatic startup
@@ -145,6 +151,7 @@ The `docker.yml` playbook sets up Docker and related infrastructure:
 - Configures log rotation and limits
 
 ### docker/compose
+
 - Installs Docker Compose (latest version)
 - Creates standard directories for docker-compose files
 - Sets up docker networks for application communication
@@ -154,6 +161,7 @@ The `docker.yml` playbook sets up Docker and related infrastructure:
 The `storage.yml` playbook manages persistent storage:
 
 ### storage/nfs
+
 - Mounts NFS shares from a central NFS server
 - Creates mount points in `/mnt/docker` for application data
 - Configures persistent mounting via `/etc/fstab`
@@ -168,6 +176,7 @@ The `storage.yml` playbook manages persistent storage:
 **Purpose**: Industry-standard reverse proxy and load balancer for routing traffic to containerized services.
 
 **Key Features**:
+
 - HTTP/HTTPS traffic routing on ports 80/443
 - Automatic SSL/TLS certificate generation via Let's Encrypt
 - DNS-01 ACME validation through Cloudflare for wildcard certificates
@@ -177,6 +186,7 @@ The `storage.yml` playbook manages persistent storage:
 - Middleware support for security headers, compression, authentication
 
 **Configuration**:
+
 - Deployed via Docker Compose in `/opt/traefik`
 - Persistent data in `/mnt/docker/traefik` (ACME certificates, config)
 - External Docker network: `traefik`
@@ -193,6 +203,7 @@ The `storage.yml` playbook manages persistent storage:
 **Purpose**: Web-based Docker container management and orchestration interface.
 
 **Key Features**:
+
 - Visual container and image management
 - Deployment of applications from templates
 - Volume and network management
@@ -202,6 +213,7 @@ The `storage.yml` playbook manages persistent storage:
 - Stack (docker-compose) deployment
 
 **Configuration**:
+
 - Deployed via Docker Compose in `/opt/portainer`
 - Persistent data in `/mnt/docker/portainer`
 - Accessible via Traefik at `https://portainer.local.rwdevs.com`
@@ -218,6 +230,7 @@ The `storage.yml` playbook manages persistent storage:
 **Purpose**: Network-wide ad blocker and DNS server for local network filtering.
 
 **Key Features**:
+
 - DNS-level ad and malware blocking
 - Gravity database with multiple blocklists
 - Web-based admin dashboard
@@ -227,6 +240,7 @@ The `storage.yml` playbook manages persistent storage:
 - Regular expression filtering
 
 **Configuration**:
+
 - Deployed via Docker Compose
 - DNS listens on UDP/TCP port 53
 - Admin dashboard on port 80 (internal)
@@ -234,6 +248,7 @@ The `storage.yml` playbook manages persistent storage:
 - Network interface binding for local network access
 
 **Important Notes**:
+
 - Do NOT run multiple Pi-hole instances on the same network
 - Do NOT proxy DNS traffic through Traefik (defeats filtering purpose)
 - Should be set as primary DNS for network devices
@@ -249,6 +264,7 @@ The `storage.yml` playbook manages persistent storage:
 **Purpose**: Customizable dashboard application for quick access to all services.
 
 **Key Features**:
+
 - Web-based dashboard and service aggregator
 - Service status monitoring
 - Quick links to applications
@@ -256,6 +272,7 @@ The `storage.yml` playbook manages persistent storage:
 - Docker integration for container status
 
 **Configuration**:
+
 - Deployed via Docker Compose
 - Accessible via Traefik at `https://homepage.local.rwdevs.com`
 - Configuration files in `/mnt/docker/homepage/config`
@@ -272,6 +289,7 @@ The `storage.yml` playbook manages persistent storage:
 **Purpose**: SMTP-to-webhooks gateway for routing email alerts to various notification services.
 
 **Key Features**:
+
 - SMTP server for receiving alert emails
 - Transforms emails to webhook calls
 - Supports routing to Discord, Slack, Telegram, and other services
@@ -279,6 +297,7 @@ The `storage.yml` playbook manages persistent storage:
 - No web UI (configuration-file driven)
 
 **Configuration**:
+
 - Deployed via Docker Compose
 - SMTP port: 8025 (configurable)
 - Configuration via mounted config file
@@ -295,6 +314,7 @@ The `storage.yml` playbook manages persistent storage:
 **Purpose**: Automatic container image update and deployment service.
 
 **Key Features**:
+
 - Monitors Docker registries for new image versions
 - Automatically pulls and restarts containers with updated images
 - Scheduled update checks (cron-based)
@@ -303,6 +323,7 @@ The `storage.yml` playbook manages persistent storage:
 - Email or webhook notifications on updates
 
 **Configuration**:
+
 - Deployed via Docker Compose
 - Runs on a schedule (default: daily at 2 AM)
 - Can be configured for monitoring specific containers
@@ -319,6 +340,7 @@ The `storage.yml` playbook manages persistent storage:
 **Purpose**: Web-based interface for running and managing Ansible playbooks with audit logging.
 
 **Key Features**:
+
 - GUI for executing Ansible playbooks
 - Project management and repository integration
 - Environment and inventory management
@@ -329,6 +351,7 @@ The `storage.yml` playbook manages persistent storage:
 - Webhook integration for CI/CD
 
 **Configuration**:
+
 - Deployed via Docker Compose with PostgreSQL database
 - Web interface on port 3000
 - Persistent database in `/mnt/docker/semaphore/db`
@@ -353,7 +376,7 @@ services:
   portainer: portainer.local.rwdevs.com
   homepage: homepage.local.rwdevs.com
   pihole: pihole.local.rwdevs.com
-  
+
 # NFS storage
 nfs_server: 192.168.1.100
 nfs_mount_base: /mnt/docker
@@ -620,3 +643,5 @@ ansible-playbook playbooks/base.yml -i inventories/docker.yml -l docker-host01
 - [MailRise Role](roles/apps/mailrise/README.md)
 - [Watchtower Role](roles/apps/watchtower/README.md)
 - [Semaphore Role](roles/apps/semaphore/README.md)
+
+TODO should include a step by step how-to

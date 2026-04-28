@@ -4,6 +4,16 @@ variable "node_name" {
   # default = "pve"
 }
 
+variable "template_mode" {
+  type        = bool
+  description = "is this a template"
+}
+
+variable "vm_startup" {
+  type        = bool
+  description = "start vm when finished"
+}
+
 variable "vm_id" {
   type        = number
   description = "Template ID Number (Index)"
