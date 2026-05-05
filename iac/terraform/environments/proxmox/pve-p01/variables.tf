@@ -11,3 +11,5 @@ variable "default_password" {
   #   default     = null
 }
 
+variable "PROVIDER_ENDPOINT" {}
+variable "PROVIDER_API_TOKEN" {}

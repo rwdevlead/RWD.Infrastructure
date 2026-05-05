@@ -2,8 +2,8 @@
 # commented out to use default values
 
 locals {
-  # Read the content of the key for direct injection (still the most effective method)
-  ssh_public_key_content  = file("~/.ssh/id_ed25519.pub")
+  # trimspace removes trailing newlines that cause perpetual drift in some providers
+  ssh_public_key_content  = trimspace(file("~/.ssh/id_ed25519.pub"))
   ssh_private_key_content = file("~/.ssh/id_ed25519")
 }
 

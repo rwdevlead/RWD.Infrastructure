@@ -93,5 +93,11 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
 
   tags = var.tags
 
+  lifecycle {
+    ignore_changes = [
+      disk[0].ssd,
+    ]
+  }
+
 }
 

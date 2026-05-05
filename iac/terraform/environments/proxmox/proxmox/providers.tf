@@ -3,6 +3,16 @@
 # ==========================================================
 terraform {
   required_version = ">= 1.13.1"
+
+  cloud {
+    organization = "realworlddevelopers"
+
+    workspaces {
+      name    = "proxmox-legacy"
+      project = "RWD Infrastructure"
+    }
+  }
+
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"

@@ -3,6 +3,16 @@
 # ==========================================================
 terraform {
   required_version = ">= 1.13.1"
+
+  cloud {
+    organization = "realworlddevelopers"
+
+    workspaces {
+      name    = "proxmox-pve-p01"
+      project = "RWD Infrastructure"
+    }
+  }
+
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
@@ -12,9 +22,9 @@ terraform {
 }
 
 provider "proxmox" {
-  # using env endpoint  = var.virtual_environment_endpoint
-  # using env api_token = var.virtual_environment_token
-  insecure = true
+  endpoint  = var.PROVIDER_ENDPOINT
+  api_token = var.PROVIDER_API_TOKEN
+  insecure  = true
   ssh {
     # agent       = true
     username    = "root"

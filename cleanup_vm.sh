@@ -11,6 +11,9 @@ echo "Step 1: Cleaning up internal OS state on ${VM_USER}@${VM_IP}..."
 ssh -T \
   -o BatchMode=yes \
   -o PasswordAuthentication=no \
+  -o StrictHostKeyChecking=no \
+  -o UserKnownHostsFile=/dev/null \
+  -i ~/.ssh/id_ed25519 \
   "${VM_USER}@${VM_IP}" \
   bash -se << 'EOF'
 
