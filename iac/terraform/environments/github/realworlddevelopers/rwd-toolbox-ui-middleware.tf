@@ -5,13 +5,19 @@
 #   to = module.rwd_toolbox_ui_middleware.github_repository.this
 # }
 
+# import {
+#   id = "RWD.Toolbox.Ui.Middleware:master"
+#   to = module.branch_protection_rwd_toolbox_ui_middleware.github_branch_protection.branch
+# }
+
+# import {
+#   id = "RWD.Toolbox.Ui.Middleware/.github/CODEOWNERS"
+#   to = module.codeowners_rwd_toolbox_ui_middleware.github_repository_file.codeowners
+# }
+
 # create a open repo
 module "rwd_toolbox_ui_middleware" {
-  source = "./modules/github-repository"
-
-  providers = {
-    github = github.organization
-  }
+  source = "../../../modules/github/github-repository"
 
   repository_name = "RWD.Toolbox.Ui.Middleware"
   description     = ".NET Core Tool for adding CSP and other Security HTTP Headers - ${local.managed_by}"
@@ -28,37 +34,26 @@ module "rwd_toolbox_ui_middleware" {
 
 # Use CODEOWNERS module to manage the CODEOWNERS file
 module "codeowners_rwd_toolbox_ui_middleware" {
-  source = "./modules/github-codeowners"
-  providers = {
-    github = github.organization
-  }
+  source = "../../../modules/github/github-codeowners"
 
   repository   = module.rwd_toolbox_ui_middleware.repository_name
   branch       = "master"
-  github_owner = var.github_owner_secondary
+  github_owner = var.github_owner_realworlddevelopers
   # admins       = [var.github_owner_secondary]
-  owners = [var.github_owner_secondary]
+  owners = [var.github_owner_realworlddevelopers]
 
   depends_on = [module.rwd_toolbox_ui_middleware]
-
-  # extra_rules = {
-  #   "/frontend/*" = "dave"
-  #   "/backend/*"  = "eve"
-  # }
 
 }
 
 # create classic branch protection instead of a ruleset
 module "branch_protection_rwd_toolbox_ui_middleware" {
-  source = "./modules/github-branch-protection"
-  providers = {
-    github = github.organization
-  }
+  source = "../../../modules/github/github-branch-protection"
 
   repository_id = module.rwd_toolbox_ui_middleware.repository_id
   branch        = "master"
 
-  github_owner = var.github_owner_secondary
+  github_owner = var.github_owner_realworlddevelopers
   # codeowners_admins = [var.github_owner_secondary]
   # codeowners_owners = [var.github_owner_secondary]
 

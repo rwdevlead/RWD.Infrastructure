@@ -1,20 +1,26 @@
 
 # *** import repo ***
 # import {
-#   id = "RWD.Toolbox.AddressParser"
-#   to = module.rwd_toolbox_address_parser.github_repository.this
+#   id = "RWD.Toolbox.PasswordGenerator"
+#   to = module.rwd_toolbox_password_generator.github_repository.this
+# }
+
+# import {
+#   id = "RWD.Toolbox.PasswordGenerator:master"
+#   to = module.branch_protection_rwd_toolbox_password_generator.github_branch_protection.branch
+# }
+
+# import {
+#   id = "RWD.Toolbox.PasswordGenerator/.github/CODEOWNERS"
+#   to = module.codeowners_rwd_toolbox_password_generator.github_repository_file.codeowners
 # }
 
 # create a open repo
-module "rwd_toolbox_address_parser" {
-  source = "./modules/github-repository"
+module "rwd_toolbox_password_generator" {
+  source = "../../../modules/github/github-repository"
 
-  providers = {
-    github = github.organization
-  }
-
-  repository_name = "RWD.Toolbox.AddressParser"
-  description     = "A String Parsing and Transformation Tool for Postal Addresses - ${local.managed_by}"
+  repository_name = "RWD.Toolbox.PasswordGenerator"
+  description     = ".NET Core Tool for Generating Random Passwords - ${local.managed_by}"
   visibility      = "public"
 
   topics          = ["csharp", "net6", "nuget", "shared"]
@@ -27,38 +33,27 @@ module "rwd_toolbox_address_parser" {
 }
 
 # Use CODEOWNERS module to manage the CODEOWNERS file
-module "codeowners_rwd_toolbox_address_parser" {
-  source = "./modules/github-codeowners"
-  providers = {
-    github = github.organization
-  }
+module "codeowners_rwd_toolbox_password_generator" {
+  source = "../../../modules/github/github-codeowners"
 
-  repository   = module.rwd_toolbox_address_parser.repository_name
+  repository   = module.rwd_toolbox_password_generator.repository_name
   branch       = "master"
-  github_owner = var.github_owner_secondary
+  github_owner = var.github_owner_realworlddevelopers
   # admins       = [var.github_owner_secondary]
-  owners = [var.github_owner_secondary]
+  owners = [var.github_owner_realworlddevelopers]
 
-  depends_on = [module.rwd_toolbox_address_parser]
-
-  # extra_rules = {
-  #   "/frontend/*" = "dave"
-  #   "/backend/*"  = "eve"
-  # }
+  depends_on = [module.rwd_toolbox_password_generator]
 
 }
 
 # create classic branch protection instead of a ruleset
-module "branch_protection_rwd_toolbox_address_parser" {
-  source = "./modules/github-branch-protection"
-  providers = {
-    github = github.organization
-  }
+module "branch_protection_rwd_toolbox_password_generator" {
+  source = "../../../modules/github/github-branch-protection"
 
-  repository_id = module.rwd_toolbox_address_parser.repository_id
+  repository_id = module.rwd_toolbox_password_generator.repository_id
   branch        = "master"
 
-  github_owner = var.github_owner_secondary
+  github_owner = var.github_owner_realworlddevelopers
   # codeowners_admins = [var.github_owner_secondary]
   # codeowners_owners = [var.github_owner_secondary]
 
@@ -70,7 +65,7 @@ module "branch_protection_rwd_toolbox_address_parser" {
   require_code_owner_reviews      = local.branch_protection_settings.require_code_owner_reviews
   required_approving_review_count = local.branch_protection_settings.required_approving_review_count
 
-  depends_on = [module.codeowners_rwd_toolbox_address_parser]
+  depends_on = [module.codeowners_rwd_toolbox_password_generator]
 
 }
 

@@ -5,13 +5,14 @@
 #   to = module.winemakerssoftware.github_repository.this
 # }
 
+# import {
+#   id = "Winemakerssoftware:master"
+#   to = module.branch_protection_winemakerssoftware.github_branch_protection.branch
+# }
+
 # create a open repo
 module "winemakerssoftware" {
-  source = "./modules/github-repository"
-
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-repository"
 
   repository_name = "Winemakerssoftware"
   description     = "Winemakers Software Website - ${local.managed_by}"
@@ -28,37 +29,26 @@ module "winemakerssoftware" {
 
 # Use CODEOWNERS module to manage the CODEOWNERS file
 module "codeowners_winemakerssoftware" {
-  source = "./modules/github-codeowners"
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-codeowners"
 
   repository   = module.winemakerssoftware.repository_name
   branch       = "master"
-  github_owner = var.github_owner_primary
+  github_owner = var.github_owner_rwdevlead
   # admins       = [var.github_owner_primary]
-  owners = [var.github_owner_primary]
+  owners = [var.github_owner_rwdevlead]
 
   depends_on = [module.winemakerssoftware]
-
-  # extra_rules = {
-  #   "/frontend/*" = "dave"
-  #   "/backend/*"  = "eve"
-  # }
 
 }
 
 # create classic branch protection instead of a ruleset
 module "branch_protection_winemakerssoftware" {
-  source = "./modules/github-branch-protection"
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-branch-protection"
 
   repository_id = module.winemakerssoftware.repository_id
   branch        = "master"
 
-  github_owner = var.github_owner_primary
+  github_owner = var.github_owner_rwdevlead
   # codeowners_admins = [var.github_owner_primary]
   # codeowners_owners = [var.github_owner_primary]
 

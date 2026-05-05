@@ -5,13 +5,14 @@
 #   to = module.rwd_web_react.github_repository.this
 # }
 
+# import {
+#   id = "RWD.Web.REACT:main"
+#   to = module.branch_protection_rwd_web_react.github_branch_protection.branch
+# }
+
 # create a open repo
 module "rwd_web_react" {
-  source = "./modules/github-repository"
-
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-repository"
 
   repository_name = "RWD.Web.REACT"
   description     = "Homepage for Real World Developers - ${local.managed_by}"
@@ -28,37 +29,26 @@ module "rwd_web_react" {
 
 # Use CODEOWNERS module to manage the CODEOWNERS file
 module "codeowners_rwd_web_react" {
-  source = "./modules/github-codeowners"
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-codeowners"
 
   repository   = module.rwd_web_react.repository_name
   branch       = "main"
-  github_owner = var.github_owner_primary
+  github_owner = var.github_owner_rwdevlead
   # admins       = [var.github_owner_primary]
-  owners = [var.github_owner_primary]
+  owners = [var.github_owner_rwdevlead]
 
   depends_on = [module.rwd_web_react]
-
-  # extra_rules = {
-  #   "/frontend/*" = "dave"
-  #   "/backend/*"  = "eve"
-  # }
 
 }
 
 # create classic branch protection instead of a ruleset
 module "branch_protection_rwd_web_react" {
-  source = "./modules/github-branch-protection"
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-branch-protection"
 
   repository_id = module.rwd_web_react.repository_id
   branch        = "main"
 
-  github_owner = var.github_owner_primary
+  github_owner = var.github_owner_rwdevlead
   # codeowners_admins = [var.github_owner_primary]
   # codeowners_owners = [var.github_owner_primary]
 

@@ -5,13 +5,14 @@
 #   to = module.rwd_numpicker.github_repository.this
 # }
 
+# import {
+#   id = "NumPicker:main"
+#   to = module.branch_protection_numpicker.github_branch_protection.branch
+# }
+
 # create a open repo
 module "rwd_numpicker" {
-  source = "./modules/github-repository"
-
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-repository"
 
   repository_name = "NumPicker"
   description     = "Just a fun lottery number picker - ${local.managed_by}"
@@ -28,37 +29,26 @@ module "rwd_numpicker" {
 
 # Use CODEOWNERS module to manage the CODEOWNERS file
 module "codeowners_numpicker" {
-  source = "./modules/github-codeowners"
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-codeowners"
 
   repository   = module.rwd_numpicker.repository_name
   branch       = "master"
-  github_owner = var.github_owner_primary
+  github_owner = var.github_owner_rwdevlead
   # admins       = [var.github_owner_primary]
-  owners = [var.github_owner_primary]
+  owners = [var.github_owner_rwdevlead]
 
   depends_on = [module.rwd_numpicker]
-
-  # extra_rules = {
-  #   "/frontend/*" = "dave"
-  #   "/backend/*"  = "eve"
-  # }
 
 }
 
 # create classic branch protection instead of a ruleset
 module "branch_protection_numpicker" {
-  source = "./modules/github-branch-protection"
-  providers = {
-    github = github.primary
-  }
+  source = "../../../modules/github/github-branch-protection"
 
   repository_id = module.rwd_numpicker.repository_id
   branch        = "main"
 
-  github_owner = var.github_owner_primary
+  github_owner = var.github_owner_rwdevlead
   # codeowners_admins = [var.github_owner_primary]
   # codeowners_owners = [var.github_owner_primary]
 
@@ -73,5 +63,3 @@ module "branch_protection_numpicker" {
   depends_on = [module.codeowners_numpicker]
 
 }
-
-
