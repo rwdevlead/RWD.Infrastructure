@@ -72,16 +72,12 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
     model = var.network_device_model
   }
 
-
   initialization {
-
-
     user_account {
       keys     = [var.ssh_public_key_content]
       username = "ka8kgj"
       password = "password123"
     }
-
     dns {
       servers = [var.network_gateway, "1.1.1.1"]
     }

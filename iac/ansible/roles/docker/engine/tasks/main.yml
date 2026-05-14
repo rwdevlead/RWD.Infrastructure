@@ -71,3 +71,23 @@
     groups: docker
     append: yes
   loop: "{{ docker_users }}"
+
+- name: DNS | Disable systemd-resolved stub listener
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: "^#?DNSStubListener="
+    line: "DNSStubListener=no"
+  register: resolved_config
+
+- name: DNS | Link resolv.conf to runtime version
+  ansible.builtin.file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+    force: yes
+
+- name: DNS | Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted
+  when: resolved_config.changed

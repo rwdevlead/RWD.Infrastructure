@@ -1,6 +1,6 @@
 ---
 - name: Configure Security Updates, Notifications, and Smart Reboots
-  hosts: ubuntu_hosts
+  hosts: docker_hosts
   become: true
 
   tasks:
@@ -18,6 +18,14 @@
         msg: "{{ upgrade_output.stdout_lines }}"
       when: upgrade_output.changed
       tags: [never, manual_upgrade]
+
+    - name: Install essential storage utilities
+      ansible.builtin.apt:
+        name:
+          - nfs-common
+          - cifs-utils # Good to have if you ever need SMB/CIFS mounts
+        state: present
+        update_cache: yes
 
     - name: Install required notification packages
       apt:

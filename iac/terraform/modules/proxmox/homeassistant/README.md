@@ -1,61 +1,77 @@
 # Home Assistant Module
 
-This Terraform module provisions Home Assistant virtual machines on Proxmox.
+This Terraform module provisions Home Assistant virtual machines on Proxmox using cloud-init.
 
 ## Features
 
-- Creates Home Assistant OS VMs
-- Uses pre-downloaded HA OS image files
-- Configures UEFI boot (required for HA OS)
-- Enables QEMU guest agent
+- Creates Home Assistant VMs on Ubuntu base
+- Cloud-init configuration and customization
+- Configures UEFI boot
+- Enables QEMU guest agent for IP retrieval
 - Supports custom VM specifications
+- Pre-configured for Home Assistant setup
 
 ## Usage
 
 ```hcl
-module "home_assistant" {
-  source = "./modules/homeassistant"
+module "homeassistant" {
+  source = "./modules/proxmox/homeassistant"
 
-  vm_name        = "home-assistant"
-  vm_description = "Home Assistant Smart Home Server"
-  node_name      = "proxmox-node"
-  vm_id          = 200
+  vm_id         = 102
+  vm_name       = "homeassistant"
+  vm_description = "Home Assistant Instance"
+  node_name     = "proxmox"
 
-  vm_cores  = 2
-  vm_memory = 4096
-  vm_disk_size = 32
+  vm_cores      = 2
+  vm_memory     = 4096
+  disk_size     = 32
+
+  efi_storage_id = "local-lvm"
+  disk_storage_id = "local-lvm"
 }
 ```
 
-## Requirements
+## Prerequisites
 
-- Home Assistant OS image file must be placed in the `files/` directory
-- The image should be extracted from the .xz download from the Home Assistant website
-- UEFI boot is required for Home Assistant OS
+- Proxmox node with SSH access
+- Ubuntu template VM available (or use in combination with [template-ubuntu module](../template-ubuntu/))
+- Cloud-init support on Proxmox
 
 ## Notes
 
-- The module uses `proxmox_virtual_environment_file` to upload the local HA image
-- Ensure the image file is named appropriately (e.g., `haos_ova-16.3.img`)
-- The VM is configured with UEFI BIOS as required by HA OS
+- This module creates a Home Assistant VM with basic Ubuntu configuration
+- Cloud-init handles initial setup and customization
+- Guest agent is enabled for IP address retrieval
+- UEFI boot recommended for better hardware support
+- QEMU Q35 machine type for modern features
 
 ## Inputs
 
-| Name           | Description         | Type     | Default  | Required |
-| -------------- | ------------------- | -------- | -------- | -------- |
-| vm_name        | Name of the HA VM   | `string` | n/a      | yes      |
-| vm_description | VM description      | `string` | n/a      | yes      |
-| node_name      | Proxmox node name   | `string` | n/a      | yes      |
-| vm_id          | Unique VM ID        | `number` | n/a      | yes      |
-| vm_cores       | Number of CPU cores | `number` | `2`      | no       |
-| vm_memory      | Memory in MB        | `number` | `2048`   | no       |
-| vm_disk_size   | Disk size in GB     | `number` | `32`     | no       |
-| vm_bios        | BIOS type           | `string` | `"ovmf"` | no       |
-| vm_machine     | Machine type        | `string` | `"q35"`  | no       |
+| Name                   | Description                   | Type     | Default       | Required |
+| ---------------------- | ----------------------------- | -------- | ------------- | -------- |
+| vm_id                  | Unique Proxmox VM ID          | `number` | n/a           | yes      |
+| vm_name                | Name of the HA VM             | `string` | n/a           | yes      |
+| vm_description         | VM description                | `string` | n/a           | yes      |
+| node_name              | Proxmox node name             | `string` | n/a           | yes      |
+| vm_cores               | Number of CPU cores           | `number` | `2`           | no       |
+| vm_memory              | Memory in MB                  | `number` | `2048`        | no       |
+| disk_size              | Disk size in GB               | `number` | `32`          | no       |
+| vm_bios                | BIOS type (ovmf for EFI)      | `string` | `"ovmf"`      | no       |
+| vm_machine             | QEMU machine type             | `string` | `"q35"`       | no       |
+| vm_os                  | OS type for Proxmox           | `string` | `"l26"`       | no       |
+| efi_storage_id         | Storage for EFI partition     | `string` | `"local-lvm"` | no       |
+| disk_interface         | Disk interface type           | `string` | `"virtio0"`   | no       |
+| disk_storage_id        | Storage location for disk     | `string` | `"local-lvm"` | no       |
+| network_bridge         | Network bridge for VM         | `string` | `"vmbr0"`     | no       |
+| ssh_public_key_content | SSH public key for cloud-init | `string` | n/a           | no       |
 
 ## Outputs
 
-| Name         | Description                              |
-| ------------ | ---------------------------------------- |
-| vm           | The Home Assistant virtual machine       |
-| ipv4_address | VM's IPv4 address (requires guest agent) |
+| Name    | Description                |
+| ------- | -------------------------- |
+| vm_id   | The Home Assistant VM ID   |
+| vm_name | The Home Assistant VM name |
+
+---
+
+For production deployment, consider adding health checks and monitoring. See the main infrastructure documentation for deployment patterns.

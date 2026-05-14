@@ -1,6 +1,6 @@
 ---
 - name: Deploy Traefik
-  hosts: docker_hosts
+  hosts: dev-docker-01
   become: true
 
   roles:

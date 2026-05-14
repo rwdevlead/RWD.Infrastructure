@@ -8,7 +8,6 @@
     data_disk: "/dev/sdb"
     wipe_existing_pool: false
     datasets:
-      - { path: "tank/docker", type: "nfs" }
       - { path: "tank/iso", type: "nfs" }
       - { path: "tank/backups", type: "nfs" }
       - { path: "tank/media/music", type: "smb" } # Nested structure

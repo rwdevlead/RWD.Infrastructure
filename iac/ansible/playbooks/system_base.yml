@@ -9,7 +9,7 @@
   #     ssh_key: "ssh-rsa AAAA..." # Put actual public key here
 
   roles:
-    - base/hostname
-    # - base/users
-    - base/security
-    # - base/ssh
+    - system_base/hostname
+    # - system_base/users
+    - system_base/security
+    # - system_base/ssh

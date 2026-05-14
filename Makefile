@@ -178,23 +178,34 @@ ansible-config: ## Display current Ansible configuration settings
 
 base-check: ## Dry-run: Review base system configuration (hostname, security, fail2ban)
 	ansible-playbook iac/ansible/playbooks/base.yml \
-		-i iac/ansible/inventories/docker.yml \
+		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
 base: ## Deploy base system configuration (hostname, security, fail2ban)
 	ansible-playbook iac/ansible/playbooks/base.yml \
-		-i iac/ansible/inventories/docker.yml
+		-i iac/ansible/inventories/hosts.yml
+
+# === System Updates & Maintenance ===
+
+run-upgrade: ## Execute full system upgrade on all packages with optional reboot (tag: manual_upgrade)
+	ansible-playbook iac/ansible/playbooks/system_updates.yml \
+		-i iac/ansible/inventories/hosts.yml --tags "manual_upgrade" --limit prod-docker-01
+
+setup-updates: ## Configure unattended security updates, email alerts, and smart reboots
+	ansible-playbook iac/ansible/playbooks/system_updates.yml \
+		-i iac/ansible/inventories/hosts.yml
 
 # === Docker Platform Setup ===
 
 docker-check: ## Dry-run: Review Docker platform setup (NFS mounts, engine, compose)
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
 		--check --diff
 
 docker: ## Deploy Docker platform (NFS mounts, engine, compose)
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
+		--limit dev-docker-01 -v
 
 # === Storage Configuration for NAS ===
 
@@ -211,12 +222,12 @@ storage: ## Deploy storage configuration
 
 traefik-check: ## Dry-run: Review Traefik reverse proxy configuration
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/traefik.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
 		--check --diff
 
 traefik: ## Deploy Traefik reverse proxy for container routing
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/traefik.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml
 
 # === Container Management & Orchestration ===
 
@@ -242,12 +253,13 @@ mailrise: ## Deploy Mailrise email notification service
 
 pihole-check: ## Dry-run: Review Pi-hole DNS/ad-blocker deployment
 	ansible-playbook iac/ansible/playbooks/pihole.yml \
-		-i iac/ansible/inventories/docker.yml \
+		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
 pihole: ## Deploy Pi-hole DNS and ad-blocking service
 	ansible-playbook iac/ansible/playbooks/pihole.yml \
-		-i iac/ansible/inventories/docker.yml
+		-i iac/ansible/inventories/hosts.yml 
+# 		--limit prod-docker-01
 
 homepage-check: ## Dry-run: Review Homepage dashboard deployment
 	ansible-playbook iac/ansible/playbooks/homepage.yml \
@@ -267,15 +279,6 @@ watchtower: ## Deploy Watchtower automated container updates service
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \
 		-i iac/ansible/inventories/docker.yml
 
-# === System Updates & Maintenance ===
-
-setup-updates: ## Configure unattended security updates, email alerts, and smart reboots
-	ansible-playbook iac/ansible/playbooks/system_updates.yml \
-		-i iac/ansible/inventories/ubuntu.yml
-
-run-upgrade: ## Execute full system upgrade on all packages with optional reboot (tag: manual_upgrade)
-	ansible-playbook iac/ansible/playbooks/system_updates.yml \
-		-i iac/ansible/inventories/ubuntu.yml --tags "manual_upgrade"
 
 # === NAS Storage Configuration ===
 

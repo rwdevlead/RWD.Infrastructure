@@ -3,4 +3,4 @@
   hosts: docker-vm01
   become: true
   roles:
-    - storage/nfs
+    - truenas/nfs

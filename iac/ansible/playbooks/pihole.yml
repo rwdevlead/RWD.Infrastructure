@@ -1,6 +1,23 @@
 - name: Deploy Pi-hole
   hosts: docker_hosts
   become: true
+  pre_tasks:
+    - name: Verify TrueNAS NFS share exists
+      shell: "showmount -e 192.168.50.13 | grep -q '/mnt/tank/docker/{{ inventory_hostname }}'"
+      register: nfs_check
+      ignore_errors: true
+      changed_when: false
+      check_mode: false
+
+    - name: Fail if NFS share is missing
+      fail:
+        msg: |
+          STOP! The NFS share for {{ inventory_hostname }} was not found on TrueNAS.
+          1. Go to TrueNAS Web UI.
+          2. Create Dataset: /mnt/tank/docker/{{ inventory_hostname }}
+          3. Create NFS Share for that path.
+          4. Re-run this playbook.
+      when: nfs_check.rc != 0
 
   roles:
     - apps/pihole

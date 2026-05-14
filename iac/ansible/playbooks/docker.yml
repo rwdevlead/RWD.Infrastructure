@@ -4,6 +4,7 @@
   become: true
 
   roles:
+    - system_base/hostname
     - docker/nfs-mounts
     - docker/engine
     - docker/compose

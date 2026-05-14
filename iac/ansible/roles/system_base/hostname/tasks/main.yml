@@ -1,4 +1,10 @@
 ---
+- name: DNS | Disable Cloud-Init hostname management
+  ansible.builtin.copy:
+    content: "preserve_hostname: true"
+    dest: /etc/cloud/cloud.cfg.d/99_preserve_hostname.cfg
+    mode: "0644"
+
 - name: Check current hostname
   ansible.builtin.command: hostnamectl --static
   register: current_hostname
@@ -7,6 +13,13 @@
 - name: Set hostname if different (safe)
   ansible.builtin.hostname:
     name: "{{ new_hostname }}"
+  when: current_hostname.stdout != new_hostname
+
+- name: Persist hostname in /etc/hostname file
+  ansible.builtin.copy:
+    content: "{{ new_hostname }}\n"
+    dest: /etc/hostname
+    mode: "0644"
   when: current_hostname.stdout != new_hostname
 
 - name: Ensure /etc/hosts has updated hostname

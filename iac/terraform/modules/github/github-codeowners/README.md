@@ -1,13 +1,14 @@
 # GitHub CODEOWNERS Module
 
-This Terraform module creates and manages CODEOWNERS files in GitHub repositories.
+This Terraform module creates and manages CODEOWNERS files in GitHub repositories for automated code owner review enforcement.
 
 ## Features
 
 - Automatically generates CODEOWNERS content
 - Supports global owners (admins and owners teams)
-- Allows additional ownership rules for specific paths
-- Creates the .github/CODEOWNERS file in the repository
+- Allows path-specific ownership rules
+- Creates the `.github/CODEOWNERS` file in the repository
+- Integrates with GitHub's code review requirements
 
 ## Usage
 
@@ -15,15 +16,15 @@ This Terraform module creates and manages CODEOWNERS files in GitHub repositorie
 module "codeowners" {
   source = "./modules/github-codeowners"
 
-  repository = "org/repo-name"
+  repository = "my-org/my-repo"
   branch     = "main"
 
-  admins = ["org/admins"]
-  owners = ["org/owners"]
+  admins = ["my-org/admins"]
+  owners = ["my-org/owners"]
 
   extra_rules = {
-    "/frontend/*" = "org/frontend-team"
-    "/backend/*"  = "org/backend-team"
+    "/frontend/*" = "@my-org/frontend-team"
+    "/backend/*"  = "@my-org/backend-team"
   }
 }
 ```
@@ -33,28 +34,53 @@ module "codeowners" {
 ```
 # CODEOWNERS
 # Automatically managed by Terraform.
+# Do not edit manually.
+
 # Global owners
-* @org/admins
-* @org/owners
+* @my-org/admins
+* @my-org/owners
 
 # Additional ownership rules
-/frontend/* @org/frontend-team
-/backend/* @org/backend-team
+/frontend/* @my-org/frontend-team
+/backend/* @my-org/backend-team
+```
+
+## How It Works
+
+1. Module accepts lists of admin and owner teams
+2. Generates CODEOWNERS file content
+3. Looks up user IDs for the specified teams
+4. Creates the `.github/CODEOWNERS` file in the repository
+
+## Integration with Branch Protection
+
+Use with [github-branch-protection](../github-branch-protection/) module to enforce code owner reviews:
+
+```hcl
+module "branch_protection" {
+  source = "./modules/github-branch-protection"
+
+  repository_id            = module.repository.repository_name
+  require_code_owner_reviews = true  # Enforces CODEOWNERS review
+}
 ```
 
 ## Inputs
 
-| Name        | Description                    | Type           | Default  | Required |
-| ----------- | ------------------------------ | -------------- | -------- | -------- |
-| repository  | GitHub repository name         | `string`       | n/a      | yes      |
-| branch      | Branch to create the file in   | `string`       | `"main"` | no       |
-| admins      | List of admin usernames/teams  | `list(string)` | `[]`     | no       |
-| owners      | List of owner usernames/teams  | `list(string)` | `[]`     | no       |
-| extra_rules | Map of path patterns to owners | `map(string)`  | `{}`     | no       |
+| Name         | Description                               | Type           | Default  | Required |
+| ------------ | ----------------------------------------- | -------------- | -------- | -------- |
+| repository   | Repository name (org/repo)                | `string`       | n/a      | yes      |
+| branch       | Branch to create the file in              | `string`       | `"main"` | no       |
+| github_owner | GitHub organization or user               | `string`       | n/a      | yes      |
+| admins       | List of admin team slugs (GitHub handles) | `list(string)` | `[]`     | no       |
+| owners       | List of owner team slugs (GitHub handles) | `list(string)` | `[]`     | no       |
+| extra_rules  | Map of path patterns to owners            | `map(string)`  | `{}`     | no       |
+
+**Note:** Team slugs should include the organization prefix, e.g., `@org/team-name`.
 
 ## Outputs
 
-| Name            | Description                          |
-| --------------- | ------------------------------------ |
-| codeowners_file | The created CODEOWNERS file resource |
-| all_owners      | List of all unique owners referenced |
+| Name               | Description                       |
+| ------------------ | --------------------------------- |
+| codeowners_content | Rendered CODEOWNERS file content  |
+| owner_ids          | Map of owner user IDs by username |

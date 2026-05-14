@@ -4,64 +4,113 @@ This Terraform module creates Ubuntu VM templates on Proxmox using cloud-init fo
 
 ## Features
 
-- Provisions Ubuntu VMs from cloud images
-- Configures cloud-init for user setup and package installation
-- Prepares VMs for template conversion
-- Supports UEFI boot configuration
+- Provisions Ubuntu VMs from official cloud images
+- Cloud-init for SSH key injection and configuration
+- Flexible template or VM mode operation
+- UEFI boot support (EFI)
+- Configurable hardware (CPU, RAM, disk)
+- Optional automatic startup
+- Tag support for organization
+
+## Workflow
+
+1. **Provision** (template_mode=false):
+   - Terraform creates VM from cloud image
+   - Cloud-init runs for initial setup
+   - VM boots and prepares for sealing
+   -
+2. **Seal**:
+   - Run external cleanup scripts via `make cleanup-vm`
+   - Clears logs, SSH keys, machine-id
+   - Prepares for templating
+
+3. **Convert** (template_mode=true):
+   - Update module to set `template_mode = true`
+   - Run `terraform apply`
+   - Terraform stops VM and converts to template
+
+4. **Clone**: Use [clone-vm module](../clone-vm/) to create VMs from template
 
 ## Usage
 
 ```hcl
+# Step 1: Create as VM for sealing
 module "ubuntu_template" {
-  source = "./modules/template-ubuntu"
+  source = "./modules/proxmox/template-ubuntu"
 
-  node_name = "proxmox-node"
-  vm_id     = 9000
-  vm_name   = "ubuntu-template"
+  vm_id         = 901
+  vm_name       = "ubuntu-2404-template"
+  node_name     = "proxmox"
+  template_mode = false  # Initially create as VM
+  vm_startup    = false
 
-  vm_cores  = 2
-  vm_memory = 4096
+  vm_cores      = 2
+  vm_memory     = 4096
+  disk_size     = 20
+
+  iso_url               = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+  iso_checksum          = "d8f7f427a53c221feee90d47ca008d89237e206a2d4935c98b84eefdbf52f41d"
+  iso_checksum_algorithm = "sha256"
+
+  ssh_public_key_content = file("~/.ssh/id_ed25519.pub")
+
+  tags = ["template", "linux"]
 }
+
+# After sealing:
+# Step 2: Convert to template
+# Update to template_mode = true, then apply again
 ```
-
-## Workflow
-
-1. **Provision**: Terraform creates a "Base VM" from a cloud image
-2. **Initialize**: Cloud-init installs the Guest Agent and sets up SSH keys
-3. **Seal**: Use external scripts to clean the VM and convert to template
-4. **Convert**: The VM becomes a read-only template for cloning
 
 ## Prerequisites
 
-- SSH agent with loaded keys for Proxmox access
-- Passwordless SSH access to Proxmox host as root
-- Public key configured in cloud-init for VM access
+- SSH access to Proxmox host
+- SSH public key for cloud-init injection
+- Ubuntu cloud image available (ISO) or URL accessible
 
 ## Important Notes
 
-- Include `ignore_changes = [template, started]` in lifecycle blocks
-- The module creates VMs in writable state initially
-- External scripts handle the sealing and templating process
+- **Initial Creation**: Set `template_mode = false` and `vm_startup = false`
+- **Sealing**: Run `make cleanup-vm` from project root after VM boot
+- **Template Conversion**: Set `template_mode = true` and apply
+- **No Guest Agent**: Cloud images don't include guest agent initially
+- **Cloud-init**: Handles SSH key injection for secure access
+
+## Template Sealing
+
+Before converting to template, the sealing process:
+
+- Clears system logs (`/var/log/*`)
+- Removes SSH host keys
+- Clears machine-id for unique identifiers on clones
+- Prepares filesystem for templating
 
 ## Inputs
 
-| Name                  | Description           | Type           | Default      | Required |
-| --------------------- | --------------------- | -------------- | ------------ | -------- |
-| node_name             | Proxmox node name     | `string`       | n/a          | yes      |
-| vm_id                 | Template VM ID        | `number`       | n/a          | yes      |
-| vm_name               | VM/template name      | `string`       | `"template"` | no       |
-| vm_os                 | Operating system type | `string`       | `"l26"`      | no       |
-| vm_bios               | BIOS type             | `string`       | `"ovmf"`     | no       |
-| vm_machine            | Machine type          | `string`       | `"q35"`      | no       |
-| vm_cores              | CPU cores             | `number`       | `2`          | no       |
-| vm_memory             | Memory in MB          | `number`       | `2048`       | no       |
-| efi_storage_id        | EFI storage location  | `string`       | n/a          | yes      |
-| disk_storage_id       | Disk storage location | `string`       | n/a          | yes      |
-| disk_size             | Disk size in GB       | `number`       | `20`         | no       |
-| cloud_init_storage_id | Cloud-init storage    | `string`       | n/a          | yes      |
-| cloud_init_user       | Cloud-init username   | `string`       | n/a          | yes      |
-| cloud_init_ssh_keys   | SSH public keys       | `list(string)` | n/a          | yes      |
-| cloud_init_packages   | Packages to install   | `list(string)` | `[]`         | no       |
+| Name                   | Description                      | Type           | Default        | Required |
+| ---------------------- | -------------------------------- | -------------- | -------------- | -------- |
+| vm_id                  | Unique Proxmox VM ID             | `number`       | n/a            | yes      |
+| vm_name                | VM/template name                 | `string`       | n/a            | yes      |
+| node_name              | Proxmox node name                | `string`       | n/a            | yes      |
+| template_mode          | Convert to template (true/false) | `bool`         | `true`         | no       |
+| vm_startup             | Auto-start on Proxmox boot       | `bool`         | `false`        | no       |
+| vm_cores               | CPU cores                        | `number`       | `2`            | no       |
+| vm_memory              | Memory in MB                     | `number`       | `4096`         | no       |
+| efi_storage_id         | Storage for EFI partition        | `string`       | `"local-lvm"`  | no       |
+| vm_bios                | BIOS type (ovmf for EFI)         | `string`       | `"ovmf"`       | no       |
+| vm_machine             | QEMU machine type                | `string`       | `"q35"`        | no       |
+| vm_os                  | OS type for Proxmox              | `string`       | `"l26"`        | no       |
+| disk_size              | Disk size in GB                  | `number`       | `20`           | no       |
+| disk_interface         | Disk interface type              | `string`       | `"virtio0"`    | no       |
+| disk_storage_id        | Storage location for disk        | `string`       | `"local-lvm"`  | no       |
+| network_bridge         | Network bridge for VM            | `string`       | `"vmbr0"`      | no       |
+| iso_target             | Storage pool for ISO             | `string`       | `"local"`      | no       |
+| iso_url                | URL to Ubuntu cloud image        | `string`       | Ubuntu noble   | no       |
+| iso_checksum           | SHA256 checksum of cloud image   | `string`       | Noble checksum | no       |
+| iso_checksum_algorithm | Checksum algorithm               | `string`       | `"sha256"`     | no       |
+| ssh_public_key_content | SSH public key for cloud-init    | `string`       | n/a            | yes      |
+| keyboard               | Keyboard layout                  | `string`       | `"en-us"`      | no       |
+| tags                   | Resource tags                    | `list(string)` | `[]`           | no       |
 
 ## Outputs
 
@@ -72,4 +121,4 @@ module "ubuntu_template" {
 
 ---
 
-This module works in conjunction with external scripts for the template sealing process. See the main Terraform README for template creation workflows.
+See the [main Terraform README](../../../README.md#proxmox-template-creation-workflow) for detailed template creation workflow.

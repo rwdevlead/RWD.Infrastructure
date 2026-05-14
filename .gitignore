@@ -19,6 +19,13 @@ tfplan
 *.tfplan
 plan.out
 *.plan
+**/*.terraform
+*.tfstate.backup
+*.tfvars
+*.tfplan
+*.tfout
+*.tflock
+*.terraform.lock.*
 
 # ==========================================================
 # Packer
@@ -34,18 +41,12 @@ output-*/
 # ==========================================================
 # Ansible
 # ==========================================================
-roles/*
-!roles/requirements.yml
-collections/*
-!collections/requirements.yml
+# Ignore Ansible-generated files and cache, but track role/collection definitions
 .vault_pass
-inventory/*
-!inventory/example.ini
-!inventory/group_vars/example.yml
-*.retry
+**/*.retry
 .ansible/fact-cache/
-ansible.cfg
-!roles/*/
+# Note: ansible.cfg, roles/, collections/, and inventories/ are tracked in git
+# These contain the infrastructure-as-code definitions and should be committed
 
 # ==========================================================
 # Environment
@@ -53,6 +54,9 @@ ansible.cfg
 .env
 .env.*
 !.env.example
+env/
+!env/**/.example
+!env/*.example
 
 # ==========================================================
 # Editor / IDE
@@ -60,8 +64,9 @@ ansible.cfg
 .vscode/
 *.code-workspace
 .vscode-test/
-.DS_Store
-Thumbs.db
+**/.DS_Store
+**/Thumbs.db
+.bfg-report/
 
 # ==========================================================
 # AI AGENT / ASSISTANT GENERATED FILES
@@ -83,8 +88,10 @@ Thumbs.db
 /agent_*/       # covers /agent_runs/, /agents/, etc.
 
 # GitHub Copilot (Workspace / Agent)
-.github/copilot-*
-.copilot*/      # covers .copilot/, copilot-chat/, etc.
+# NOTE: DO NOT ignore copilot-instructions.md or .instructions.md - these are configuration files
+# that should be tracked in git. Only ignore runtime caches and artifacts.
+.copilot/       # Cache directory only, not instructions
+.copilot-chat/  # Chat history cache
 
 # Cursor IDE
 /.cursor*/       # covers .cursor/, .cursor-history/, .cursordb/, cursor-cache/

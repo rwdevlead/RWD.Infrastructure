@@ -8,3 +8,9 @@
   ansible.builtin.command: docker compose version
   register: docker_compose_version
   changed_when: false
+
+- name: Ensure standard external Docker networks exist
+  community.docker.docker_network:
+    name: traefik
+    state: present
+    driver: bridge

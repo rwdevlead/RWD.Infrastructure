@@ -1,0 +1,17 @@
+# Docker/Network Settings
+shared_docker_api_version: "1.44"
+shared_docker_network: "traefik"
+
+# Security Defaults
+security_fail2ban_enabled: true
+security_sysctl_enabled: true
+security_firewall_enabled: true
+ssh_port: 22
+
+# Global Docker Info
+docker_users:
+  - ka8kgj
+nfs_mounts:
+  - path: "/mnt/docker"
+    src: "192.168.50.13:/mnt/tank/docker/{{ inventory_hostname }}"
+    opts: "rw,soft,intr"

@@ -41,7 +41,22 @@ http:
 {% endfor %}
       service: {{ pve.name }}
 {% endfor %}
+    pihole-prod:      
+      entryPoints:
+        - "websecure"
+        - "websecure"
+      rule: "Host(`pihole-p01.local.rwdevs.com`)"
+      middlewares:
+        - https-redirectscheme
+        - pihole-redirect      
+      tls:
+        certResolver: "cloudflare"
+      service: "pihole-prod-service"
   services:
+    pihole-prod-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.50.14:8888"
 {% for pve in proxmox_instances %}
     {{ pve.name }}:
       loadBalancer:
@@ -58,6 +73,10 @@ http:
       redirectScheme:
         scheme: https
         permanent: true
+    pihole-redirect:
+      redirectRegex:
+        regex: "^https://pihole-p01.local.rwdevs.com/$$"
+        replacement: "https://pihole-p01.local.rwdevs.com/admin/"
     default-headers:
       headers:
         frameDeny: true

@@ -2,7 +2,7 @@ services:
   pihole:
     container_name: {{ pihole_container_name }}
     image: {{ pihole_image }}
-    hostname: pihole
+    hostname: {{ pihole_container_name }}
     restart: unless-stopped
 
     networks:
