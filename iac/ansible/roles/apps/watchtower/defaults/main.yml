@@ -6,5 +6,5 @@ watchtower_monitor_only: true
 watchtower_cleanup: true
 watchtower_email_from: watchtower@rwdevs.com
 watchtower_email_to: alerts@mailrise.xyz
-watchtower_email_server: mailrise
+watchtower_email_server: mailrise.local.rwdevs.com
 watchtower_email_port: "8025"

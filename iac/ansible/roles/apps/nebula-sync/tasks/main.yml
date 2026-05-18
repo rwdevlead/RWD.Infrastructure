@@ -1,0 +1,44 @@
+---
+- name: Deploy Nebula Sync Container (Pi-hole Dual-Instance Synchronizer)
+  community.docker.docker_container:
+    name: "nebula-sync"
+    image: "ghcr.io/lovelaze/nebula-sync:v0.11.2"
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "{{ shared_docker_network }}"
+    env:
+      # --- REQUIRED CORE PARAMS ---
+      PRIMARY: "{{ nebula_sync_primary_node }}|{{ nebula_sync_primary_token }}"
+      REPLICAS: "{{ nebula_sync_replica_node }}|{{ nebula_sync_replica_token }}"
+      FULL_SYNC: "true"
+
+      # --- SCHEDULING & RUNTIME ---
+      RUN_GRAVITY: "false"
+      CRON: "0 * * * *" # Explicitly runs at the top of every hour
+      TZ: "America/New_York"
+
+      # --- HTTP CLIENT ENGINE SPECS ---
+      CLIENT_SKIP_TLS_VERIFICATION: "false"
+      CLIENT_RETRY_DELAY_SECONDS: "1"
+      CLIENT_TIMEOUT_SECONDS: "20"
+
+      # --- EXPLICIT FEATURE COUPLING (Disabled due to FULL_SYNC=true) ---
+      SYNC_CONFIG_DNS: "false"
+      SYNC_CONFIG_DHCP: "false"
+      SYNC_CONFIG_NTP: "false"
+      SYNC_CONFIG_RESOLVER: "false"
+      SYNC_CONFIG_DATABASE: "false"
+      SYNC_CONFIG_MISC: "false"
+      SYNC_CONFIG_DEBUG: "false"
+      SYNC_GRAVITY_DHCP_LEASES: "false"
+      SYNC_GRAVITY_GROUP: "false"
+      SYNC_GRAVITY_AD_LIST: "false"
+      SYNC_GRAVITY_AD_LIST_BY_GROUP: "false"
+      SYNC_GRAVITY_DOMAIN_LIST: "false"
+      SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP: "false"
+      SYNC_GRAVITY_CLIENT: "false"
+      SYNC_GRAVITY_CLIENT_BY_GROUP: "false"
+
+      # --- WEBHOOK NOTIFICATIONS ---
+      WEBHOOK_CLIENT_SKIP_TLS_VERIFICATION: "false"

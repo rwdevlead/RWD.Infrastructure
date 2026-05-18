@@ -53,7 +53,7 @@ portainer_watchtower_enable: "true"
 # Watchtower
 watchtower_name: watchtower-d01
 watchtower_network: "{{ shared_docker_network }}"
-watchtower_notification_url: "smtp://mailrise-d01:8025/?to={{ mailrise_target_email }}&encryption=none"
+watchtower_email_from: watchtower-d01@rwdevs.com
 
 # Homepage service variables
 homepage_container_name: "homepage-d01"

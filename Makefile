@@ -270,6 +270,16 @@ pihole: ## Deploy Pi-hole DNS and ad-blocking service
 		-i iac/ansible/inventories/hosts.yml 
 # 		--limit prod-docker-01
 
+nebula-check: ## Dry-run: Review Pi-hole Nebula deployment
+	ansible-playbook iac/ansible/playbooks/nebula_sync.yml \
+		-i iac/ansible/inventories/hosts.yml \
+		--check --diff
+
+nebula: ## Deploy Nebula Pi-hole sync service
+	ansible-playbook iac/ansible/playbooks/nebula_sync.yml \
+		-i iac/ansible/inventories/hosts.yml 
+
+
 homepage-check: ## Dry-run: Review Homepage dashboard deployment
 	ansible-playbook iac/ansible/playbooks/homepage.yml \
 		-i iac/ansible/inventories/docker.yml \
@@ -281,12 +291,12 @@ homepage: ## Deploy Homepage dashboard service
 
 watchtower-check: ## Dry-run: Review Watchtower auto-update service
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \
-		-i iac/ansible/inventories/docker.yml \
+		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
 watchtower: ## Deploy Watchtower automated container updates service
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \
-		-i iac/ansible/inventories/docker.yml
+		-i iac/ansible/inventories/hosts.yml
 
 
 # === NAS Storage Configuration ===

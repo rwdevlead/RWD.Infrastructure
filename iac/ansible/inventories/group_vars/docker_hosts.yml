@@ -15,3 +15,14 @@ nfs_mounts:
   - path: "/mnt/docker"
     src: "192.168.50.13:/mnt/tank/docker/{{ inventory_hostname }}"
     opts: "rw,soft,intr"
+
+# --- Nebula Sync Configuration Variables ---
+
+# Core API Endpoint Configuration (Pi-hole v6 App Endpoints)
+nebula_sync_primary_node: "http://192.168.50.14:8888" # Replace with your primary Pi-hole IP/DNS
+nebula_sync_replica_node: "http://192.168.50.12:8888" # Replace with your replica Pi-hole IP/DNS
+
+# Pi-hole API App Passwords
+# Note: Ensure 'webserver.api.app_sudo: true' is set on the replica instance
+nebula_sync_primary_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_PASSWORD') }}"
+nebula_sync_replica_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_PASSWORD') }}"

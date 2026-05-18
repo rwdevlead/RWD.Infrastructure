@@ -1,0 +1,6 @@
+---
+- name: Deploy Nebula Sync Application
+  hosts: prod-docker-01
+  become: true
+  roles:
+    - apps/nebula-sync
