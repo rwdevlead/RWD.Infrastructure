@@ -1,6 +1,6 @@
 ---
 - name: Deploy Mailrise Alerts
-  hosts: docker_hosts
+  hosts: prod-docker-01
   become: true
   roles:
     - apps/mailrise

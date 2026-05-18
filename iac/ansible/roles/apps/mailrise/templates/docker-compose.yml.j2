@@ -4,14 +4,12 @@ services:
     container_name: {{ mailrise_container_name }}
     restart: unless-stopped
     ports:
-      - "{{ mailrise_smtp_port }}:8025"
+      - "8025:8025"
       - "8081:8080"    
     volumes:
       - "{{ mailrise_data_dir }}/config/mailrise.conf:/etc/mailrise.conf:ro"
     command: ["/etc/mailrise.conf"]
     environment:
-      - MAILRISE_GUI_ENABLED=true  # Note: It's GUI, not WEB
-      - MAILRISE_GUI_PORT=8080
       - PYTHONUNBUFFERED=1
     networks:
       - {{ shared_docker_network }}

@@ -4,6 +4,10 @@ services:
     container_name: {{ portainer_container_name }}
     restart: unless-stopped
 
+    environment:
+      - PORTAINER_ADMIN_SESSIONTIMEOUT={{ portainer_session_timeout }}
+      - SKIP_TLS_CERT_VERIFICATION=true
+
     healthcheck:
       test: ["CMD", "/portainer", "--version"]
       interval: {{ portainer_healthcheck_interval }}

@@ -11,3 +11,15 @@ pihole_base_dir: "/opt/docker/pihole"
 
 # DNS Role: Enable Port 53 binding for production
 pihole_bind_dns: true
+
+# Portainer
+portainer_agent_dir: "/opt/docker/portainer-agent"
+portainer_agent_container_name: "portainer-agent-p01"
+portainer_agent_docker_network: "{{ shared_docker_network }}"
+portainer_agent_port: 9001
+portainer_agent_watchtower_enable: "true"
+
+# Mailrise
+mailrise_ha_host: "192.168.50.14"
+mailrise_target_email: "AlertsRWD@outlook.com"
+mailrise_container_name: mailrise-p01

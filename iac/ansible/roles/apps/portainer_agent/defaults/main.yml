@@ -1,0 +1,5 @@
+---
+portainer_agent_dir: /opt/docker/portainer-agent
+portainer_agent_container_name: portainer-agent
+portainer_agent_port: 9001
+portainer_agent_watchtower_enable: true

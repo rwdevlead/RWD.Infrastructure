@@ -233,23 +233,32 @@ traefik: ## Deploy Traefik reverse proxy for container routing
 
 portainer-check: ## Dry-run: Review Portainer container management deployment
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
+		--check --diff
+
+portainer-agent-check: ## Dry-run: Review Portainer container management deployment
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer_agent.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
 		--check --diff
 
 portainer: ## Deploy Portainer container management platform
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml
+
+portainer-agent: ## Deploy Portainer container management platform
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/portainer_agent.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml
 
 # === Application Services ===
 
 mailrise-check: ## Dry-run: Review Mailrise email notification service
 	ansible-playbook iac/ansible/playbooks/mailrise.yml \
-		-i iac/ansible/inventories/docker.yml \
+		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
 mailrise: ## Deploy Mailrise email notification service
 	ansible-playbook iac/ansible/playbooks/mailrise.yml \
-		-i iac/ansible/inventories/docker.yml
+		-i iac/ansible/inventories/hosts.yml
 
 pihole-check: ## Dry-run: Review Pi-hole DNS/ad-blocker deployment
 	ansible-playbook iac/ansible/playbooks/pihole.yml \
