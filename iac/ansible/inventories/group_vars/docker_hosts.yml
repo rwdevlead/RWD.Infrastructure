@@ -16,7 +16,18 @@ nfs_mounts:
     src: "192.168.50.13:/mnt/tank/docker/{{ inventory_hostname }}"
     opts: "rw,soft,intr"
 
-# --- Nebula Sync Configuration Variables ---
+# --- PiHole and Nebula Sync Configuration Variables ---
+pihole_instances:
+  - name: "pihole-p01"
+    url: "https://pihole-p01.local.rwdevs.com"
+    server: "prod-docker-01"
+    container: "pihole-p01"
+    env_user_pwd: "PIHOLE_P01_PASSWORD"
+  - name: "pihole-d01"
+    url: "https://pihole-d01.local.rwdevs.com"
+    server: "dev-docker-01"
+    container: "pihole-d01"
+    env_user_pwd: "PIHOLE_D01_PASSWORD"
 
 # Core API Endpoint Configuration (Pi-hole v6 App Endpoints)
 nebula_sync_primary_node: "http://192.168.50.14:8888" # Replace with your primary Pi-hole IP/DNS
@@ -24,5 +35,18 @@ nebula_sync_replica_node: "http://192.168.50.12:8888" # Replace with your replic
 
 # Pi-hole API App Passwords
 # Note: Ensure 'webserver.api.app_sudo: true' is set on the replica instance
-nebula_sync_primary_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_PASSWORD') }}"
-nebula_sync_replica_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_PASSWORD') }}"
+nebula_sync_primary_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_P01_PASSWORD') }}"
+nebula_sync_replica_token: "{{ lookup('ansible.builtin.env', 'PIHOLE__D01_PASSWORD') }}"
+
+# --- Proxmox Instances ---
+proxmox_instances:
+  - name: "proxmox"
+    domain: "proxmox.local.rwdevs.com"
+    url: "https://192.168.50.11:8006"
+    env_user_key: "PROXMOX_API_USER"
+    env_token_key: "PROXMOX_API_TOKEN"
+  - name: "pve-p01"
+    domain: "pve-p01.local.rwdevs.com"
+    url: "https://192.168.50.10:8006"
+    env_user_key: "PVE_P01_API_USER"
+    env_token_key: "PVE_P01_API_TOKEN"

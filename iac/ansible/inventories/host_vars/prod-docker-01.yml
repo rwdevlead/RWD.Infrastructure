@@ -1,11 +1,6 @@
 ---
 new_hostname: prod-docker-01
 
-# PiHole configuration
-pihole_container_name: pihole-p01
-pihole_domain: pihole-p01.local.rwdevs.com
-pihole_password: "{{ lookup('ansible.builtin.env', 'PIHOLE_PASSWORD') }}"
-
 # Use local storage for PiHole (NFS file locking issues prevent DNS from working)
 pihole_base_dir: "/opt/docker/pihole"
 

@@ -37,6 +37,7 @@
     owner: root
     group: docker
     mode: "0644"
+  notify: Restart Homepage
 
 - name: Deploy homepage favicon
   copy:
@@ -45,11 +46,13 @@
     owner: root
     group: docker
     mode: "0644"
+  notify: Restart Homepage
 
 - name: Deploy docker compose file
   template:
     src: docker-compose.yml.j2
     dest: "{{ homepage_base_dir }}/docker-compose.yml"
+  notify: Restart Homepage
 
 - name: Deploy Homepage configs
   template:
@@ -60,8 +63,10 @@
     - services.yaml.j2
     - bookmarks.yaml.j2
     - widgets.yaml.j2
+    - docker.yaml.j2
   loop_control:
     label: "{{ item }}"
+  notify: Restart Homepage
 
 - name: Start Homepage container
   community.docker.docker_compose_v2:

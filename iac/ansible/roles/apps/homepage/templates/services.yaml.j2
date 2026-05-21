@@ -2,30 +2,27 @@
 # For configuration options and examples, please see:
 # https://gethomepage.dev/configs/services
 
-- Infrastructure:
-    - Portainer:
-        href: https://portainer.yourdomain.com
-        description: Container Management
-
-    - Traefik:
-        href: https://traefik.yourdomain.com
-        description: Reverse Proxy
-
-    - Pi-hole:
-        href: https://pihole.yourdomain.com
-        description: DNS Filtering
 - Network:
-    - Pi-Hole1:
+{% for pihole in pihole_instances %}
+    - {{ pihole.name }}:
         icon: pi-hole.svg
-        href: {{ homepage_var_pihole_url }}
-        description: pi-hole DNS on Docker
-        server: omv-docker # The docker server that was configured
-        container: pihole # The name of the container you'd like to connect
+        href: {{ pihole.url }}
+        description: Pi-hole DNS on Docker
+        server: {{ pihole.server }}
+        container: {{ pihole.container }}
+        siteMonitor: {{ pihole.url }}
+        widget:
+            type: pihole
+            url: {{ pihole.url }}
+            version: 6
+            key: {{ lookup('ansible.builtin.env', pihole.env_user_pwd) }}
+{% endfor %}
     - traefik:
         icon: traefik.svg
         href: {{ homepage_var_proxy_url }}
-        server: omv-docker # The docker server that was configured
-        container: traefik # The name of the container you'd like to connect
+        server: dev-docker-01 # The docker server that was configured
+        container: traefik-d01 # The name of the container you'd like to connect
+        siteMonitor: {{ homepage_var_proxy_url }}
         description: Reverse Proxy
         widget:
             type: traefik
@@ -33,7 +30,7 @@
             # username: admin # optional
             # password: {{ homepage_var_proxy_password }}
 
-- Local Services:
+- Local Servers:
 {% for pve in proxmox_instances %}
     - {{ pve.name }}:
         icon: proxmox.svg
@@ -61,18 +58,7 @@
             key: {{ homepage_var_truenas_key }} # not required if using username / password
             enablePools: true # optional, defaults to false
             nasType: scale # defaults to scale, must be set to 'core' if using enablePools with TrueNAS Core
-    - OMV:
-        statusStyle: "basic"
-        icon: openmediavault.svg
-        href: {{ homepage_var_omv_url }}
-        description: Open Media Vault
-        siteMonitor: {{ homepage_var_omv_url }}
-        widget:
-            type: openmediavault
-            url: {{ homepage_var_omv_url }}
-            username: {{ homepage_var_omv_usr }}
-            password: {{ homepage_var_omv_pwd }}
-            method: services.getStatus # required
+- Containers:
     - portainer-dev:
         statusStyle: "basic"
         icon: portainer.svg
@@ -88,3 +74,38 @@
             env: 3
             key: {{ homepage_var_portainer_dev_key }}
             #key: ptr_FdP+k0xwP+qyvRHknVfcOr4+P33j35FZ9I97UqXuqSQ=
+
+- IoT:
+    # - Watchtower:
+        # icon: watchtower.svg
+        # href: https://portainer.yourdomain.com # Link it back to your management view
+        # description: Automated Container Updates
+        # server: dev-docker-01
+        # container: watchtower # Matches the container_name value
+    - Nebula Sync:
+        icon: mdi-sync # Uses standard Material Design Icons
+        description: Pi-hole Database Synchronizer
+        server: prod-docker-01
+        container: nebula-sync
+        # Optional: Tells Homepage to verify the container background health state
+        siteMonitor: http://192.168.50.14:8888/api/auth 
+    # - Mailrise Gateway:
+        # icon: mdi-email-alert
+        # href: mailto:alert@yourdomain.com
+        # description: SMTP Notification Routing Engine
+        # siteMonitor: http://192.168.50.12:8025 # Verifies the port responds to raw socket hooks
+    - Home Assistant:
+        icon: home-assistant.svg
+        href: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
+        description: Home Automation System
+        widget:
+          type: homeassistant
+          url: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
+          key: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}"
+          # Standard quick summaries:
+          fields: ["lights_on", "switches_on", "people_home"]
+          # Custom entity tracks (Optional: remove or swap to your actual sensors):
+          # custom:
+          #   - state: sensor.total_power
+          #     label: Total Power
+

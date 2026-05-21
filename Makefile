@@ -282,12 +282,12 @@ nebula: ## Deploy Nebula Pi-hole sync service
 
 homepage-check: ## Dry-run: Review Homepage dashboard deployment
 	ansible-playbook iac/ansible/playbooks/homepage.yml \
-		-i iac/ansible/inventories/docker.yml \
+		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
 homepage: ## Deploy Homepage dashboard service
 	ansible-playbook iac/ansible/playbooks/homepage.yml \
-		-i iac/ansible/inventories/docker.yml
+		-i iac/ansible/inventories/hosts.yml
 
 watchtower-check: ## Dry-run: Review Watchtower auto-update service
 	ansible-playbook iac/ansible/playbooks/watchtower.yml \
