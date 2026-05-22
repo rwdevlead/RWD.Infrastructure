@@ -16,7 +16,14 @@
             url: {{ pihole.url }}
             version: 6
             key: {{ lookup('ansible.builtin.env', pihole.env_user_pwd) }}
+            fields: ["queries", "blocked", "blocked_percent", "gravity"]
 {% endfor %}
+    - nebula-sync:
+        icon: mdi-sync # Uses standard Material Design Icons
+        description: Pi-hole Database Synchronizer
+        server: prod-docker-01
+        container: nebula-sync
+        siteMonitor: http://192.168.50.14:8888/api/auth 
     - traefik:
         icon: traefik.svg
         href: {{ homepage_var_proxy_url }}
@@ -43,8 +50,9 @@
             # Using your existing global user/key for all nodes
             username: "{{ lookup('ansible.builtin.env', pve.env_user_key) }}"
             password: "{{ lookup('ansible.builtin.env', pve.env_token_key) }}"
+            fields: ["vms", "lxc", "resources.cpu", "resources.mem"]
 {% endfor %}
-    - TrueNAS:
+    - truenas-d01:
         statusStyle: "basic"
         icon: truenas.svg
         href: {{ homepage_var_truenas_url }}
@@ -53,57 +61,73 @@
         widget:
             type: truenas
             url: {{ homepage_var_truenas_url }}
+            version: 2
             # username: user # not required if using api key
             # password: pass # not required if using api key
             key: {{ homepage_var_truenas_key }} # not required if using username / password
             enablePools: true # optional, defaults to false
             nasType: scale # defaults to scale, must be set to 'core' if using enablePools with TrueNAS Core
+            fields: ["load", "uptime", "alerts"]
 - Containers:
     - portainer-dev:
         statusStyle: "basic"
         icon: portainer.svg
-        href: {{ homepage_var_portainer_dev_url }}
-        #href: https://192.168.50.14:9443
+        server: dev-docker-01 
+        href: {{ homepage_var_portainer_d01_url }}
         description: Container Management 
-        siteMonitor: {{ homepage_var_portainer_dev_url }}
-        #siteMonitor: https://192.168.50.14:9443
+        siteMonitor: {{ homepage_var_portainer_d01_url }}
         widget:
             type: portainer
-            #url: https://192.168.50.14:9443
-            url: {{ homepage_var_portainer_dev_url }}
+            url: {{ homepage_var_portainer_d01_url }}
             env: 3
-            key: {{ homepage_var_portainer_dev_key }}
-            #key: ptr_FdP+k0xwP+qyvRHknVfcOr4+P33j35FZ9I97UqXuqSQ=
+            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}" 
+    - dev-docker-01:
+        icon: docker.svg
+        description: Development Docker Environment
+        widget:
+            type: portainer
+            url: {{ homepage_var_portainer_d01_url }}
+            env: 3
+            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}"
+    - prod-docker-01:
+        icon: docker.svg
+        description: Production Docker Environment
+        widget:
+            type: portainer
+            url: {{ homepage_var_portainer_d01_url }}
+            env: 7
+            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}"
+
+    - watchtower-d01:
+        icon: watchtower.svg
+        description: Automated Container Updates
+        server: dev-docker-01
+        container: watchtower-d01
+    - watchtower-p01:
+        icon: watchtower.svg
+        description: Automated Container Updates
+        server: prod-docker-01
+        container: watchtower-p01
+
+    - Mailrise Gateway:
+        icon: mdi-email-alert
+        # href: mailto:alert@yourdomain.com
+        description: SMTP Notification Routing Engine
+        # siteMonitor: http://192.168.50.12:8025 # Verifies the port responds to raw socket hooks
+        server: prod-docker-01
+        container: mailrise-p01
 
 - IoT:
-    # - Watchtower:
-        # icon: watchtower.svg
-        # href: https://portainer.yourdomain.com # Link it back to your management view
-        # description: Automated Container Updates
-        # server: dev-docker-01
-        # container: watchtower # Matches the container_name value
-    - Nebula Sync:
-        icon: mdi-sync # Uses standard Material Design Icons
-        description: Pi-hole Database Synchronizer
-        server: prod-docker-01
-        container: nebula-sync
-        # Optional: Tells Homepage to verify the container background health state
-        siteMonitor: http://192.168.50.14:8888/api/auth 
-    # - Mailrise Gateway:
-        # icon: mdi-email-alert
-        # href: mailto:alert@yourdomain.com
-        # description: SMTP Notification Routing Engine
-        # siteMonitor: http://192.168.50.12:8025 # Verifies the port responds to raw socket hooks
     - Home Assistant:
         icon: home-assistant.svg
-        href: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
+        #href: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
         description: Home Automation System
         widget:
           type: homeassistant
-          url: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
-          key: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}"
+          #url: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
+          #key: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}"
           # Standard quick summaries:
-          fields: ["lights_on", "switches_on", "people_home"]
+          #fields: ["lights_on", "switches_on", "people_home"]
           # Custom entity tracks (Optional: remove or swap to your actual sensors):
           # custom:
           #   - state: sensor.total_power
