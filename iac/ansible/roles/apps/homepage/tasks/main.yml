@@ -16,7 +16,7 @@
 
 - name: Ensure public images directory exists
   file:
-    path: "{{ homepage_config_dir }}/public/images"
+    path: "{{ homepage_base_dir }}/public/images"
     state: directory
     owner: root
     group: docker
@@ -24,7 +24,7 @@
 
 - name: Ensure public icons directory exists
   file:
-    path: "{{ homepage_config_dir }}/public/icons"
+    path: "{{ homepage_base_dir }}/public/icons"
     state: directory
     owner: root
     group: docker
@@ -33,7 +33,7 @@
 - name: Deploy homepage logo
   copy:
     src: RWDevs-NuGet.png
-    dest: "{{ homepage_config_dir }}/public/images/RWDevs-NuGet.png"
+    dest: "{{ homepage_base_dir }}/public/images/RWDevs-NuGet.png"
     owner: root
     group: docker
     mode: "0644"
@@ -42,7 +42,7 @@
 - name: Deploy homepage favicon
   copy:
     src: favicon.ico
-    dest: "{{ homepage_config_dir }}/public/icons/favicon.ico"
+    dest: "{{ homepage_base_dir }}/public/icons/favicon.ico"
     owner: root
     group: docker
     mode: "0644"

@@ -5,7 +5,7 @@
 homepage_version: latest
 
 # Base directory on host where Homepage will live
-homepage_base_dir: /opt/containers/homepage
+homepage_base_dir: /opt/homepage
 
 # Config directory inside base directory
 homepage_config_dir: "{{ homepage_base_dir }}/config"
