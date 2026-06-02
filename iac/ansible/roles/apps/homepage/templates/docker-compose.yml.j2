@@ -10,6 +10,7 @@ services:
       - PROXMOX_API_TOKEN={{ lookup('ansible.builtin.env', 'PROXMOX_API_TOKEN') }}
       - PVE_P01_API_USER={{ lookup('ansible.builtin.env', 'PVE_P01_API_USER') }}
       - PVE_P01_API_TOKEN={{ lookup('ansible.builtin.env', 'PVE_P01_API_TOKEN') }}
+      - HOMEASSISTANT_TOKEN={{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}
     volumes:
       - ./config:/app/config
       - ./public:/app/public

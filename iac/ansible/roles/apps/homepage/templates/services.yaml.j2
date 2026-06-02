@@ -35,7 +35,7 @@
             type: traefik
             url: {{ homepage_var_proxy_url }}
             # username: admin # optional
-            # password: {{ homepage_var_proxy_password }}
+            # password: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PROXY_PASSWORD') }}"
 
 - Local Servers:
 {% for pve in proxmox_instances %}
@@ -64,7 +64,7 @@
             version: 2
             # username: user # not required if using api key
             # password: pass # not required if using api key
-            key: {{ homepage_var_truenas_key }} # not required if using username / password
+            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_TRUENAS_D01_KEY') }}"  # not required if using username / password
             enablePools: true # optional, defaults to false
             nasType: scale # defaults to scale, must be set to 'core' if using enablePools with TrueNAS Core
             fields: ["load", "uptime", "alerts"]
@@ -120,16 +120,20 @@
 - IoT:
     - Home Assistant:
         icon: home-assistant.svg
-        #href: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
+        href: {{ homepage_var_homepage_url }}
         description: Home Automation System
         widget:
           type: homeassistant
-          #url: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_URL') }}"
-          #key: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}"
-          # Standard quick summaries:
-          #fields: ["lights_on", "switches_on", "people_home"]
-          # Custom entity tracks (Optional: remove or swap to your actual sensors):
-          # custom:
-          #   - state: sensor.total_power
-          #     label: Total Power
+          url: {{ homepage_var_homepage_url }}
+          key: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}"
+          custom:
+            - state: sensor.system_monitor_processor_use
+              label: CPU
+              unit: "%"
+            - state: sensor.system_monitor_memory_usage
+              label: RAM
+              unit: "%"
+            - state: sensor.system_monitor_disk_usage
+              label: Disk
+              unit: "%"
 

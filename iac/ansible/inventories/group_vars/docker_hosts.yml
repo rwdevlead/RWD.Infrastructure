@@ -9,6 +9,7 @@ security_firewall_enabled: true
 ssh_port: 22
 
 # Global Docker Info
+docker_base_dir: /opt/docker
 docker_users:
   - ka8kgj
 nfs_mounts:
