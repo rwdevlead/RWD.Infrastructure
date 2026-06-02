@@ -44,19 +44,31 @@ http:
     pihole-prod:      
       entryPoints:
         - "websecure"
-        - "websecure"
       rule: "Host(`pihole-p01.local.rwdevs.com`)"
       middlewares:
-        - https-redirectscheme
+        - default-headers
         - pihole-redirect      
       tls:
         certResolver: "cloudflare"
       service: "pihole-prod-service"
+    ha-router:
+      entryPoints:
+        - "websecure"
+      rule: "Host(`ha.local.rwdevs.com`)"
+      middlewares:
+        - default-headers
+      tls:
+        certResolver: "cloudflare"
+      service: "ha-service"
   services:
     pihole-prod-service:
       loadBalancer:
         servers:
           - url: "http://192.168.50.14:8888"
+    ha-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.50.15:8123"
 {% for pve in proxmox_instances %}
     {{ pve.name }}:
       loadBalancer:

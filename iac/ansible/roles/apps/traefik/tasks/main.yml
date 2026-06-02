@@ -31,6 +31,7 @@
     src: dynamic.yml.j2
     dest: "{{ traefik_data_dir }}/config/dynamic.yml"
     mode: "0644"
+  notify: Restart Traefik
 
 - name: Render Traefik docker-compose.yml
   ansible.builtin.template:

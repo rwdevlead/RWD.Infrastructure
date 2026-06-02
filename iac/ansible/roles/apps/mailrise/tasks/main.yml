@@ -15,8 +15,7 @@
   ansible.builtin.assert:
     that:
       - mailrise_icloud_pass != ""
-      - mailrise_ha_token != ""
-    fail_msg: "ERROR: Make sure ICLOUD_PASS and HA_TOKEN are defined in your .env file!"
+    fail_msg: "ERROR: Make sure mailrise_icloud_pass are defined in your .env file!"
 
 - name: Render Mailrise config
   ansible.builtin.template:

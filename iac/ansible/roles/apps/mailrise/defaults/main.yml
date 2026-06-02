@@ -8,8 +8,6 @@ mailrise_data_dir: "/mnt/docker/mailrise"
 # Use the exact variable names from your .env file
 mailrise_icloud_user: "{{ lookup('env', 'ICLOUD_MAIL_USER') }}"
 mailrise_icloud_pass: "{{ lookup('env', 'ICLOUD_MAIL_PASS') }}"
-mailrise_ha_token: "{{ lookup('env', 'HA_TOKEN') }}"
+mailrise_icloud_from: "{{ lookup('env', 'ICLOUD_MAIL_FROM') }}"
 
-# Non-sensitive defaults
-mailrise_target_email: "AlertsRWD@outlook.com"
-mailrise_ha_host: "192.168.50.14" # Or your HA IP
+mailrise_target_email: "{{ lookup('env', 'MAILRISE_EMAIL_DEST') }}"
