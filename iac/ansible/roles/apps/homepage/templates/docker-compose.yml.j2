@@ -6,6 +6,8 @@ services:
     environment:
       - TZ={{ homepage_timezone }}
       - HOMEPAGE_ALLOWED_HOSTS={{ homepage_domain }}
+      - HOMEPAGE_VAR_PROC=/host/proc
+      - HOMEPAGE_VAR_SYS=/host/sys
       - PROXMOX_API_USER={{ lookup('ansible.builtin.env', 'PROXMOX_API_USER') }}
       - PROXMOX_API_TOKEN={{ lookup('ansible.builtin.env', 'PROXMOX_API_TOKEN') }}
       - PVE_P01_API_USER={{ lookup('ansible.builtin.env', 'PVE_P01_API_USER') }}
@@ -13,8 +15,10 @@ services:
       - HOMEASSISTANT_TOKEN={{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}
     volumes:
       - ./config:/app/config
-      - ./public:/app/public
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/app/host:ro
+      - ./public/images:/app/public/icons 
+      - ./public/images/favicon.ico:/app/public/favicon.ico 
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.homepage.rule=Host(`{{ homepage_domain }}`)"

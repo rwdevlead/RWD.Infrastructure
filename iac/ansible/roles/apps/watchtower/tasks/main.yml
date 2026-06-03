@@ -2,21 +2,28 @@
   community.docker.docker_container:
     name: "{{ watchtower_name }}"
     image: "{{ watchtower_image }}"
+    recreate: true
     restart_policy: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: >
-      {% if watchtower_cleanup %} --cleanup {% endif %}
-      --label-enable
-      {% if watchtower_monitor_only %} --monitor-only {% endif %}
-      --schedule "{{ watchtower_schedule }}"
+    command:
+      - "{{ watchtower_cleanup | ternary('--cleanup', '') }}"
+      - "--label-enable"
+      - "{{ watchtower_monitor_only | ternary('--monitor-only', '') }}"
+      - "--schedule"
+      - "{{ watchtower_schedule }}"
     env:
+      TZ: America/New_York
       DOCKER_API_VERSION: "{{ shared_docker_api_version }}"
       WATCHTOWER_NOTIFICATIONS: email
       WATCHTOWER_NOTIFICATION_EMAIL_FROM: "{{ watchtower_email_from }}"
       WATCHTOWER_NOTIFICATION_EMAIL_TO: "{{ watchtower_email_to }}"
       WATCHTOWER_NOTIFICATION_EMAIL_SERVER: "{{ watchtower_email_server }}"
       WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: "{{ watchtower_email_port }}"
+      WATCHTOWER_HTTP_API_METRICS: "true"
+      WATCHTOWER_HTTP_API_TOKEN: "{{ lookup('ansible.builtin.env', 'WATCHTOWER_TOKEN') }}"
+    ports:
+      - "8082:8080"
     labels:
       com.centurylinklabs.watchtower.enable: "false"
     networks:

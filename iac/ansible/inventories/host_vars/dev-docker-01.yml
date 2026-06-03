@@ -50,4 +50,5 @@ homepage_var_truenas_url: "https://truenas-d01.local.rwdevs.com"
 
 homepage_var_portainer_d01_url: "https://portainer-d01.local.rwdevs.com"
 
-homepage_var_homepage_url: "http://ha.local.rwdevs.com"
+homepage_var_homepage_href: "http://ha.local.rwdevs.com"
+homepage_var_homepage_url: "http://192.168.50.15:8123"

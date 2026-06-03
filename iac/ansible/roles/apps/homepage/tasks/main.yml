@@ -4,7 +4,7 @@
     state: directory
     owner: root
     group: docker
-    mode: "0755"
+    mode: "0777"
 
 - name: Create config directory
   file:
@@ -12,23 +12,23 @@
     state: directory
     owner: root
     group: docker
-    mode: "0755"
+    mode: "0777"
 
 - name: Ensure public images directory exists
   file:
-    path: "{{ homepage_base_dir }}/public/images"
+    path: "{{ homepage_config_dir }}/images"
     state: directory
     owner: root
     group: docker
-    mode: "0755"
+    mode: "0777"
 
 - name: Ensure public icons directory exists
   file:
-    path: "{{ homepage_base_dir }}/public/icons"
+    path: "{{ homepage_config_dir }}/icons"
     state: directory
     owner: root
     group: docker
-    mode: "0755"
+    mode: "0777"
 
 - name: Deploy homepage logo
   copy:
@@ -36,16 +36,16 @@
     dest: "{{ homepage_base_dir }}/public/images/RWDevs-NuGet.png"
     owner: root
     group: docker
-    mode: "0644"
+    mode: "0666"
   notify: Restart Homepage
 
 - name: Deploy homepage favicon
   copy:
     src: favicon.ico
-    dest: "{{ homepage_base_dir }}/public/icons/favicon.ico"
+    dest: "{{ homepage_base_dir }}/public/images/favicon.ico"
     owner: root
     group: docker
-    mode: "0644"
+    mode: "0666"
   notify: Restart Homepage
 
 - name: Deploy docker compose file

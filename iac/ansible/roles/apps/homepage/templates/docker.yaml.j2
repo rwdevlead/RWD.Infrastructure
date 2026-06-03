@@ -1,6 +1,8 @@
 dev-docker-01:
-    socket: /var/run/docker.sock  # Keeps it local and secure via the volume mount
+  socket: /var/run/docker.sock
 
 prod-docker-01:
-    host: 192.168.50.14
-    port: 2375
+  type: portainer
+  url: {{ homepage_var_portainer_d01_url }}
+  env: 7
+  key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}"

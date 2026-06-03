@@ -9,8 +9,8 @@
         href: {{ pihole.url }}
         description: Pi-hole DNS on Docker
         server: {{ pihole.server }}
-        #container: {{ pihole.container }}
-        #siteMonitor: {{ pihole.url }}
+        container: {{ pihole.container }}
+        siteMonitor: {{ pihole.url }}
         widget:
             type: pihole
             url: {{ pihole.url }}
@@ -21,6 +21,8 @@
     - nebula-sync:
         icon: mdi-sync # Uses standard Material Design Icons
         description: Pi-hole Database Synchronizer
+        server: prod-docker-01
+        container: nebula-sync
         siteMonitor: http://192.168.50.14:8888/api/auth 
     - traefik:
         icon: traefik.svg
@@ -70,10 +72,9 @@
     - portainer-dev:
         statusStyle: "basic"
         icon: portainer.svg
+        server: dev-docker-01 
         href: {{ homepage_var_portainer_d01_url }}
         description: Container Management 
-        server: dev-docker-01
-        container: portainer-d01
         siteMonitor: {{ homepage_var_portainer_d01_url }}
         widget:
             type: portainer
@@ -83,8 +84,6 @@
     - dev-docker-01:
         icon: docker.svg
         description: Development Docker Environment
-        server: dev-docker-01
-        container: portainer-d01
         widget:
             type: portainer
             url: {{ homepage_var_portainer_d01_url }}
@@ -93,7 +92,6 @@
     - prod-docker-01:
         icon: docker.svg
         description: Production Docker Environment
-        ping: 192.168.50.14
         widget:
             type: portainer
             url: {{ homepage_var_portainer_d01_url }}
@@ -105,31 +103,25 @@
         description: Automated Container Updates
         server: dev-docker-01
         container: watchtower-d01
-        siteMonitor: {{ homepage_var_portainer_d01_url }}
-        widget:
-            type: watchtower
-            url: http://192.168.50.12:8082
-            key: "{{ lookup('ansible.builtin.env', 'WATCHTOWER_TOKEN') }}"
     - watchtower-p01:
         icon: watchtower.svg
         description: Automated Container Updates
-        ping: 192.168.50.14
-        widget:
-            type: watchtower
-            url: http://192.168.50.14:8082
-            key: "{{ lookup('ansible.builtin.env', 'WATCHTOWER_TOKEN') }}"
+        server: prod-docker-01
+        container: watchtower-p01
 
     - Mailrise Gateway:
         icon: mdi-email-alert
+        # href: mailto:alert@yourdomain.com
         description: SMTP Notification Routing Engine
-        ping: mailrise.local.rwdevs.com
+        # siteMonitor: http://192.168.50.12:8025 # Verifies the port responds to raw socket hooks
+        server: prod-docker-01
+        container: mailrise-p01
 
 - IoT:
     - Home Assistant:
         icon: home-assistant.svg
-        href: {{ homepage_var_homepage_href }}
+        href: {{ homepage_var_homepage_url }}
         description: Home Automation System
-        siteMonitor: http://192.168.50.15:8123
         widget:
           type: homeassistant
           url: {{ homepage_var_homepage_url }}
