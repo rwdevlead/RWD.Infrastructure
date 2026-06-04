@@ -1,8 +1,3 @@
 dev-docker-01:
   socket: /var/run/docker.sock
 
-prod-docker-01:
-  type: portainer
-  url: {{ homepage_var_portainer_d01_url }}
-  env: 7
-  key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}"

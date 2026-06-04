@@ -12,7 +12,7 @@ Deploys Homepage using Docker Compose.
 
 | Variable      | Description  |
 | ------------- | ------------ |
-| homepage_port | Port exposed |
+| homepage.port | Port exposed |
 
 ## Notes
 

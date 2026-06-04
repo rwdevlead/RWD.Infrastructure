@@ -7,21 +7,3 @@ homepage_base_dir: "{{ docker_base_dir }}/homepage"
 
 # Config directory inside base directory
 homepage_config_dir: "{{ homepage_base_dir }}/config"
-
-# Port Homepage listens on inside container
-homepage_port: 3000
-
-# Timezone for container
-homepage_timezone: "America/New_York"
-
-# Domain for Traefik routing (must exist in inventory/group_vars)
-homepage_domain: "homepage.local.rwdevs.com"
-
-# homepage_var_proxy_url: "https://traefik-d01.local.rwdevs.com"
-# homepage_var_proxy_password: "{{ lookup('env', 'HOMEPAGE_PROXY_PASSWORD') }}"
-
-# homepage_var_truenas_url: "https://truenas.local.rwdevs.com"
-# homepage_var_truenas_key: "{{ lookup('env', 'HOMEPAGE_TRUENAS_D01_KEY') }}"
-
-# homepage_var_portainer_dev_url: "https://portainer-dev.local.rwdevs.com"
-# homepage_var_portainer_dev_key: "{{ lookup('env', 'HOMEPAGE_PORTAINER_DEV_KEY') }}"

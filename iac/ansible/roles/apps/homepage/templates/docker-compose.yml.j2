@@ -4,8 +4,8 @@ services:
     container_name: {{ homepage_container_name }}
     restart: unless-stopped
     environment:
-      - TZ={{ homepage_timezone }}
-      - HOMEPAGE_ALLOWED_HOSTS={{ homepage_domain }}
+      - TZ={{ shared_timezone }}
+      - HOMEPAGE_ALLOWED_HOSTS={{ homepage.domain }}
       - HOMEPAGE_VAR_PROC=/host/proc
       - HOMEPAGE_VAR_SYS=/host/sys
       - PROXMOX_API_USER={{ lookup('ansible.builtin.env', 'PROXMOX_API_USER') }}
@@ -21,10 +21,10 @@ services:
       - ./public/images/favicon.ico:/app/public/favicon.ico 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.homepage.rule=Host(`{{ homepage_domain }}`)"
+      - "traefik.http.routers.homepage.rule=Host(`{{ homepage.domain }}`)"
       - "traefik.http.routers.homepage.entrypoints=websecure"
       - "traefik.http.routers.homepage.tls=true"
-      - "traefik.http.services.homepage.loadbalancer.server.port={{ homepage_port }}"
+      - "traefik.http.services.homepage.loadbalancer.server.port={{ homepage.port }}"
       - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - traefik

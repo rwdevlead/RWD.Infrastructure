@@ -77,7 +77,7 @@
 
 - name: Wait for Homepage to respond via Traefik
   uri:
-    url: "https://{{ homepage_domain }}"
+    url: "https://{{ homepage.domain }}"
     status_code: 200
     validate_certs: false
   register: homepage_health

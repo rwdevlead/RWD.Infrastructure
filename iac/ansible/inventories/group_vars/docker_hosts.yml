@@ -1,6 +1,5 @@
-# Docker/Network Settings
-shared_docker_api_version: "1.44"
-shared_docker_network: "traefik"
+# Global Settings
+shared_timezone: "America/New_York"
 
 # Security Defaults
 security_fail2ban_enabled: true
@@ -9,6 +8,8 @@ security_firewall_enabled: true
 ssh_port: 22
 
 # Global Docker Info
+shared_docker_api_version: "1.44"
+shared_docker_network: "traefik"
 docker_base_dir: /opt/docker
 docker_users:
   - ka8kgj
@@ -30,6 +31,7 @@ pihole_instances:
     container: "pihole-d01"
     env_user_pwd: "PIHOLE_D01_PASSWORD"
 
+nebula_sync_url: "http://192.168.50.14:8888/api/auth"
 # Core API Endpoint Configuration (Pi-hole v6 App Endpoints)
 nebula_sync_primary_node: "http://192.168.50.14:8888" # Replace with your primary Pi-hole IP/DNS
 nebula_sync_replica_node: "http://192.168.50.12:8888" # Replace with your replica Pi-hole IP/DNS
@@ -51,3 +53,51 @@ proxmox_instances:
     url: "https://192.168.50.10:8006"
     env_user_key: "PVE_P01_API_USER"
     env_token_key: "PVE_P01_API_TOKEN"
+
+watchtower_instances:
+  - name: watchtower-d01
+    server: dev-docker-01
+    container: watchtower-d01
+    widget:
+      url: http://192.168.50.12:8082
+      key_env: WATCHTOWER_TOKEN
+  - name: watchtower-p01
+    ping: 192.168.50.14
+    widget:
+      url: http://192.168.50.14:8082
+      key_env: WATCHTOWER_TOKEN
+
+portainer_instance:
+  url: "https://portainer-d01.local.rwdevs.com"
+
+portainer_agents:
+  - name: dev-docker-01
+    description: Development Docker Environment
+    server: dev-docker-01
+    container: portainer-d01
+    widget:
+      url: "{{ portainer_instance.url }}"
+      env: 3
+      key_env: HOMEPAGE_PORTAINER_D01_KEY
+  - name: prod-docker-01
+    description: Production Docker Environment
+    ping: 192.168.50.14
+    widget:
+      url: "{{ portainer_instance.url }}"
+      env: 7
+      key_env: HOMEPAGE_PORTAINER_D01_KEY
+
+mailrise:
+  domain: "mailrise.local.rwdevs.com"
+
+truenas:
+  url: "https://truenas-d01.local.rwdevs.com"
+
+homepage:
+  domain: "homepage-d01.local.rwdevs.com"
+  port: 3000
+
+homeassistant:
+  url: "http://192.168.50.15:8123"
+  href: "http://ha.local.rwdevs.com"
+  domain: "ha.local.rwdevs.com"

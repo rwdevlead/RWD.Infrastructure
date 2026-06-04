@@ -1,12 +1,6 @@
 ---
 new_hostname: prod-docker-01
 
-# Use local storage for PiHole (NFS file locking issues prevent DNS from working)
-pihole_base_dir: "/opt/docker/pihole"
-
-# DNS Role: Enable Port 53 binding for production
-pihole_bind_dns: true
-
 # Portainer
 portainer_agent_dir: "/opt/docker/portainer-agent"
 portainer_agent_container_name: "portainer-agent-p01"

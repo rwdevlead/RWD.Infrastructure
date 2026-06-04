@@ -21,17 +21,17 @@
     - nebula-sync:
         icon: mdi-sync # Uses standard Material Design Icons
         description: Pi-hole Database Synchronizer
-        siteMonitor: http://192.168.50.14:8888/api/auth 
+        siteMonitor: {{ nebula_sync_url }}
     - traefik:
         icon: traefik.svg
-        href: {{ homepage_var_proxy_url }}
+        href: {{ traefik_dashboard_url }}
         server: dev-docker-01 # The docker server that was configured
         container: traefik-d01 # The name of the container you'd like to connect
-        siteMonitor: {{ homepage_var_proxy_url }}
+        siteMonitor: {{ traefik_dashboard_url }}
         description: Reverse Proxy
         widget:
             type: traefik
-            url: {{ homepage_var_proxy_url }}
+            url: {{ traefik_dashboard_url }}
             # username: admin # optional
             # password: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PROXY_PASSWORD') }}"
 
@@ -53,12 +53,12 @@
     - truenas-d01:
         statusStyle: "basic"
         icon: truenas.svg
-        href: {{ homepage_var_truenas_url }}
+        href: {{ truenas.url }}
         description: backups on NAS
-        siteMonitor: {{ homepage_var_truenas_url }}
+        siteMonitor: {{ truenas.url }}
         widget:
             type: truenas
-            url: {{ homepage_var_truenas_url }}
+            url: {{ truenas.url }}
             version: 2
             # username: user # not required if using api key
             # password: pass # not required if using api key
@@ -70,69 +70,70 @@
     - portainer-dev:
         statusStyle: "basic"
         icon: portainer.svg
-        href: {{ homepage_var_portainer_d01_url }}
+        href: {{ portainer_instance.url }}
         description: Container Management 
         server: dev-docker-01
         container: portainer-d01
-        siteMonitor: {{ homepage_var_portainer_d01_url }}
+        siteMonitor: {{ portainer_instance.url }}
         widget:
             type: portainer
-            url: {{ homepage_var_portainer_d01_url }}
+            url: {{ portainer_instance.url }}
             env: 3
             key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}" 
-    - dev-docker-01:
-        icon: docker.svg
-        description: Development Docker Environment
-        server: dev-docker-01
-        container: portainer-d01
-        widget:
-            type: portainer
-            url: {{ homepage_var_portainer_d01_url }}
-            env: 3
-            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}"
-    - prod-docker-01:
-        icon: docker.svg
-        description: Production Docker Environment
-        ping: 192.168.50.14
-        widget:
-            type: portainer
-            url: {{ homepage_var_portainer_d01_url }}
-            env: 7
-            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}"
 
-    - watchtower-d01:
+{% for portainer in portainer_agents %}
+    - {{ portainer.name }}:
+        icon: docker.svg
+        description: {{ portainer.description }}
+{% if portainer.server is defined %}
+        server: {{ portainer.server }}
+{% endif %}
+{% if portainer.container is defined %}
+        container: {{ portainer.container }}
+{% endif %}
+{% if portainer.ping is defined %}
+        ping: {{ portainer.ping }}
+{% endif %}
+        widget:
+            type: portainer
+            url: {{ portainer.widget.url }}
+            env: {{ portainer.widget.env }}
+            key: "{{ lookup('ansible.builtin.env', portainer.widget.key_env) }}"
+{% endfor %}
+
+{% for watchtower in watchtower_instances %}
+    - {{ watchtower.name }}:
         icon: watchtower.svg
         description: Automated Container Updates
-        server: dev-docker-01
-        container: watchtower-d01
-        siteMonitor: {{ homepage_var_portainer_d01_url }}
+{% if watchtower.server is defined %}
+        server: {{ watchtower.server }}
+{% endif %}
+{% if watchtower.container is defined %}
+        container: {{ watchtower.container }}
+{% endif %}
+{% if watchtower.ping is defined %}
+        ping: {{ watchtower.ping }}
+{% endif %}
         widget:
             type: watchtower
-            url: http://192.168.50.12:8082
-            key: "{{ lookup('ansible.builtin.env', 'WATCHTOWER_TOKEN') }}"
-    - watchtower-p01:
-        icon: watchtower.svg
-        description: Automated Container Updates
-        ping: 192.168.50.14
-        widget:
-            type: watchtower
-            url: http://192.168.50.14:8082
-            key: "{{ lookup('ansible.builtin.env', 'WATCHTOWER_TOKEN') }}"
+            url: {{ watchtower.widget.url }}
+            key: "{{ lookup('ansible.builtin.env', watchtower.widget.key_env) }}"
+{% endfor %}
 
     - Mailrise Gateway:
         icon: mdi-email-alert
         description: SMTP Notification Routing Engine
-        ping: mailrise.local.rwdevs.com
+        ping: {{ mailrise.domain }}
 
 - IoT:
     - Home Assistant:
         icon: home-assistant.svg
-        href: {{ homepage_var_homepage_href }}
+        href: {{ homeassistant.href }}
         description: Home Automation System
-        siteMonitor: http://192.168.50.15:8123
+        siteMonitor: {{ homeassistant.url }}
         widget:
           type: homeassistant
-          url: {{ homepage_var_homepage_url }}
+          url: {{ homeassistant.url }}
           key: "{{ lookup('ansible.builtin.env', 'HOMEASSISTANT_TOKEN') }}"
           custom:
             - state: sensor.system_monitor_processor_use
