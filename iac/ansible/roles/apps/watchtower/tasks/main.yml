@@ -1,6 +1,6 @@
 - name: Deploy Watchtower (notify-only, self-monitoring)
   community.docker.docker_container:
-    name: "{{ watchtower_name }}"
+    name: "{{ watchtower_instances[inventory_hostname].name }}"
     image: "{{ watchtower_image }}"
     recreate: true
     restart_policy: unless-stopped
@@ -13,13 +13,13 @@
       - "--schedule"
       - "{{ watchtower_schedule }}"
     env:
-      TZ: America/New_York
+      TZ: "{{ shared_timezone }}"
       DOCKER_API_VERSION: "{{ shared_docker_api_version }}"
       WATCHTOWER_NOTIFICATIONS: email
-      WATCHTOWER_NOTIFICATION_EMAIL_FROM: "{{ watchtower_email_from }}"
-      WATCHTOWER_NOTIFICATION_EMAIL_TO: "{{ watchtower_email_to }}"
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: "{{ watchtower_email_server }}"
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: "{{ watchtower_email_port }}"
+      WATCHTOWER_NOTIFICATION_EMAIL_FROM: "{{ watchtower_instances[inventory_hostname].email }}"
+      WATCHTOWER_NOTIFICATION_EMAIL_TO: "{{ mailrise.email }}"
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: "{{ mailrise.domain }}"
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: "{{ 'mailrise.port' }}"
       WATCHTOWER_HTTP_API_METRICS: "true"
       WATCHTOWER_HTTP_API_TOKEN: "{{ lookup('ansible.builtin.env', 'WATCHTOWER_TOKEN') }}"
     ports:
@@ -27,5 +27,5 @@
     labels:
       com.centurylinklabs.watchtower.enable: "false"
     networks:
-      - name: "{{ watchtower_network }}"
+      - name: "{{ shared_docker_network }}"
     state: started

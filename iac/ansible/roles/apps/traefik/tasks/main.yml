@@ -23,7 +23,7 @@
 
 - name: Ensure Traefik docker network exists
   community.docker.docker_network:
-    name: "{{ traefik_network }}"
+    name: "{{ shared_docker_network }}"
     state: present
 
 - name: Render Traefik dynamic config
@@ -51,7 +51,7 @@
 
 - name: Wait for Traefik container to be healthy
   community.docker.docker_container_info:
-    name: "{{ traefik_container_name }}"
+    name: "{{ traefik_instance.name }}"
   register: traefik_container
   until:
     - traefik_container.container is defined

@@ -3,7 +3,7 @@
 # https://gethomepage.dev/configs/services
 
 - Network:
-{% for pihole in pihole_instances %}
+{% for host, pihole in pihole_instances.items() %}
     - {{ pihole.name }}:
         icon: pi-hole.svg
         href: {{ pihole.url }}
@@ -24,14 +24,14 @@
         siteMonitor: {{ nebula_sync_url }}
     - traefik:
         icon: traefik.svg
-        href: {{ traefik_dashboard_url }}
-        server: dev-docker-01 # The docker server that was configured
-        container: traefik-d01 # The name of the container you'd like to connect
-        siteMonitor: {{ traefik_dashboard_url }}
+        href: {{ traefik_instance.url }}
+        server: {{ traefik_instance.server }}
+        container: {{ traefik_instance.container }}
+        siteMonitor: {{ traefik_instance.url }}
         description: Reverse Proxy
         widget:
             type: traefik
-            url: {{ traefik_dashboard_url }}
+            url: {{ traefik_instance.url }}
             # username: admin # optional
             # password: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PROXY_PASSWORD') }}"
 
@@ -81,7 +81,7 @@
             env: 3
             key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}" 
 
-{% for portainer in portainer_agents %}
+{% for host, portainer in portainer_agents.items() %}
     - {{ portainer.name }}:
         icon: docker.svg
         description: {{ portainer.description }}
@@ -101,7 +101,7 @@
             key: "{{ lookup('ansible.builtin.env', portainer.widget.key_env) }}"
 {% endfor %}
 
-{% for watchtower in watchtower_instances %}
+{% for host, watchtower in watchtower_instances.items() %}
     - {{ watchtower.name }}:
         icon: watchtower.svg
         description: Automated Container Updates

@@ -1,5 +1,4 @@
 mailrise_image: "yoryan/mailrise"
-mailrise_container_name: mailrise
 mailrise_tag: "1.4.0"
 
 mailrise_base_dir: "/opt/mailrise"
@@ -9,5 +8,4 @@ mailrise_data_dir: "/mnt/docker/mailrise"
 mailrise_icloud_user: "{{ lookup('env', 'ICLOUD_MAIL_USER') }}"
 mailrise_icloud_pass: "{{ lookup('env', 'ICLOUD_MAIL_PASS') }}"
 mailrise_icloud_from: "{{ lookup('env', 'ICLOUD_MAIL_FROM') }}"
-
 mailrise_target_email: "{{ lookup('env', 'MAILRISE_EMAIL_DEST') }}"

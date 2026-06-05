@@ -1,7 +1,7 @@
 services:
   mailrise:
     image: "{{ mailrise_image }}:{{ mailrise_tag }}"
-    container_name: "{{ mailrise_container_name }}"
+    container_name: "{{ mailrise.name }}"
     restart: unless-stopped
     ports:
       - "8025:8025"

@@ -1,7 +1,7 @@
 services:
   portainer:
     image: {{ portainer_image }}:{{ portainer_tag }}
-    container_name: {{ portainer_container_name }}
+    container_name: {{ portainer_instance.container }}
     restart: unless-stopped
 
     environment:
@@ -20,7 +20,7 @@ services:
       - {{ portainer_data_dir }}:/data
 
     networks:
-      - {{ portainer_docker_network }}
+      - {{ shared_docker_network }}
 
     labels:
       - "traefik.enable=true"
@@ -28,7 +28,7 @@ services:
       - "com.centurylinklabs.watchtower.enable={{ portainer_watchtower_enable }}"
 
       # Traefik Router
-      - "traefik.http.routers.portainer.rule=Host(`{{ portainer_domain }}`)"
+      - "traefik.http.routers.portainer.rule=Host(`{{ portainer_instance.domain }}`)"
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.tls.certresolver=cloudflare"
       - "traefik.http.routers.portainer.tls=true"
@@ -37,5 +37,5 @@ services:
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
 
 networks:
-  {{ portainer_docker_network }}:
+  {{ shared_docker_network }}:
     external: true

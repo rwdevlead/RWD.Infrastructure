@@ -8,9 +8,10 @@ security_firewall_enabled: true
 ssh_port: 22
 
 # Global Docker Info
-shared_docker_api_version: "1.44"
+shared_docker_api_version: "1.52"
 shared_docker_network: "traefik"
 docker_base_dir: /opt/docker
+docker_base_mnt: /mnt/docker
 docker_users:
   - ka8kgj
 nfs_mounts:
@@ -20,12 +21,16 @@ nfs_mounts:
 
 # --- PiHole and Nebula Sync Configuration Variables ---
 pihole_instances:
-  - name: "pihole-p01"
+  prod-docker-01:
+    name: "pihole-p01"
+    domain: pihole-p01.local.rwdevs.com
     url: "https://pihole-p01.local.rwdevs.com"
     server: "prod-docker-01"
     container: "pihole-p01"
     env_user_pwd: "PIHOLE_P01_PASSWORD"
-  - name: "pihole-d01"
+  dev-docker-01:
+    name: "pihole-d01"
+    domain: pihole-d01.local.rwdevs.com
     url: "https://pihole-d01.local.rwdevs.com"
     server: "dev-docker-01"
     container: "pihole-d01"
@@ -41,6 +46,15 @@ nebula_sync_replica_node: "http://192.168.50.12:8888" # Replace with your replic
 nebula_sync_primary_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_P01_PASSWORD') }}"
 nebula_sync_replica_token: "{{ lookup('ansible.builtin.env', 'PIHOLE__D01_PASSWORD') }}"
 
+# traefik
+traefik_instance:
+  name: "traefik-d01"
+  domain: "traefik-d01.local.rwdevs.com"
+  server: dev-docker-01
+  container: traefik-d01
+  url: "https://traefik-d01.local.rwdevs.com"
+  env_token_key: "CF_DNS_API_TOKEN"
+
 # --- Proxmox Instances ---
 proxmox_instances:
   - name: "proxmox"
@@ -55,13 +69,17 @@ proxmox_instances:
     env_token_key: "PVE_P01_API_TOKEN"
 
 watchtower_instances:
-  - name: watchtower-d01
+  dev-docker-01:
+    name: watchtower-d01
+    email: watchtower-d01@rwdevs.com
     server: dev-docker-01
     container: watchtower-d01
     widget:
       url: http://192.168.50.12:8082
       key_env: WATCHTOWER_TOKEN
-  - name: watchtower-p01
+  prod-docker-01:
+    name: watchtower-p01
+    email: watchtower-p01@rwdevs.com
     ping: 192.168.50.14
     widget:
       url: http://192.168.50.14:8082
@@ -69,9 +87,12 @@ watchtower_instances:
 
 portainer_instance:
   url: "https://portainer-d01.local.rwdevs.com"
+  container: portainer-d01
+  domain: portainer-d01.local.rwdevs.com
 
 portainer_agents:
-  - name: dev-docker-01
+  dev-docker-01:
+    name: portainer-d01
     description: Development Docker Environment
     server: dev-docker-01
     container: portainer-d01
@@ -79,16 +100,20 @@ portainer_agents:
       url: "{{ portainer_instance.url }}"
       env: 3
       key_env: HOMEPAGE_PORTAINER_D01_KEY
-  - name: prod-docker-01
+  prod-docker-01:
+    name: portainer-agent-p01
     description: Production Docker Environment
     ping: 192.168.50.14
     widget:
       url: "{{ portainer_instance.url }}"
-      env: 7
+      env: 5
       key_env: HOMEPAGE_PORTAINER_D01_KEY
 
 mailrise:
+  name: mailrise-p01
   domain: "mailrise.local.rwdevs.com"
+  email: "email@mailrise.xyz"
+  port: 8025
 
 truenas:
   url: "https://truenas-d01.local.rwdevs.com"

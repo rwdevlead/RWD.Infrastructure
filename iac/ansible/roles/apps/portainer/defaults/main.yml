@@ -1,16 +1,10 @@
 ---
 # Portainer defaults
-
 portainer_image: "portainer/portainer-ce"
 portainer_tag: "latest"
 
-portainer_base_dir: "/opt/portainer"
-portainer_data_dir: "/opt/portainer/data"
-
-portainer_container_name: "portainer"
-portainer_domain: "portainer.local.rwdevs.com"
-
-portainer_docker_network: "traefik"
+portainer_base_dir: "{{ docker_base_dir }}/portainer"
+portainer_data_dir: "{{ docker_base_mnt }}/portainer/data"
 
 portainer_watchtower_enable: "true"
 portainer_healthcheck_interval: "30s"

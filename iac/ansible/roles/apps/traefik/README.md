@@ -5,6 +5,7 @@ Deploys Traefik v3.6.1 reverse proxy on a Docker host using Docker Compose.
 ## Overview
 
 Traefik is configured as a reverse proxy with:
+
 - **HTTP/HTTPS routing** on ports 80/443 with automatic certificate generation
 - **Insecure API dashboard** on port 8080 for monitoring and management
 - **Docker provider** for automatic service discovery via labels
@@ -27,19 +28,19 @@ Traefik is configured as a reverse proxy with:
 
 ## Variables
 
-| Variable                 | Description                                          | Default                |
-| ------------------------ | ---------------------------------------------------- | ---------------------- |
-| traefik_image            | Docker image name                                    | `traefik`              |
-| traefik_tag              | Docker image tag                                     | `v3.6.1`               |
-| traefik_base_dir         | Host path for docker-compose.yml                     | `/opt/traefik`         |
-| traefik_data_dir         | Host path for config and ACME storage                | `/mnt/docker/traefik`  |
-| traefik_volumes_dir      | Host path for persistent data/custom files           | `/mnt/docker/traefik/volumes` |
-| traefik_logs_dir         | Host path for Traefik logs                           | `/mnt/docker/traefik/logs` |
-| traefik_network          | Docker network name for Traefik                      | `traefik`              |
-| traefik_dashboard_domain | Hostname for Traefik dashboard                       | `proxy.local.rwdevs.com` |
-| traefik_acme_email       | Email for ACME certificate registration             | `srdevlead@outlook.com` |
-| traefik_acme_resolver    | ACME resolver name (Cloudflare)                      | `cloudflare`           |
-| cloudflare_dns_api_token | Cloudflare API token for DNS-01 challenges          | From env var `CF_DNS_API_TOKEN` |
+| Variable                 | Description                                | Default                         |
+| ------------------------ | ------------------------------------------ | ------------------------------- |
+| traefik_image            | Docker image name                          | `traefik`                       |
+| traefik_tag              | Docker image tag                           | `v3.6.1`                        |
+| traefik_base_dir         | Host path for docker-compose.yml           | `/opt/traefik`                  |
+| traefik_data_dir         | Host path for config and ACME storage      | `/mnt/docker/traefik`           |
+| traefik_volumes_dir      | Host path for persistent data/custom files | `/mnt/docker/traefik/volumes`   |
+| traefik_logs_dir         | Host path for Traefik logs                 | `/mnt/docker/traefik/logs`      |
+| shared_docker_network    | Docker network name for Traefik            | `traefik`                       |
+| traefik_dashboard_domain | Hostname for Traefik dashboard             | `proxy.local.rwdevs.com`        |
+| traefik_acme_email       | Email for ACME certificate registration    | `srdevlead@outlook.com`         |
+| traefik_acme_resolver    | ACME resolver name (Cloudflare)            | `cloudflare`                    |
+| cloudflare_dns_api_token | Cloudflare API token for DNS-01 challenges | From env var `CF_DNS_API_TOKEN` |
 
 ## Certificate Management
 
@@ -48,6 +49,7 @@ Traefik is configured as a reverse proxy with:
 Traefik automatically requests and manages SSL/TLS certificates from Let's Encrypt using DNS-01 validation via Cloudflare.
 
 **Certificate Details:**
+
 - **Domain**: `local.rwdevs.com` (main)
 - **Wildcard**: `*.local.rwdevs.com` (all subdomains)
 - **Validation Method**: DNS-01 (Cloudflare)
@@ -58,9 +60,11 @@ Traefik automatically requests and manages SSL/TLS certificates from Let's Encry
 ### Cloudflare API Token Setup
 
 **Required Permissions:**
+
 - Zone:DNS:Edit (for DNS-01 challenges)
 
 **How to Create Token:**
+
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens)
 2. Click "Create Token"
 3. Use template: "Edit zone DNS"
@@ -72,6 +76,7 @@ Traefik automatically requests and manages SSL/TLS certificates from Let's Encry
    ```
 
 **Verification:**
+
 ```bash
 # Before deployment, test token validity
 curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
@@ -81,6 +86,7 @@ curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
 ### DNS Requirements
 
 Before deploying Traefik:
+
 1. **Add DNS A records** pointing to your Docker host:
    ```
    local.rwdevs.com     A   192.168.50.12
@@ -106,6 +112,7 @@ Before deploying Traefik:
 ### First Deployment & Certificate Generation
 
 **Timeline:**
+
 1. Traefik starts and validates Cloudflare token
 2. Requests wildcard certificate from Let's Encrypt (can take 30-60 seconds)
 3. Let's Encrypt challenges DNS record via Cloudflare API
@@ -114,6 +121,7 @@ Before deploying Traefik:
 6. Certificate issued and stored in `acme.json`
 
 **Monitoring First Cert:**
+
 ```bash
 # Watch Traefik logs during first certificate request
 docker logs -f traefik
@@ -124,13 +132,13 @@ ls -la /mnt/docker/traefik/acme/acme.json
 
 ### Troubleshooting Certificate Issues
 
-| Problem | Cause | Solution |
-|---------|-------|----------|
-| No certificate issued after 5 min | Invalid Cloudflare token | Check `CF_DNS_API_TOKEN` in `.env` |
-| API not accessible | DNS not resolved | Verify DNS A records are set |
-| Token validation fails | Token expired/revoked | Create new token in Cloudflare dashboard |
-| Mixed content warnings | HTTP services on HTTPS | Configure backends correctly or use TLS upstream |
-| Certificate mismatch | Wrong domain in config | Verify `local.rwdevs.com` in docker-compose config |
+| Problem                           | Cause                    | Solution                                           |
+| --------------------------------- | ------------------------ | -------------------------------------------------- |
+| No certificate issued after 5 min | Invalid Cloudflare token | Check `CF_DNS_API_TOKEN` in `.env`                 |
+| API not accessible                | DNS not resolved         | Verify DNS A records are set                       |
+| Token validation fails            | Token expired/revoked    | Create new token in Cloudflare dashboard           |
+| Mixed content warnings            | HTTP services on HTTPS   | Configure backends correctly or use TLS upstream   |
+| Certificate mismatch              | Wrong domain in config   | Verify `local.rwdevs.com` in docker-compose config |
 
 ## Configuration
 
@@ -143,6 +151,7 @@ ls -la /mnt/docker/traefik/acme/acme.json
 ### Middleware
 
 Three middlewares are defined in `dynamic.yml`:
+
 - `default-headers`: Security headers (HSTS, Frame-deny, etc.)
 - `default-whitelist`: IP allowlist for private ranges (10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12, 127.0.0.1)
 - `secured`: Chain combining whitelist + headers
@@ -150,6 +159,7 @@ Three middlewares are defined in `dynamic.yml`:
 ### Service Discovery
 
 Services can be routed via:
+
 1. **Docker labels** (preferred) - auto-discovered from containers on `traefik` network
 2. **File provider** - static routes defined in `dynamic.yml`
 
@@ -158,6 +168,7 @@ Services can be routed via:
 **URL**: `http://proxy1.local.rwdevs.com:8080/dashboard` (or substitute actual hostname/IP)
 
 The dashboard provides:
+
 - Traffic overview and routing rules
 - Services, routers, and middleware status
 - Real-time metrics and performance data
@@ -179,6 +190,7 @@ labels:
 ### File Provider
 
 Services can also be defined in `dynamic.yml`:
+
 ```yaml
 http:
   routers:

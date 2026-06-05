@@ -1,7 +1,7 @@
 services:
   traefik:
     image: {{ traefik_image }}:{{ traefik_tag }}
-    container_name: {{ traefik_container_name }}
+    container_name: {{ traefik_instance.name }}
     restart: unless-stopped
 
     command:
@@ -14,7 +14,7 @@ services:
 
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
-      - --providers.docker.network={{ traefik_network }}
+      - --providers.docker.network={{ shared_docker_network }}
 
       - --providers.file.filename=/config/dynamic.yml
       - --providers.file.watch=true
@@ -44,8 +44,8 @@ services:
       - "{{ traefik_port_api }}:{{ traefik_port_api }}"
 
     environment:
-      CF_DNS_API_TOKEN: "{{ cloudflare_dns_api_token }}"
-      DOCKER_API_VERSION: "{{ traefik_docker_api_version }}"
+      CF_DNS_API_TOKEN: "{{ lookup('ansible.builtin.env', traefik_instance.env_token_key) }}"
+      DOCKER_API_VERSION: "{{ shared_docker_api_version }}"
 
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -54,7 +54,7 @@ services:
       - {{ traefik_data_dir }}/acme:/acme
 
     networks:
-      - {{ traefik_network }}
+      - {{ shared_docker_network }}
 
     labels:
       - traefik.enable=false
@@ -66,5 +66,5 @@ services:
       retries: 3
 
 networks:
-  {{ traefik_network }}:
+  {{ shared_docker_network }}:
     external: true

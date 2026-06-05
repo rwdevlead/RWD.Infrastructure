@@ -3,7 +3,7 @@ http:
     dashboard:
       entryPoints:
         - "websecure"
-      rule: "Host(`{{ traefik_dashboard_domain }}`)"
+      rule: "Host(`{{ traefik_instance.domain }}`)"
       middlewares:
         - default-headers
       tls:
@@ -18,7 +18,7 @@ http:
     dashboard-http:
       entryPoints:
         - "web"
-      rule: "Host(`{{ traefik_dashboard_domain }}`)"
+      rule: "Host(`{{ traefik_instance.domain }}`)"
       middlewares:
         - https-redirectscheme
       service: api@internal
