@@ -131,3 +131,7 @@ env/
 # Obsidian or VSCode AI plugin data
 /.vscode/ai/
 /.obsidian/plugins/*ai*/
+
+# BFG Repo-Cleaner 
+bfg-report/
+..bfg-report/
