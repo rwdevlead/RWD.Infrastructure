@@ -19,8 +19,8 @@ Deploys MailRise SMTP alert router.
 ## Working Test Script
 
 ```bash
-ka8kgj on Jims-MBP at 󰋜 ~ swaks --to alerts@mailrise.xyz --server 192.168.50.14 --port 8025
-or swaks --to alerts@mailrise.xyz --server mailrise.local.rwdevs.com --port 8025
+ka8kgj on Jims-MBP at 󰋜 ~ swaks --to email@mailrise.xyz --server 192.168.50.14 --port 8025
+or swaks --to email@mailrise.xyz --server mailrise.local.rwdevs.com --port 8025
 ```
 
 ### should return this:
