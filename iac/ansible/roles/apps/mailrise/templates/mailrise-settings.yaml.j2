@@ -2,7 +2,12 @@ configs:
   email:
     urls:
       - "mailto://{{ mailrise_icloud_user }}:{{ mailrise_icloud_pass }}@smtp.mail.me.com:587?from={{ mailrise_icloud_from }}&to={{ mailrise_target_email }}&mode=starttls"
-  
+  outlook:
+    urls:
+      - "mailto://{{ mailrise_outlook_user }}?smtp=smtp.office365.com&user={{ mailrise_outlook_user }}@outlook.com&pass={{mailrise_outlook_pass}}&from={{ mailrise_outlook_from }}&to={{ mailrise_target_email }}"
+  icloud:
+    urls:
+      - "mailto://{{ mailrise_icloud_user }}:{{ mailrise_icloud_pass }}@smtp.mail.me.com:587?from={{ mailrise_icloud_from }}&to={{ mailrise_target_email }}&mode=starttls"
 smtp:
   port: 8025
 
