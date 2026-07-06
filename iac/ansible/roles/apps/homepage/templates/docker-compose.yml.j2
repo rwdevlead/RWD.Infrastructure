@@ -19,8 +19,7 @@ services:
       - ./config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/app/host:ro
-      - ./public/images:/app/public/icons 
-      - ./public/images/favicon.ico:/app/public/favicon.ico 
+      - ./public:/app/public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.homepage.rule=Host(`{{ homepage.domain }}`)"
