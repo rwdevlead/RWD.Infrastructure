@@ -15,10 +15,10 @@ module "rwd_agents" {
   source = "../../../modules/github/github-repository"
 
   repository_name = "RWD.Agents"
-  description     = "Network Utility for Infrastructure - ${local.managed_by}"
+  description     = "Agentic AI Notes - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["dotnet", "reactjs", "vite", "utility", "mysql"]
+  topics          = ["template", "ai"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki

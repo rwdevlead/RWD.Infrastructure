@@ -18,7 +18,7 @@ module "rwd_numpicker" {
   description     = "Just a fun lottery number picker - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["mvc", "frontend"]
+  topics          = ["mvc"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki

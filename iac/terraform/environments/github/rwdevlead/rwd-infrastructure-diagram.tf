@@ -18,7 +18,7 @@ module "rwd_infrastructure_diagram" {
   description     = "Network Utility for Infrastructure - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["dotnet", "reactjs", "vite", "utility", "mysql"]
+  topics          = ["dotnet", "reactjs", "vite", "utility", "sqlite"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki

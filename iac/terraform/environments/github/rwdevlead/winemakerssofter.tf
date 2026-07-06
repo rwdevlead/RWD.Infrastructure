@@ -18,7 +18,7 @@ module "winemakerssoftware" {
   description     = "Winemakers Software Website - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["mvc", "aspnetcore", "csharp", "net6", "pwa", "css", "backend", "frontend"]
+  topics          = ["mvc", "aspnetcore", "csharp", "net6", "pwa", "css"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki
