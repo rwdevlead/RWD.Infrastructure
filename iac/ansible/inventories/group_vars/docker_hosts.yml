@@ -60,13 +60,18 @@ proxmox_instances:
   - name: "proxmox"
     domain: "proxmox.local.rwdevs.com"
     url: "https://192.168.50.11:8006"
-    env_user_key: "PROXMOX_API_USER"
-    env_token_key: "PROXMOX_API_TOKEN"
+    env_user_key: "PROXMOX_HOMEPAGE_USER"
+    env_token_key: "PROXMOX_HOMEPAGE_TOKEN"
+  - name: "pve-d01"
+    domain: "pve-d01.local.rwdevs.com"
+    url: "https://192.168.50.9:8006"
+    env_user_key: "PVE_D01_HOMEPAGE_USER"
+    env_token_key: "PVE_D01_HOMEPAGE_TOKEN"
   - name: "pve-p01"
     domain: "pve-p01.local.rwdevs.com"
     url: "https://192.168.50.10:8006"
-    env_user_key: "PVE_P01_API_USER"
-    env_token_key: "PVE_P01_API_TOKEN"
+    env_user_key: "PVE_P01_HOMEPAGE_USER"
+    env_token_key: "PVE_P01_HOMEPAGE_TOKEN"
 
 watchtower_instances:
   dev-docker-01:
