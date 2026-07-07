@@ -52,8 +52,8 @@ module "Prod_Docker_01" {
   vm_description = "Production Docker Instance"
   #   keyboard      
 
-  vm_username = "ka8kgj"
-  vm_password = "password123"
+  vm_username = var.default_username
+  vm_password = var.default_password
 
   vm_cores = 2
 

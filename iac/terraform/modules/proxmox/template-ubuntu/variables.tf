@@ -140,4 +140,3 @@ variable "ssh_public_key_content" {
   # default     = null
 }
 
-
