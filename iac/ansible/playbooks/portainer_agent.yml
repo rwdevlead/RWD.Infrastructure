@@ -1,6 +1,6 @@
 ---
 - name: Deploy Portainer Agent
-  hosts: prod-docker-01
+  hosts: portainer_agents
   become: true
   roles:
     - apps/portainer_agent

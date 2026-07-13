@@ -32,6 +32,7 @@
         name: [unattended-upgrades, bsd-mailx, postfix]
         state: present
         update_cache: yes
+      tags: [manual_upgrade]
 
     - name: Configure Postfix Relay
       lineinfile:

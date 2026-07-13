@@ -7,6 +7,7 @@ services:
     environment:
       - PORTAINER_ADMIN_SESSIONTIMEOUT={{ portainer_session_timeout }}
       - SKIP_TLS_CERT_VERIFICATION=true
+      - AGENT_SECRET={{ portainer_agent_secret }}
 
     healthcheck:
       test: ["CMD", "/portainer", "--version"]

@@ -13,3 +13,5 @@ portainer_healthcheck_retries: 3
 
 # Session timeout in hours (default is 8 hours)
 portainer_session_timeout: 24
+
+portainer_agent_secret: "{{ lookup('env', 'PORTAINER_AGENT_SECRET') }}"

@@ -1,6 +1,6 @@
 ---
 - name: Deploy Portainer
-  hosts: dev-docker-01
+  hosts: dev-docker-02
   become: true
 
   roles:

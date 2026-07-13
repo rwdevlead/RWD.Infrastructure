@@ -49,7 +49,7 @@ http:
         - default-headers
         - pihole-redirect      
       tls:
-        certResolver: "cloudflare"
+        certResolver: "{{ traefik_acme_resolver }}"
       service: "pihole-prod-service"
     ha-router:
       entryPoints:
@@ -58,7 +58,7 @@ http:
       middlewares:
         - default-headers
       tls:
-        certResolver: "cloudflare"
+        certResolver: "{{ traefik_acme_resolver }}"
       service: "ha-service"
   services:
     pihole-prod-service:

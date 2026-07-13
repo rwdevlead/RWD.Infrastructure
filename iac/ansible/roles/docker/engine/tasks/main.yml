@@ -64,6 +64,7 @@
     name: docker
     state: started
     enabled: yes
+  check_mode: no
 
 - name: Add users to docker group
   ansible.builtin.user:

@@ -3,6 +3,8 @@ services:
     image: portainer/agent:latest
     container_name: {{ portainer_agents[inventory_hostname].name }}
     restart: always
+    environment:
+      - AGENT_SECRET={{ portainer_agent_secret }}
     labels:
       - "com.centurylinklabs.watchtower.enable={{ portainer_agent_watchtower_enable }}"
     ports:

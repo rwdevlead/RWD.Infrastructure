@@ -1,0 +1,5 @@
+---
+new_hostname: dev-docker-02
+
+# Homepage service variables
+homepage_container_name: "homepage-d02"

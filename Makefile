@@ -177,23 +177,23 @@ ansible-config: ## Display current Ansible configuration settings
 # === Base System Configuration ===
 
 base-check: ## Dry-run: Review base system configuration (hostname, security, fail2ban)
-	ansible-playbook iac/ansible/playbooks/base.yml \
+	ansible-playbook iac/ansible/playbooks/system_base.yml \
 		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
 base: ## Deploy base system configuration (hostname, security, fail2ban)
-	ansible-playbook iac/ansible/playbooks/base.yml \
+	ansible-playbook iac/ansible/playbooks/system_base.yml \
 		-i iac/ansible/inventories/hosts.yml
 
 # === System Updates & Maintenance ===
 
 run-upgrade: ## Execute full system upgrade on all packages with optional reboot (tag: manual_upgrade)
 	ansible-playbook iac/ansible/playbooks/system_updates.yml \
-		-i iac/ansible/inventories/hosts.yml --tags "manual_upgrade" --limit prod-docker-01
+		-i iac/ansible/inventories/hosts.yml --tags "manual_upgrade" --limit dev-docker-02
 
 setup-updates: ## Configure unattended security updates, email alerts, and smart reboots
 	ansible-playbook iac/ansible/playbooks/system_updates.yml \
-		-i iac/ansible/inventories/hosts.yml
+		-i iac/ansible/inventories/hosts.yml --limit dev-docker-02
 
 # === Docker Platform Setup ===
 
@@ -205,7 +205,7 @@ docker-check: ## Dry-run: Review Docker platform setup (NFS mounts, engine, comp
 docker: ## Deploy Docker platform (NFS mounts, engine, compose)
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
 		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
-		--limit dev-docker-01 -v
+		--limit dev-docker-02 -v
 
 # === Storage Configuration for NAS ===
 
