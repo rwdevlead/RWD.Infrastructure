@@ -10,7 +10,7 @@
     env:
       # --- REQUIRED CORE PARAMS ---
       PRIMARY: "{{ nebula_sync_primary_node }}|{{ nebula_sync_primary_token }}"
-      REPLICAS: "{{ nebula_sync_replica_node }}|{{ nebula_sync_replica_token }}"
+      REPLICAS: "{{ nebula_sync_replica1_node }}|{{ nebula_sync_replica1_token }},{{ nebula_sync_replica2_node }}|{{ nebula_sync_replica2_token }}"
       FULL_SYNC: "true"
 
       # --- SCHEDULING & RUNTIME ---
