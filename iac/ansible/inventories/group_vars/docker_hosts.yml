@@ -83,14 +83,14 @@ proxmox_instances:
     env_token_key: "PVE_P01_HOMEPAGE_TOKEN"
 
 watchtower_instances:
-  dev-docker-01:
-    name: watchtower-d01
-    email: watchtower-d01@rwdevs.com
-    server: dev-docker-01
-    container: watchtower-d01
-    widget:
-      url: http://192.168.50.12:8082
-      key_env: WATCHTOWER_TOKEN
+  # dev-docker-01:
+  #   name: watchtower-d01
+  #   email: watchtower-d01@rwdevs.com
+  #   server: dev-docker-01
+  #   container: watchtower-d01
+  #   widget:
+  #     url: http://192.168.50.12:8082
+  #     key_env: WATCHTOWER_TOKEN
   dev-docker-02:
     name: watchtower-d02
     email: watchtower-d02@rwdevs.com
@@ -116,12 +116,11 @@ portainer_agents:
   dev-docker-01:
     name: portainer-agent-d01
     description: Development Docker Environment
-    server: dev-docker-01
-    container: portainer-d01
+    ping: 192.168.50.12
     widget:
       url: "{{ portainer_instance.url }}"
-      env: 3
-      key_env: HOMEPAGE_PORTAINER_D01_KEY
+      env: 14
+      key_env: HOMEPAGE_PORTAINER_D02_KEY
   dev-docker-02:
     name: portainer-d02
     description: Development Docker Environment
@@ -137,8 +136,8 @@ portainer_agents:
     ping: 192.168.50.14
     widget:
       url: "{{ portainer_instance.url }}"
-      env: 5
-      key_env: HOMEPAGE_PORTAINER_D01_KEY
+      env: 13
+      key_env: HOMEPAGE_PORTAINER_D02_KEY
 
 mailrise:
   name: mailrise-p01
@@ -147,7 +146,7 @@ mailrise:
   port: 8025
 
 truenas:
-  url: "https://truenas-d02.local.rwdevs.com"
+  url: "https://truenas-d01.local.rwdevs.com"
 
 homepage:
   domain: "homepage-d02.local.rwdevs.com"

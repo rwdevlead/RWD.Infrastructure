@@ -72,14 +72,14 @@
         icon: portainer.svg
         href: {{ portainer_instance.url }}
         description: Container Management 
-        server: dev-docker-01
-        container: portainer-d01
+        server: dev-docker-02
+        container: portainer-d02
         siteMonitor: {{ portainer_instance.url }}
         widget:
             type: portainer
             url: {{ portainer_instance.url }}
             env: 3
-            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D01_KEY') }}" 
+            key: "{{ lookup('ansible.builtin.env', 'HOMEPAGE_PORTAINER_D02_KEY') }}" 
 
 {% for host, portainer in portainer_agents.items() %}
     - {{ portainer.name }}:
