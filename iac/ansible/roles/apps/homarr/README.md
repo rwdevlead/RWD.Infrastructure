@@ -1,0 +1,20 @@
+# apps/homepage
+
+Deploys Homepage using Docker Compose.
+
+## Responsibilities
+
+- Create config directory
+- Render docker-compose.yml
+- Deploy and update Homepage
+
+## Variables
+
+| Variable      | Description  |
+| ------------- | ------------ |
+| homepage.port | Port exposed |
+
+## Notes
+
+- Traefik integration can be added later
+- Pattern used for all app roles

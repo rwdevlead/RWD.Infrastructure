@@ -1,0 +1,5 @@
+- name: Deploy Homarr
+  hosts: homarr
+  become: true
+  roles:
+    - role: apps/homarr

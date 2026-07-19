@@ -1,5 +1,2 @@
 ---
 new_hostname: dev-docker-01
-
-# Homepage service variables
-homepage_container_name: "homepage-d01"

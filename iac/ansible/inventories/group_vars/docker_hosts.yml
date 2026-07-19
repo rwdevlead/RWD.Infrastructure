@@ -148,9 +148,10 @@ mailrise:
 truenas:
   url: "https://truenas-d01.local.rwdevs.com"
 
-homepage:
-  domain: "homepage-d02.local.rwdevs.com"
-  port: 3000
+homarr:
+  container: homarr-d02
+  domain: "homarr-d02.local.rwdevs.com"
+  port: 7575
 
 homeassistant:
   url: "http://192.168.50.15:8123"
