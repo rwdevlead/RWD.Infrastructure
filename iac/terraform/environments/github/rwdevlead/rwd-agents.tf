@@ -1,12 +1,12 @@
 
 # *** import repo ***
 # import {
-#   id = "RWD.Agents"
+#   id = "RWD.Ai.Stack"
 #   to = module.rwd_agents.github_repository.this
 # }
 
 # import {
-#   id = "RWD.Agents:main"
+#   id = "RWD.Ai.Stack:main"
 #   to = module.branch_protection_rwd_agents.github_branch_protection.branch
 # }
 
@@ -14,7 +14,7 @@
 module "rwd_agents" {
   source = "../../../modules/github/github-repository"
 
-  repository_name = "RWD.Agents"
+  repository_name = "RWD.Ai.Stack"
   description     = "Agentic AI Notes - ${local.managed_by}"
   visibility      = "public"
 
