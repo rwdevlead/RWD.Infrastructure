@@ -10,7 +10,7 @@
     env:
       # --- REQUIRED CORE PARAMS ---
       PRIMARY: "{{ nebula_sync_primary_node }}|{{ nebula_sync_primary_token }}"
-      REPLICAS: "{{ nebula_sync_replica1_node }}|{{ nebula_sync_replica1_token }},{{ nebula_sync_replica2_node }}|{{ nebula_sync_replica2_token }}"
+      REPLICAS: "{{ nebula_sync_replica1_node }}|{{ nebula_sync_replica1_token }}"
       FULL_SYNC: "true"
 
       # --- SCHEDULING & RUNTIME ---
@@ -42,3 +42,7 @@
 
       # --- WEBHOOK NOTIFICATIONS ---
       WEBHOOK_CLIENT_SKIP_TLS_VERIFICATION: "false"
+      WEBHOOK_SYNC_SUCCESS_URL: "{{ uptime_kuma_nebula_push_url_success }}"
+      WEBHOOK_SYNC_SUCCESS_METHOD: "GET"
+      WEBHOOK_SYNC_FAILURE_URL: "{{ uptime_kuma_nebula_push_url_fail }}"
+      WEBHOOK_SYNC_FAILURE_METHOD: "GET"

@@ -4,7 +4,7 @@ services:
     container_name: {{ homarr.container }}
     restart: unless-stopped
     ports:
-      - "{{ homarr.port }}:{{ homarr.port }}"
+      - "{{ homarr.port }}:7575"
     environment:
       - TZ={{ shared_timezone }}
       - SECRET_ENCRYPTION_KEY={{ lookup('ansible.builtin.env', 'HOMMARR_SECRET_ENCRYPTION_KEY') }}

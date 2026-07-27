@@ -1,0 +1,10 @@
+---
+# Pulse Docker image version
+pulse_image: "rcourtman/pulse"
+pulse_tag: latest
+
+# Base directory on host where Pulse will live
+pulse_base_dir: "{{ docker_base_dir }}/{{ pulse_instance.container }}"
+
+# Config directory inside persistant directory
+pulse_data_dir: "{{ docker_base_mnt }}/{{ pulse_instance.container }}"

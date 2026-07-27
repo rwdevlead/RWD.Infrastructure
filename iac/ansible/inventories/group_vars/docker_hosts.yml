@@ -46,14 +46,18 @@ pihole_instances:
 nebula_sync_url: "http://192.168.50.14:8888/api/auth"
 # Core API Endpoint Configuration (Pi-hole v6 App Endpoints)
 nebula_sync_primary_node: "http://192.168.50.14:8888" # Replace with your primary Pi-hole IP/DNS
-nebula_sync_replica1_node: "http://192.168.50.12:8888" # Replace with your replica Pi-hole IP/DNS
-nebula_sync_replica2_node: "http://192.168.50.16:8888" # Replace with your replica Pi-hole IP/DNS
+nebula_sync_replica1_node: "http://192.168.50.16:8888" # Replace with your replica Pi-hole IP/DNS
+# nebula_sync_replica2_node: "http://192.168.50.12:8888" # Replace with your replica Pi-hole IP/DNS
 
 # Pi-hole API App Passwords
 # Note: Ensure 'webserver.api.app_sudo: true' is set on the replica instance
 nebula_sync_primary_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_P01_PASSWORD') }}"
-nebula_sync_replica1_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_D01_PASSWORD') }}"
-nebula_sync_replica2_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_D02_PASSWORD') }}"
+nebula_sync_replica1_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_D02_PASSWORD') }}"
+# nebula_sync_replica2_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_D01_PASSWORD') }}"
+
+# webhook for monitoring
+uptime_kuma_nebula_push_url_success: "https://uptime-kuma-p01.local.rwdevs.com/api/push/mOzdLaaXRzsew7xovxoy7K594cMkj9qb?status=up&msg=Sync+Success"
+uptime_kuma_nebula_push_url_fail: "https://uptime-kuma-p01.local.rwdevs.com/api/push/mOzdLaaXRzsew7xovxoy7K594cMkj9qb?status=down&msg=Sync+Failed"
 
 # traefik
 traefik_instance:
@@ -83,14 +87,6 @@ proxmox_instances:
     env_token_key: "PVE_P01_HOMEPAGE_TOKEN"
 
 watchtower_instances:
-  # dev-docker-01:
-  #   name: watchtower-d01
-  #   email: watchtower-d01@rwdevs.com
-  #   server: dev-docker-01
-  #   container: watchtower-d01
-  #   widget:
-  #     url: http://192.168.50.12:8082
-  #     key_env: WATCHTOWER_TOKEN
   dev-docker-02:
     name: watchtower-d02
     email: watchtower-d02@rwdevs.com
@@ -157,3 +153,13 @@ homeassistant:
   url: "http://192.168.50.15:8123"
   href: "http://ha.local.rwdevs.com"
   domain: "ha.local.rwdevs.com"
+
+uptime_kuma:
+  container: uptime-kuma-p01
+  domain: "uptime-kuma-p01.local.rwdevs.com"
+  port: 3001
+
+pulse_instance:
+  container: pulse-d02
+  domain: "pulse-d02.local.rwdevs.com"
+  port: 7655

@@ -280,13 +280,31 @@ nebula: ## Deploy Nebula Pi-hole sync service
 		-i iac/ansible/inventories/hosts.yml 
 
 
-homarr-check: ## Dry-run: Review Homepage dashboard deployment
+homarr-check: ## Dry-run: Review Homarr dashboard deployment
 	ansible-playbook iac/ansible/playbooks/homarr.yml \
 		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
-homarr: ## Deploy Homepage dashboard service
+homarr: ## Deploy Homarr dashboard service
 	ansible-playbook iac/ansible/playbooks/homarr.yml \
+		-i iac/ansible/inventories/hosts.yml
+
+uptime-kuma-check: ## Dry-run: Review Uptime Kuma dashboard deployment
+	ansible-playbook iac/ansible/playbooks/uptime_kuma.yml \
+		-i iac/ansible/inventories/hosts.yml \
+		--check --diff
+
+uptime-kuma: ## Deploy Uptime Kuma dashboard service
+	ansible-playbook iac/ansible/playbooks/uptime_kuma.yml \
+		-i iac/ansible/inventories/hosts.yml
+
+pulse-check: ## Dry-run: Review Pulse dashboard deployment
+	ansible-playbook iac/ansible/playbooks/pulse.yml \
+		-i iac/ansible/inventories/hosts.yml \
+		--check --diff
+
+pulse: ## Deploy Pulse dashboard service
+	ansible-playbook iac/ansible/playbooks/pulse.yml \
 		-i iac/ansible/inventories/hosts.yml
 
 watchtower-check: ## Dry-run: Review Watchtower auto-update service

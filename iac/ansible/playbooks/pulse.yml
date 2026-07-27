@@ -1,0 +1,7 @@
+---
+- name: Deploy Pulse
+  hosts: pulse
+  become: true
+
+  roles:
+    - role: apps/pulse

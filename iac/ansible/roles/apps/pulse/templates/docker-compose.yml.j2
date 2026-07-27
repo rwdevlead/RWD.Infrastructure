@@ -1,0 +1,25 @@
+services:
+  pulse:
+    image: {{ pulse_image }}:{{ pulse_tag }}
+    container_name: {{ pulse_instance.container }}
+    restart: unless-stopped
+    ports:
+      - "{{ pulse_instance.port }}:7655"
+    environment:
+      - TZ={{ shared_timezone }}
+      - PULSE_DEPLOYMENT_METHOD=docker_compose
+    volumes:
+      - "{{ pulse_data_dir }}:/data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ pulse_instance.container }}.rule=Host(`{{ pulse_instance.domain }}`)"
+      - "traefik.http.routers.{{ pulse_instance.container }}.entrypoints=websecure"
+      - "traefik.http.routers.{{ pulse_instance.container }}.tls=true"
+      - "traefik.http.services.{{ pulse_instance.container }}.loadbalancer.server.port=7655"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

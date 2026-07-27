@@ -3,8 +3,8 @@
 portainer_image: "portainer/portainer-ce"
 portainer_tag: "latest"
 
-portainer_base_dir: "{{ docker_base_dir }}/portainer"
-portainer_data_dir: "{{ docker_base_mnt }}/portainer/data"
+portainer_base_dir: "{{ docker_base_dir }}/{{ portainer.container }}"
+portainer_data_dir: "{{ docker_base_mnt }}/{{ portainer.container }}"
 
 portainer_watchtower_enable: "true"
 portainer_healthcheck_interval: "30s"
