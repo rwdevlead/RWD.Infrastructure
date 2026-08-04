@@ -51,6 +51,17 @@ http:
       tls:
         certResolver: "{{ traefik_acme_resolver }}"
       service: "pihole-prod-service"
+    omv:
+      entryPoints:
+        - "web"
+        - "websecure"
+      rule: "Host(`tm.local.rwdevs.com`)"
+      middlewares:
+        - https-redirectscheme
+        - default-headers 
+      tls: 
+        certResolver: "{{ traefik_acme_resolver }}"
+      service: "omv-service"
     uptime-kuma-prod:      
       entryPoints:
         - "web"
@@ -78,6 +89,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.50.14:8888"
+    omv-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.50.17"
     uptime-kuma-prod-service:
       loadBalancer:
         servers:

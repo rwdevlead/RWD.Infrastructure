@@ -11,5 +11,5 @@ variable "default_password" {
   #   default     = null
 }
 
-variable "PROVIDER_ENDPOINT" {}
-variable "PROVIDER_API_TOKEN" {}
+variable "PROXMOX_ENDPOINT" {}
+variable "PROXMOX_TERRAFORM_TOKEN" {}

@@ -22,8 +22,8 @@ terraform {
 }
 
 provider "proxmox" {
-  endpoint  = var.PROVIDER_ENDPOINT
-  api_token = var.PROVIDER_API_TOKEN
+  endpoint  = var.PROXMOX_ENDPOINT
+  api_token = var.PROXMOX_TERRAFORM_TOKEN
   insecure  = true
   ssh {
     # agent       = true

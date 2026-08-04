@@ -11,5 +11,6 @@ variable "default_password" {
   #   default     = null
 }
 
-variable "PROVIDER_ENDPOINT" {}
-variable "PROVIDER_API_TOKEN" {}
+variable "PVE_P01_ENDPOINT" {}
+variable "PVE_P01_TERRAFORM_TOKEN" {}
+
