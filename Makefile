@@ -12,7 +12,6 @@
 	traefik traefik-check \
 	mailrise mailrise-check \
 	pihole pihole-check \
-	homepage homepage-check \
 	watchtower watchtower-check \
 	truenas truenas-check \
 	setup-updates run-upgrade
@@ -169,10 +168,11 @@ clean: ## Delete generated Terraform files (plan, .terraform dir) but preserve s
 ANSIBLE=ansible-playbook
 ANSIBLE_DIR=iac/ansible
 
-# TODO make TARGET and INV var like with Terraform above
-
 ansible-config: ## Display current Ansible configuration settings
 	ansible-config dump --only-changed
+
+test-infisical: ## test the infisical secret vault
+	OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ANSIBLE_DEBUG=1 ansible-playbook -c local iac/ansible/playbooks/test_infisical.yml
 
 # === Base System Configuration ===
 

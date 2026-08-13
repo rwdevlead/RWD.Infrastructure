@@ -1,0 +1,15 @@
+---
+# Default Infisical secret paths read by the role
+# Override in a playbook or inventory to customize
+infisical_secret_paths:
+  - "/"
+  - "/shared"
+  - "/ansible"
+  - "/ansible/cloudflare"
+  - "/ansible/homarr"
+  - "/ansible/homeassistant"
+  - "/ansible/mail"
+  - "/ansible/mailrise"
+  - "/ansible/pihole"
+  - "/ansible/portainer"
+  - "/ansible/watchtower"

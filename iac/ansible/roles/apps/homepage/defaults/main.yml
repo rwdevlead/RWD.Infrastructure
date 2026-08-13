@@ -1,9 +1,0 @@
----
-# Homepage Docker image version
-homepage_version: latest
-
-# Base directory on host where Homepage will live
-homepage_base_dir: "{{ docker_base_dir }}/homepage"
-
-# Config directory inside base directory
-homepage_config_dir: "{{ homepage_base_dir }}/config"

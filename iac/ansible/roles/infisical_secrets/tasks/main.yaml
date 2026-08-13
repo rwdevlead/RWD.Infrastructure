@@ -1,0 +1,60 @@
+# Login to Infisical
+- name: Login to Infisical
+  infisical.vault.login:
+    url: "https://app.infisical.com"
+    auth_method: universal_auth
+    universal_auth_client_id: "{{ lookup('env', 'INFISICAL_CLIENT_ID') }}"
+    universal_auth_client_secret: "{{ lookup('env', 'INFISICAL_CLIENT_SECRET') }}"
+  register: infisical_login
+
+# Read secrets from a list of paths and merge into a namespaced `secrets` fact.
+# Example of roles vars:
+# infisical_secret_paths:
+#   - "/"
+#   - "/ansible/mail"
+
+- name: Read secrets from configured paths
+  infisical.vault.read_secrets:
+    login_data: "{{ infisical_login.login_data }}"
+    project_id: "{{ lookup('env', 'INFISICAL_PROJECT_ID') }}"
+    env_slug: "{{ infisical_env_slug | default('dev') }}"
+    path: "{{ item }}"
+    as_dict: true
+  loop: "{{ infisical_secret_paths | default(['/']) }}"
+  register: read_results
+
+- name: Merge path reads into namespaced `secrets` fact
+  set_fact:
+    secrets: >-
+      {{ (secrets | default({})) | combine({
+        ((item.item | default('/') | trim('/')) | replace('/', '.')) if (item.item | default('/') | trim('/')) != '' else 'root':
+          (item.secrets | default({}))
+      }, recursive=True) }}
+  loop: "{{ read_results.results | default([]) }}"
+  when: read_results is defined
+
+- name: Build nested `secrets` mapping from all read results
+  set_fact:
+    secrets: >-
+      {% set s = {} %}
+      {% for r in read_results.results | default([]) %}
+      {% set path = (r.item | default('/')) | trim('/') %}
+      {% set parts = path.split('/') if path != '' else [] %}
+      {% set nested = r.secrets | default({}) %}
+      {% for p in parts | reverse %}
+      {% set nested = { (p): nested } %}
+      {% endfor %}
+      {% set s = s | combine(nested, recursive=True) %}
+      {% endfor %}
+      {{ (secrets | default({})) | combine(s, recursive=True) }}
+  when: read_results is defined
+
+- name: Normalize `secrets` into a dict if templated as string
+  set_fact:
+    secrets: "{{ secrets | from_yaml }}"
+  when: secrets is defined and secrets is string
+
+- name: Promote root secrets to top-level for convenience
+  set_fact:
+    secrets: "{{ (secrets | default({})) | combine(secrets.root | default({}), recursive=True) }}"
+  when: secrets is defined and secrets.root is defined
