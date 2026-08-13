@@ -21,7 +21,7 @@
       WATCHTOWER_NOTIFICATION_EMAIL_SERVER: "{{ mailrise.domain }}"
       WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: "{{ 'mailrise.port' }}"
       WATCHTOWER_HTTP_API_METRICS: "true"
-      WATCHTOWER_HTTP_API_TOKEN: "{{ lookup('ansible.builtin.env', 'WATCHTOWER_TOKEN') }}"
+      WATCHTOWER_HTTP_API_TOKEN: "{{ secrets.ansible.watchtower.API_TOKEN }}"
     ports:
       - "8082:8080"
     labels:

@@ -172,7 +172,7 @@ ansible-config: ## Display current Ansible configuration settings
 	ansible-config dump --only-changed
 
 test-infisical: ## test the infisical secret vault
-	OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ANSIBLE_DEBUG=1 ansible-playbook -c local iac/ansible/playbooks/test_infisical.yml
+	OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ansible-playbook -c local iac/ansible/playbooks/test_infisical.yml
 
 # === Base System Configuration ===
 

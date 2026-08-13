@@ -1,6 +1,6 @@
 ---
 # Default Infisical secret paths read by the role
-# Override in a playbook or inventory to customize
+# Override in a playbook or inventory to minimize exposure
 infisical_secret_paths:
   - "/"
   - "/shared"

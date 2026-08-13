@@ -3,38 +3,73 @@
   hosts: localhost
   # become: true
 
+  vars:
+    infisical_secret_paths:
+      - "/"
+      - "/shared"
+      - "/ansible"
+      - "/ansible/cloudflare"
+      - "/ansible/homarr"
+      - "/ansible/homeassistant"
+      - "/ansible/mail"
+      - "/ansible/mailrise"
+      - "/ansible/pihole"
+      - "/ansible/portainer"
+      - "/ansible/watchtower"
+
   roles:
     - infisical_secrets
 
   tasks:
-    - name: Show all retrieved secrets under root (human readable)
-      debug:
-        msg: "Test 1 {{ secrets.root | default({}) | to_nice_yaml }}"
-      when: secrets is defined and secrets.root is defined
+    - name: "Test 1 - root secret is promoted to top level"
+      assert:
+        that:
+          - secrets is defined
+          - secrets.SECRET is defined
+          - secrets.SECRET == 'testing'
+        fail_msg: "Test 1 failed: secrets.SECRET is missing or incorrect"
 
-    - name: "Debug: show raw read_results object"
-      debug:
-        msg: "Test 2 read_results = {{ read_results | to_nice_yaml }}"
-      when: read_results is defined
+    - name: "Test 2 - path reads were collected"
+      assert:
+        that:
+          - read_results is defined
+          - read_results.results is defined
+          - read_results.results | length > 0
+        fail_msg: "Test 2 failed: read_results did not populate"
 
-    - name: "Debug: show read_results.results entries"
-      debug:
-        msg: "Test 3 read_results.results = {{ read_results.results | to_nice_yaml }}"
-      when: read_results is defined and read_results.results is defined
+    - name: "Test 3 - nested ansible namespace exists"
+      assert:
+        that:
+          - secrets is defined
+          - secrets.ansible is defined
+          - secrets.ansible.mail is defined
+          - secrets.ansible.watchtower is defined
+        fail_msg: "Test 3 failed: secrets.ansible namespace is missing"
 
-    - name: "Debug: show merged secrets fact"
-      debug:
-        msg: " Test 4 merged secrets = {{ secrets | to_nice_yaml }}"
-      when: secrets is defined
+    - name: "Test 4 - mail secret is accessible by namespaced key"
+      assert:
+        that:
+          - secrets.ansible.mail.OUTLOOK_MAIL_USER == 'realworlddevs'
+        fail_msg: "Test 4 failed: secrets.ansible.mail.OUTLOOK_MAIL_USER is missing or wrong"
 
-    - name: "Debug: show secret by namespace 1"
-      debug:
-        msg: " Test 5 OUTLOOK_MAIL_USER = {{ secrets['ansible.mail']['OUTLOOK_MAIL_USER'] | to_nice_yaml }}"
-      when: secrets is defined and ('ansible.mail' in secrets) and ('OUTLOOK_MAIL_USER' in secrets['ansible.mail'])
+    - name: "Test 5 - watchtower token is accessible by namespaced key"
+      assert:
+        that:
+          - secrets.ansible.watchtower.API_TOKEN is defined
+          - secrets.ansible.watchtower.API_TOKEN | length > 0
+        fail_msg: "Test 5 failed: secrets.ansible.watchtower.API_TOKEN is missing or empty"
 
-    - name: "Debug: show secret by namespace 2"
-      debug:
-        msg: "Test 6 SECRET = {{ secrets.SECRET | to_nice_yaml }}"
-      when: secrets is defined and ('SECRET' in secrets)
+    - name: "Test 6 - legacy dotted-key compatibility still resolves"
+      assert:
+        that:
+          - secrets['ansible.mail'] is defined
+          - secrets['ansible.mail']['OUTLOOK_MAIL_USER'] == 'realworlddevs'
+        fail_msg: "Test 6 failed:legacy dotted-key lookup is not resolving"
+
+    - name: "Test 7 - root secret still matches"
+      assert:
+        that:
+          - secrets.SECRET == 'testing'
+        fail_msg: "Test 7 failed: root secret mismatch"
 # TODO create secrets universal app to gather secrets for all that need it
 # https://infisical.com/docs/integrations/platforms/ansible#universal-auth

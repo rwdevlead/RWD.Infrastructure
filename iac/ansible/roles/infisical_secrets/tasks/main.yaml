@@ -23,38 +23,28 @@
   loop: "{{ infisical_secret_paths | default(['/']) }}"
   register: read_results
 
-- name: Merge path reads into namespaced `secrets` fact
-  set_fact:
-    secrets: >-
-      {{ (secrets | default({})) | combine({
-        ((item.item | default('/') | trim('/')) | replace('/', '.')) if (item.item | default('/') | trim('/')) != '' else 'root':
-          (item.secrets | default({}))
-      }, recursive=True) }}
+- name: Initialize secrets dictionary
+  ansible.builtin.set_fact:
+    secrets: {}
+
+- name: Merge path results into secrets
+  ansible.builtin.set_fact:
+    secrets: "{{ secrets | combine(item_dict | from_yaml, recursive=True) }}"
   loop: "{{ read_results.results | default([]) }}"
-  when: read_results is defined
-
-- name: Build nested `secrets` mapping from all read results
-  set_fact:
-    secrets: >-
-      {% set s = {} %}
-      {% for r in read_results.results | default([]) %}
-      {% set path = (r.item | default('/')) | trim('/') %}
-      {% set parts = path.split('/') if path != '' else [] %}
-      {% set nested = r.secrets | default({}) %}
-      {% for p in parts | reverse %}
-      {% set nested = { (p): nested } %}
+  vars:
+    clean_path: "{{ (item.item | default('/')) | trim('/') }}"
+    path_parts: "{{ clean_path.split('/') if clean_path != '' else [] }}"
+    raw_secrets: "{{ item.secrets | default({}) }}"
+    nested_dict: >-
+      {% set curr = raw_secrets %}
+      {% for part in path_parts | reverse %}
+        {% set curr = { part: curr } %}
       {% endfor %}
-      {% set s = s | combine(nested, recursive=True) %}
-      {% endfor %}
-      {{ (secrets | default({})) | combine(s, recursive=True) }}
-  when: read_results is defined
-
-- name: Normalize `secrets` into a dict if templated as string
-  set_fact:
-    secrets: "{{ secrets | from_yaml }}"
-  when: secrets is defined and secrets is string
-
-- name: Promote root secrets to top-level for convenience
-  set_fact:
-    secrets: "{{ (secrets | default({})) | combine(secrets.root | default({}), recursive=True) }}"
-  when: secrets is defined and secrets.root is defined
+      {{ curr }}
+    dotted_key: "{{ clean_path | replace('/', '.') }}"
+    item_dict: >-
+      {% if clean_path == '' %}
+        {{ raw_secrets }}
+      {% else %}
+        {{ nested_dict | from_yaml | combine({ dotted_key: raw_secrets }, recursive=True) }}
+      {% endif %}
