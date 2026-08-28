@@ -1,0 +1,5 @@
+- name: Deploy Uptime Kuma
+  hosts: uptime_kuma
+  become: true
+  roles:
+    - role: apps/uptime_kuma

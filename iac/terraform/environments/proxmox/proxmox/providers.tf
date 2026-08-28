@@ -14,6 +14,10 @@ terraform {
   }
 
   required_providers {
+    infisical = {
+      source  = "Infisical/infisical"
+      version = "~> 0.14"
+    }
     proxmox = {
       source  = "bpg/proxmox"
       version = "0.89.1" # version = ">=0.66"
@@ -21,9 +25,19 @@ terraform {
   }
 }
 
+# --- Infisical provider ---
+provider "infisical" {
+  host = "https://app.infisical.com"
+  auth = {
+    universal = {
+      client_id     = var.infisical_client_id
+      client_secret = var.infisical_client_secret
+    }
+  }
+}
 provider "proxmox" {
-  endpoint  = var.PROVIDER_ENDPOINT
-  api_token = var.PROVIDER_API_TOKEN
+  endpoint  = local.PVE_ENDPOINT
+  api_token = local.PVE_TOKEN
   insecure  = true
   ssh {
     # agent       = true
@@ -33,6 +47,7 @@ provider "proxmox" {
 }
 
 
-// provider
-// https://registry.terraform.io/providers/bpg/proxmox/0.89.1
+# provider
+# https://registry.terraform.io/providers/bpg/proxmox/0.89.1
+# https://registry.terraform.io/providers/Infisical/infisical/latest/docs#terraform
 

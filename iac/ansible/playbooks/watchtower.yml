@@ -1,5 +1,11 @@
 - name: Deploy Lab Package Monitor
   hosts: docker_hosts
   become: true
+
+  vars:
+    infisical_secret_paths:
+      - "/ansible/watchtower"
+
   roles:
+    - infisical_secrets
     - apps/watchtower

@@ -1,0 +1,32 @@
+---
+- name: Create Pulse directory structure
+  ansible.builtin.file:
+    path: "{{ pulse_data_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure Pulse base directory exists
+  ansible.builtin.file:
+    path: "{{ pulse_base_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ pulse_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Pulse
+
+- name: Deploy and Start Pulse via Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ pulse_base_dir }}"
+    state: present
+    pull: always
+  when: not ansible_check_mode

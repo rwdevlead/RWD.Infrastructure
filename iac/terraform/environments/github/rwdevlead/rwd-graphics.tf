@@ -29,9 +29,9 @@ module "codeowners_rwd_graphics" {
 
   repository   = module.rwd_graphics.repository_name
   branch       = "main"
-  github_owner = var.github_owner_rwdevlead
+  github_owner = local.github_owner
   # admins       = [var.github_owner_primary]
-  owners = [var.github_owner_rwdevlead]
+  owners = [local.github_owner]
 
   depends_on = [module.rwd_graphics]
 

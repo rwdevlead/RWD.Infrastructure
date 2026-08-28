@@ -64,6 +64,23 @@
     name: docker
     state: started
     enabled: yes
+  check_mode: no
+
+- name: Create systemd override directory for Docker
+  ansible.builtin.file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: "0755"
+
+- name: Configure Docker to wait for NFS storage mount before booting
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/docker.service.d/override.conf
+    mode: "0644"
+    content: |
+      [Unit]
+      Requires=mnt-docker.mount
+      After=mnt-docker.mount
+  notify: Restart Docker daemon
 
 - name: Add users to docker group
   ansible.builtin.user:

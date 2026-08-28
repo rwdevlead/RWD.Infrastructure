@@ -12,10 +12,10 @@
 	traefik traefik-check \
 	mailrise mailrise-check \
 	pihole pihole-check \
-	homepage homepage-check \
 	watchtower watchtower-check \
 	truenas truenas-check \
-	setup-updates run-upgrade
+	setup-updates run-upgrade \
+	check-tf-vars
 
 # ==========================================================
 # Environment Setup (Load .env file if present)
@@ -26,6 +26,11 @@ ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
+
+# Map env vars to Terraform variables (Make syntax)
+export TF_VAR_infisical_client_id := $(INFISICAL_CLIENT_ID)
+export TF_VAR_infisical_client_secret := $(INFISICAL_CLIENT_SECRET)
+export TF_VAR_infisical_project_id := $(INFISICAL_PROJECT_ID)
 
 # ==========================================================
 # Global Variables (Configuration)
@@ -74,6 +79,12 @@ help: ## Show this help message with all available targets
 	@echo '  - Packer instructions: instructions/PACKER.md'
 	@echo '═══════════════════════════════════════════════════════════════'
 
+
+# test that the ENV made it into terraform 
+check-tf-vars:
+	@echo "TF_VAR_infisical_client_id:     $$TF_VAR_infisical_client_id"
+	@echo "TF_VAR_infisical_client_secret: $$TF_VAR_infisical_client_secret"
+	@echo "TF_VAR_infisical_project_id:    $$TF_VAR_infisical_project_id"
 
 # ==========================================================
 # Proxmox VM Templating Commands (Golden Image Creation)
@@ -169,31 +180,32 @@ clean: ## Delete generated Terraform files (plan, .terraform dir) but preserve s
 ANSIBLE=ansible-playbook
 ANSIBLE_DIR=iac/ansible
 
-# TODO make TARGET and INV var like with Terraform above
-
 ansible-config: ## Display current Ansible configuration settings
 	ansible-config dump --only-changed
+
+test-infisical: ## test the infisical secret vault
+	OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ansible-playbook -c local iac/ansible/playbooks/test_infisical.yml
 
 # === Base System Configuration ===
 
 base-check: ## Dry-run: Review base system configuration (hostname, security, fail2ban)
-	ansible-playbook iac/ansible/playbooks/base.yml \
+	ansible-playbook iac/ansible/playbooks/system_base.yml \
 		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
 base: ## Deploy base system configuration (hostname, security, fail2ban)
-	ansible-playbook iac/ansible/playbooks/base.yml \
+	ansible-playbook iac/ansible/playbooks/system_base.yml \
 		-i iac/ansible/inventories/hosts.yml
 
 # === System Updates & Maintenance ===
 
 run-upgrade: ## Execute full system upgrade on all packages with optional reboot (tag: manual_upgrade)
 	ansible-playbook iac/ansible/playbooks/system_updates.yml \
-		-i iac/ansible/inventories/hosts.yml --tags "manual_upgrade" --limit prod-docker-01
+		-i iac/ansible/inventories/hosts.yml --tags "manual_upgrade" --limit dev-docker-02
 
 setup-updates: ## Configure unattended security updates, email alerts, and smart reboots
 	ansible-playbook iac/ansible/playbooks/system_updates.yml \
-		-i iac/ansible/inventories/hosts.yml
+		-i iac/ansible/inventories/hosts.yml --limit dev-docker-02
 
 # === Docker Platform Setup ===
 
@@ -205,7 +217,7 @@ docker-check: ## Dry-run: Review Docker platform setup (NFS mounts, engine, comp
 docker: ## Deploy Docker platform (NFS mounts, engine, compose)
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
 		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
-		--limit dev-docker-01 -v
+		--limit dev-docker-02 -v
 
 # === Storage Configuration for NAS ===
 
@@ -280,13 +292,31 @@ nebula: ## Deploy Nebula Pi-hole sync service
 		-i iac/ansible/inventories/hosts.yml 
 
 
-homepage-check: ## Dry-run: Review Homepage dashboard deployment
-	ansible-playbook iac/ansible/playbooks/homepage.yml \
+homarr-check: ## Dry-run: Review Homarr dashboard deployment
+	ansible-playbook iac/ansible/playbooks/homarr.yml \
 		-i iac/ansible/inventories/hosts.yml \
 		--check --diff
 
-homepage: ## Deploy Homepage dashboard service
-	ansible-playbook iac/ansible/playbooks/homepage.yml \
+homarr: ## Deploy Homarr dashboard service
+	ansible-playbook iac/ansible/playbooks/homarr.yml \
+		-i iac/ansible/inventories/hosts.yml
+
+uptime-kuma-check: ## Dry-run: Review Uptime Kuma dashboard deployment
+	ansible-playbook iac/ansible/playbooks/uptime_kuma.yml \
+		-i iac/ansible/inventories/hosts.yml \
+		--check --diff
+
+uptime-kuma: ## Deploy Uptime Kuma dashboard service
+	ansible-playbook iac/ansible/playbooks/uptime_kuma.yml \
+		-i iac/ansible/inventories/hosts.yml
+
+pulse-check: ## Dry-run: Review Pulse dashboard deployment
+	ansible-playbook iac/ansible/playbooks/pulse.yml \
+		-i iac/ansible/inventories/hosts.yml \
+		--check --diff
+
+pulse: ## Deploy Pulse dashboard service
+	ansible-playbook iac/ansible/playbooks/pulse.yml \
 		-i iac/ansible/inventories/hosts.yml
 
 watchtower-check: ## Dry-run: Review Watchtower auto-update service

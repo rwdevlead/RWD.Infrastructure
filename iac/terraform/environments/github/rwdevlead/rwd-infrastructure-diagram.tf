@@ -18,7 +18,7 @@ module "rwd_infrastructure_diagram" {
   description     = "Network Utility for Infrastructure - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["dotnet", "reactjs", "vite", "utility", "mysql"]
+  topics          = ["dotnet", "reactjs", "vite", "utility", "sqlite"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki
@@ -33,9 +33,9 @@ module "codeowners_rwd_infrastructure_diagram" {
 
   repository   = module.rwd_infrastructure_diagram.repository_name
   branch       = "main"
-  github_owner = var.github_owner_rwdevlead
+  github_owner = local.github_owner
   # admins       = [var.github_owner_primary]
-  owners = [var.github_owner_rwdevlead]
+  owners = [local.github_owner]
 
   depends_on = [module.rwd_infrastructure_diagram]
 
@@ -48,7 +48,7 @@ module "branch_protection_rwd_infrastructure_diagram" {
   repository_id = module.rwd_infrastructure_diagram.repository_id
   branch        = "main"
 
-  github_owner = var.github_owner_rwdevlead
+  github_owner = local.github_owner
   # codeowners_admins = [var.github_owner_primary]
   # codeowners_owners = [var.github_owner_primary]
 

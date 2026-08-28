@@ -49,8 +49,32 @@ http:
         - default-headers
         - pihole-redirect      
       tls:
-        certResolver: "cloudflare"
+        certResolver: "{{ traefik_acme_resolver }}"
       service: "pihole-prod-service"
+    omv:
+      entryPoints:
+        - "web"
+        - "websecure"
+      rule: "Host(`tm.local.rwdevs.com`)"
+      middlewares:
+        - https-redirectscheme
+        - default-headers 
+      tls: 
+        certResolver: "{{ traefik_acme_resolver }}"
+      service: "omv-service"
+    uptime-kuma-prod:      
+      entryPoints:
+        - "web"
+        - "websecure"
+      rule: "Host(`uptime-kuma-p01.local.rwdevs.com`)"
+      middlewares:
+        - https-redirectscheme
+        - default-headers     
+      tls:
+        certResolver: "{{ traefik_acme_resolver }}"
+        domains:
+          - main: "uptime-kuma-p01.local.rwdevs.com"
+      service: "uptime-kuma-prod-service"
     ha-router:
       entryPoints:
         - "websecure"
@@ -58,13 +82,21 @@ http:
       middlewares:
         - default-headers
       tls:
-        certResolver: "cloudflare"
+        certResolver: "{{ traefik_acme_resolver }}"
       service: "ha-service"
   services:
     pihole-prod-service:
       loadBalancer:
         servers:
           - url: "http://192.168.50.14:8888"
+    omv-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.50.17"
+    uptime-kuma-prod-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.50.14:3001"
     ha-service:
       loadBalancer:
         servers:

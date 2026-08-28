@@ -1,0 +1,32 @@
+- name: Create Uptime Kuma base directory
+  file:
+    path: "{{ uptime_kuma_base_dir }}"
+    state: directory
+    owner: root
+    group: docker
+    mode: "0775"
+
+- name: Deploy docker compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ uptime_kuma_base_dir }}/docker-compose.yml"
+  notify: Restart Uptime Kuma
+
+- name: Start Uptime Kuma container
+  community.docker.docker_compose_v2:
+    project_src: "{{ uptime_kuma_base_dir }}"
+    state: present
+  check_mode: false
+  when: not ansible_check_mode
+
+- name: Wait for Uptime Kuma to respond via Traefik
+  uri:
+    url: "https://{{ uptime_kuma.domain }}"
+    status_code: 200
+    validate_certs: false
+  register: uptime_kuma_health
+  retries: 10
+  delay: 5
+  until: uptime_kuma_health.status == 200
+  check_mode: false
+  when: not ansible_check_mode

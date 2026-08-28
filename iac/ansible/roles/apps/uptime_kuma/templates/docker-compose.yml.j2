@@ -1,0 +1,35 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:{{ uptime_kuma_version }}
+    container_name: {{ uptime_kuma.container }}
+    restart: unless-stopped
+    ports:
+      - "{{ uptime_kuma.port }}:3001"
+    environment:
+      - TZ={{ shared_timezone }}
+    volumes:
+      - "{{ uptime_kuma_data_dir }}:/app/data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptime-kuma.rule=Host(`{{ uptime_kuma.domain }}`)"
+      - "traefik.http.routers.uptime-kuma.entrypoints=websecure"
+      - "traefik.http.routers.uptime-kuma.tls=true"
+      - "traefik.http.services.uptime-kuma.loadbalancer.server.port=3001"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - traefik
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  traefik:
+    external: true

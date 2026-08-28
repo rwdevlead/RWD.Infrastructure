@@ -2,5 +2,9 @@
 - name: Deploy Nebula Sync Application
   hosts: prod-docker-01
   become: true
+  vars:
+    infisical_secret_paths:
+      - "/ansible/pihole"
   roles:
+    - infisical_secrets
     - apps/nebula-sync

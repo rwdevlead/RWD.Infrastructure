@@ -8,20 +8,6 @@ terraform {
 }
 
 
-# resource "proxmox_virtual_environment_download_file" "ha_image" {
-#   content_type = "iso"
-#   datastore_id = "local"
-#   node_name    = var.node_name
-#   url          = var.qcow2_url
-
-#   # This is the magic line for .xz files
-#   decompression_algorithm = "xz"
-
-#   # Ensure the destination filename ends in .img or .qcow2 
-#   # so Proxmox recognizes it as a disk image after decompression
-#   file_name = var.qcow2_filename
-# }
-
 resource "proxmox_virtual_environment_file" "ha_image" {
   content_type = "iso"
   datastore_id = "local"

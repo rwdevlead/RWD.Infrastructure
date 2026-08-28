@@ -57,6 +57,8 @@ resource "proxmox_virtual_environment_vm" "template" {
 
 
   initialization {
+    datastore_id = var.disk_storage_id
+
     # TODO The user account configuration (conflicts with user_data_file_id per the provider
     # user_account {
     #   keys     = [var.ssh_public_key_content]
@@ -126,4 +128,3 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
 #     path = "${path.module}/cloudinit.yaml"
 #   }
 # }
-

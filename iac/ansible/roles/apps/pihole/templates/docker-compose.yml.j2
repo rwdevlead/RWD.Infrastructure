@@ -19,7 +19,7 @@ services:
       VIRTUAL_HOST: "{{ pihole_instances[inventory_hostname].domain }}"
       FTLCONF_webserver_api_allowedHosts: "{{ pihole_instances[inventory_hostname].domain }}"
       TZ: "{{ shared_timezone }}"
-      FTLCONF_webserver_api_password: "{{ lookup('ansible.builtin.env', pihole_instances[inventory_hostname].env_user_pwd) }}"
+      FTLCONF_webserver_api_password: "{{ secrets.ansible.pihole[pihole_instances[inventory_hostname].env_user_pwd] }}"
       FTLCONF_webserver_tls_enabled: "false"
       DNS1: "{{ pihole_dns1 }}"
       DNS2: "{{ pihole_dns2 }}"

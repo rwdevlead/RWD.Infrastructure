@@ -135,3 +135,14 @@ packer/
 • make all-\* commands run independently for each Terraform root — safe to use even if some projects fail validation.
 • Designed for macOS (Zsh) but compatible with other Unix shells.
 • You can extend this Makefile easily by adding new targets to automate CI/CD or cloud tasks.
+
+💻 macOS: Objective-C fork-safety when running Ansible
+
+• On macOS some Python or native extensions initialize the Objective‑C runtime and can cause fork/exec to fail when running local processes (this shows up as ObjC/fork errors).
+• The Makefile selectively prefixes local Ansible runs with `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to disable that runtime check for the single command, e.g.:
+
+```sh
+OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ansible-playbook -c local iac/ansible/playbooks/test_infisical.yml
+```
+
+• This is a targeted workaround. Alternatives include using a Python runtime that does not trigger the ObjC initialization (virtualenv, pyenv, or a different Homebrew Python), or running Ansible inside a container or VM.

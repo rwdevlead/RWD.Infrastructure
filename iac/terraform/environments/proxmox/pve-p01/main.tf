@@ -2,7 +2,7 @@
 # commented out to use default values
 
 locals {
-  # Read the content of the key for direct injection (still the most effective method)
+  # trimspace removes trailing newlines that cause perpetual drift in some providers
   ssh_public_key_content  = trimspace(file("~/.ssh/id_ed25519.pub"))
   ssh_private_key_content = file("~/.ssh/id_ed25519")
 }
@@ -52,8 +52,8 @@ module "Prod_Docker_01" {
   vm_description = "Production Docker Instance"
   #   keyboard      
 
-  vm_username = "ka8kgj"
-  vm_password = "password123"
+  vm_username = var.default_username
+  vm_password = var.default_password
 
   vm_cores = 2
 
@@ -79,4 +79,38 @@ module "Prod_Docker_01" {
 
 }
 
+module "omv_vm" {
+  source            = "../../../modules/proxmox/omv-vm"
+  vm_name           = "dev-omv-01"
+  vm_id             = 102
+  vm_description    = "Open Media Vault - Managed by Terraform"
+  proxmox_node_name = "pve-p01"
+  proxmox_node_ip   = "192.168.50.10"
 
+  # Resource Allocation
+  vm_cores = 2
+
+  vm_bios    = "ovmf"
+  vm_machine = "q35"
+
+  vm_memory_max = 4096 # 3-4 gig 3073-4096
+  vm_memory_min = 4096
+
+  # Storage & Media
+  boot_datastore = "local-lvm"
+  # iso_file_id    = "local:iso/openmediavault_8.3.1-amd64.iso"
+  iso_file_id = "none"
+
+  # Physical Disk Passthrough
+  data_disk_id   = "ata-HGST_HTS541010A9E680_JA1009C033492P"
+  disk_interface = "scsi0"
+  disk_size      = 32
+
+  network_gateway = "192.168.50.1"
+  vm_static_ip    = "192.168.50.17/24"
+
+  tags = ["vm", "dev", "omv", "storage"]
+
+  ssh_private_key_content = local.ssh_private_key_content
+
+}

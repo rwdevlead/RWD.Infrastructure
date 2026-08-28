@@ -1,5 +1,0 @@
-- name: Deploy Homepage
-  hosts: dev-docker-01
-  become: true
-  roles:
-    - role: apps/homepage

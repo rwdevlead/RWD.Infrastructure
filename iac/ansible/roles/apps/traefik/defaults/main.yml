@@ -2,8 +2,8 @@
 traefik_image: "traefik"
 traefik_tag: "v3.6.1"
 
-traefik_base_dir: "{{ docker_base_dir }}/traefik"
-traefik_data_dir: "{{ docker_base_mnt }}/traefik"
+traefik_base_dir: "{{ docker_base_dir }}/{{ traefik_instance.name }}"
+traefik_data_dir: "{{ docker_base_mnt }}/{{ traefik_instance.name }}"
 traefik_volumes_dir: "{{ traefik_data_dir }}/volumes"
 traefik_logs_dir: "{{ traefik_data_dir }}/logs"
 
@@ -29,4 +29,4 @@ traefik_ip_whitelist:
   - "192.168.50.0/24"
   - "172.18.0.0/16"
 
-cloudflare_dns_api_token: "{{ lookup('env', 'CF_DNS_API_TOKEN') }}"
+cloudflare_dns_api_token: "{{ secrets.ansible.cloudflare.CF_DNS_API_TOKEN }}"

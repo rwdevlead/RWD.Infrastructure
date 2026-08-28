@@ -2,5 +2,10 @@
 - name: Deploy Mailrise Alerts
   hosts: prod-docker-01
   become: true
+  vars:
+    infisical_secret_paths:
+      - "/ansible/mail"
+      - "/ansible/mailrise"
   roles:
+    - infisical_secrets
     - apps/mailrise

@@ -1,0 +1,9 @@
+---
+# Homepage Docker image version
+homarr_version: latest
+
+# Base directory on host where Homepage will live
+homarr_base_dir: "{{ docker_base_dir }}/{{ homarr.container }}"
+
+# Config directory inside base directory
+homarr_config_dir: "{{ homarr_base_dir }}/config"

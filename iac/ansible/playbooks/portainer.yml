@@ -1,7 +1,10 @@
 ---
 - name: Deploy Portainer
-  hosts: dev-docker-01
+  hosts: dev-docker-02
   become: true
-
+  vars:
+    infisical_secret_paths:
+      - "/ansible/portainer"
   roles:
+    - infisical_secrets
     - apps/portainer

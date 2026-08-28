@@ -1,0 +1,9 @@
+---
+# Uptime Kuma Docker image version
+uptime_kuma_version: 2
+
+# Base directory on host where Uptime Kuma will live
+uptime_kuma_base_dir: "{{ docker_base_dir }}/{{ uptime_kuma.container }}"
+
+# Config directory inside persistant directory
+uptime_kuma_data_dir: "{{ docker_base_mnt }}/{{ uptime_kuma.container }}"

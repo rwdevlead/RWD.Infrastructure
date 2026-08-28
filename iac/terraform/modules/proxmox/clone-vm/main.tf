@@ -73,6 +73,8 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
   }
 
   initialization {
+    datastore_id = var.disk_storage_id
+
     user_account {
       keys     = [var.ssh_public_key_content]
       username = "ka8kgj"

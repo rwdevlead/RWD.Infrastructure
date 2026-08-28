@@ -21,11 +21,11 @@ locals {
   codeowners_content = trimspace("${local.base_content}${local.extra_content}")
 
   # Collect all unique usernames from admins, owners, and extra rules
-  all_owners = distinct(concat(
+  all_owners = nonsensitive(distinct(concat(
     var.admins,
     var.owners,
     [for _, owner in var.extra_rules : owner]
-  ))
+  )))
 }
 
 # data "github_user" "owner" {

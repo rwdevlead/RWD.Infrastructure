@@ -1,7 +1,10 @@
 ---
 - name: Deploy Traefik
-  hosts: dev-docker-01
+  hosts: dev-docker-02
   become: true
-
+  vars:
+    infisical_secret_paths:
+      - "/ansible/cloudflare"
   roles:
+    - infisical_secrets
     - apps/traefik

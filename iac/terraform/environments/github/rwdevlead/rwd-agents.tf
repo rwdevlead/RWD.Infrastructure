@@ -1,12 +1,12 @@
 
 # *** import repo ***
 # import {
-#   id = "RWD.Agents"
+#   id = "RWD.Ai.Stack"
 #   to = module.rwd_agents.github_repository.this
 # }
 
 # import {
-#   id = "RWD.Agents:main"
+#   id = "RWD.Ai.Stack:main"
 #   to = module.branch_protection_rwd_agents.github_branch_protection.branch
 # }
 
@@ -14,11 +14,11 @@
 module "rwd_agents" {
   source = "../../../modules/github/github-repository"
 
-  repository_name = "RWD.Agents"
-  description     = "Network Utility for Infrastructure - ${local.managed_by}"
+  repository_name = "RWD.Ai.Stack"
+  description     = "Agentic AI Notes - ${local.managed_by}"
   visibility      = "public"
 
-  topics          = ["dotnet", "reactjs", "vite", "utility", "mysql"]
+  topics          = ["template", "ai"]
   has_issues      = local.repo_features.has_issues
   has_projects    = local.repo_features.has_projects
   has_wiki        = local.repo_features.has_wiki
@@ -33,9 +33,9 @@ module "codeowners_rwd_agents" {
 
   repository   = module.rwd_agents.repository_name
   branch       = "main"
-  github_owner = var.github_owner_rwdevlead
+  github_owner = local.github_owner
   # admins       = [var.github_owner_primary]
-  owners = [var.github_owner_rwdevlead]
+  owners = [local.github_owner]
 
   depends_on = [module.rwd_agents]
 
@@ -48,7 +48,7 @@ module "branch_protection_rwd_agents" {
   repository_id = module.rwd_agents.repository_id
   branch        = "main"
 
-  github_owner = var.github_owner_rwdevlead
+  github_owner = local.github_owner
   # codeowners_admins = [var.github_owner_primary]
   # codeowners_owners = [var.github_owner_primary]
 
