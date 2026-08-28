@@ -4,7 +4,7 @@ terraform {
 
     workspaces {
       project = "RWD Infrastructure"
-      name    = "github-rwdevlead-repos"
+      name    = "infisical-testing"
     }
   }
   required_version = ">= 1.13.1"
@@ -13,9 +13,9 @@ terraform {
       source  = "Infisical/infisical"
       version = "~> 0.14"
     }
-    github = {
-      source  = "integrations/github"
-      version = "~> 6.1.0"
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
     }
   }
 }
@@ -30,11 +30,3 @@ provider "infisical" {
     }
   }
 }
-
-# --- GitHub provider ---
-provider "github" {
-  token = local.github_token
-  owner = local.github_owner
-}
-
-# https://registry.terraform.io/providers/Infisical/infisical/latest/docs#terraform

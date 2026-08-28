@@ -44,7 +44,7 @@ services:
       - "{{ traefik_port_api }}:{{ traefik_port_api }}"
 
     environment:
-      CF_DNS_API_TOKEN: "{{ lookup('ansible.builtin.env', traefik_instance.env_token_key) }}"
+      CF_DNS_API_TOKEN: "{{ cloudflare_dns_api_token }}"
       DOCKER_API_VERSION: "{{ shared_docker_api_version }}"
 
     volumes:

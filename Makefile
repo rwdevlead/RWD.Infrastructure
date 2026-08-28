@@ -14,7 +14,8 @@
 	pihole pihole-check \
 	watchtower watchtower-check \
 	truenas truenas-check \
-	setup-updates run-upgrade
+	setup-updates run-upgrade \
+	check-tf-vars
 
 # ==========================================================
 # Environment Setup (Load .env file if present)
@@ -25,6 +26,11 @@ ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
+
+# Map env vars to Terraform variables (Make syntax)
+export TF_VAR_infisical_client_id := $(INFISICAL_CLIENT_ID)
+export TF_VAR_infisical_client_secret := $(INFISICAL_CLIENT_SECRET)
+export TF_VAR_infisical_project_id := $(INFISICAL_PROJECT_ID)
 
 # ==========================================================
 # Global Variables (Configuration)
@@ -73,6 +79,12 @@ help: ## Show this help message with all available targets
 	@echo '  - Packer instructions: instructions/PACKER.md'
 	@echo '═══════════════════════════════════════════════════════════════'
 
+
+# test that the ENV made it into terraform 
+check-tf-vars:
+	@echo "TF_VAR_infisical_client_id:     $$TF_VAR_infisical_client_id"
+	@echo "TF_VAR_infisical_client_secret: $$TF_VAR_infisical_client_secret"
+	@echo "TF_VAR_infisical_project_id:    $$TF_VAR_infisical_project_id"
 
 # ==========================================================
 # Proxmox VM Templating Commands (Golden Image Creation)

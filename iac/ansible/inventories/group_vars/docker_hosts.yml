@@ -28,13 +28,6 @@ pihole_instances:
     server: "prod-docker-01"
     container: "pihole-p01"
     env_user_pwd: "PIHOLE_P01_PASSWORD"
-  # dev-docker-01:
-  #   name: "pihole-d01"
-  #   domain: pihole-d01.local.rwdevs.com
-  #   url: "https://pihole-d01.local.rwdevs.com"
-  #   server: "dev-docker-01"
-  #   container: "pihole-d01"
-  #   env_user_pwd: "PIHOLE_D01_PASSWORD"
   dev-docker-02:
     name: "pihole-d02"
     domain: pihole-d02.local.rwdevs.com
@@ -47,13 +40,6 @@ nebula_sync_url: "http://192.168.50.14:8888/api/auth"
 # Core API Endpoint Configuration (Pi-hole v6 App Endpoints)
 nebula_sync_primary_node: "http://192.168.50.14:8888" # Replace with your primary Pi-hole IP/DNS
 nebula_sync_replica1_node: "http://192.168.50.16:8888" # Replace with your replica Pi-hole IP/DNS
-# nebula_sync_replica2_node: "http://192.168.50.12:8888" # Replace with your replica Pi-hole IP/DNS
-
-# Pi-hole API App Passwords
-# Note: Ensure 'webserver.api.app_sudo: true' is set on the replica instance
-nebula_sync_primary_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_P01_PASSWORD') }}"
-nebula_sync_replica1_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_D02_PASSWORD') }}"
-# nebula_sync_replica2_token: "{{ lookup('ansible.builtin.env', 'PIHOLE_D01_PASSWORD') }}"
 
 # webhook for monitoring
 uptime_kuma_nebula_push_url_success: "https://uptime-kuma-p01.local.rwdevs.com/api/push/mOzdLaaXRzsew7xovxoy7K594cMkj9qb?status=up&msg=Sync+Success"
@@ -66,25 +52,18 @@ traefik_instance:
   server: dev-docker-02
   container: traefik-d02
   url: "https://traefik-d02.local.rwdevs.com"
-  env_token_key: "CF_DNS_API_TOKEN"
 
 # --- Proxmox Instances ---
 proxmox_instances:
   - name: "proxmox"
     domain: "proxmox.local.rwdevs.com"
     url: "https://192.168.50.11:8006"
-    # env_user_key: "PROXMOX_HOMEPAGE_USER"
-    # env_token_key: "PROXMOX_HOMEPAGE_TOKEN"
   - name: "pve-d01"
     domain: "pve-d01.local.rwdevs.com"
     url: "https://192.168.50.9:8006"
-    # env_user_key: "PVE_D01_HOMEPAGE_USER"
-    # env_token_key: "PVE_D01_HOMEPAGE_TOKEN"
   - name: "pve-p01"
     domain: "pve-p01.local.rwdevs.com"
     url: "https://192.168.50.10:8006"
-    # env_user_key: "PVE_P01_HOMEPAGE_USER"
-    # env_token_key: "PVE_P01_HOMEPAGE_TOKEN"
 
 watchtower_instances:
   dev-docker-02:
@@ -92,16 +71,10 @@ watchtower_instances:
     email: watchtower-d02@rwdevs.com
     server: dev-docker-02
     container: watchtower-d02
-    # widget:
-    #   url: http://192.168.50.16:8082
-    #   key_env: WATCHTOWER_TOKEN
   prod-docker-01:
     name: watchtower-p01
     email: watchtower-p01@rwdevs.com
     ping: 192.168.50.14
-    # widget:
-    #   url: http://192.168.50.14:8082
-    #   key_env: WATCHTOWER_TOKEN
 
 portainer_instance:
   url: "https://portainer-d02.local.rwdevs.com"
@@ -109,32 +82,15 @@ portainer_instance:
   domain: portainer-d02.local.rwdevs.com
 
 portainer_agents:
-  # TODO do i need widgets?
-  # dev-docker-01:
-  #   name: portainer-agent-d01
-  #   description: Development Docker Environment
-  #   ping: 192.168.50.12
-  #   widget:
-  #     url: "{{ portainer_instance.url }}"
-  #     env: 14
-  #     key_env: HOMEPAGE_PORTAINER_D01_KEY
   dev-docker-02:
     name: portainer-d02
     description: Development Docker Environment
     server: dev-docker-02
     container: portainer-d02
-    # widget:
-    #   url: "{{ portainer_instance.url }}"
-    #   env: 3
-    #   key_env: HOMEPAGE_PORTAINER_D02_KEY
   prod-docker-01:
     name: portainer-agent-p01
     description: Production Docker Environment
     ping: 192.168.50.14
-    # widget:
-    #   url: "{{ portainer_instance.url }}"
-    #   env: 13
-    #   key_env: HOMEPAGE_PORTAINER_P01_KEY
 
 mailrise:
   name: mailrise-p01

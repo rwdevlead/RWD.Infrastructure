@@ -4,16 +4,6 @@
 
   vars:
     infisical_secret_paths:
-      - "/"
-      - "/shared"
-      - "/ansible"
-      - "/ansible/cloudflare"
-      - "/ansible/homarr"
-      - "/ansible/homeassistant"
-      - "/ansible/mail"
-      - "/ansible/mailrise"
-      - "/ansible/pihole"
-      - "/ansible/portainer"
       - "/ansible/watchtower"
 
   roles:

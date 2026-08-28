@@ -29,4 +29,4 @@ traefik_ip_whitelist:
   - "192.168.50.0/24"
   - "172.18.0.0/16"
 
-cloudflare_dns_api_token: "{{ lookup('env', 'CF_DNS_API_TOKEN') }}"
+cloudflare_dns_api_token: "{{ secrets.ansible.cloudflare.CF_DNS_API_TOKEN }}"

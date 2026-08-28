@@ -1,0 +1,2 @@
+nebula_sync_primary_token: "{{ secrets.ansible.pihole.PIHOLE_P01_PASSWORD }}"
+nebula_sync_replica1_token: "{{ secrets.ansible.pihole.PIHOLE_D02_PASSWORD }}"

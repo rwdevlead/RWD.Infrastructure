@@ -38,9 +38,9 @@ module "codeowners_rwd_toolbox_ui_middleware" {
 
   repository   = module.rwd_toolbox_ui_middleware.repository_name
   branch       = "master"
-  github_owner = var.github_owner_realworlddevelopers
+  github_owner = local.github_owner
   # admins       = [var.github_owner_secondary]
-  owners = [var.github_owner_realworlddevelopers]
+  owners = [local.github_owner]
 
   depends_on = [module.rwd_toolbox_ui_middleware]
 
@@ -53,7 +53,7 @@ module "branch_protection_rwd_toolbox_ui_middleware" {
   repository_id = module.rwd_toolbox_ui_middleware.repository_id
   branch        = "master"
 
-  github_owner = var.github_owner_realworlddevelopers
+  github_owner = local.github_owner
   # codeowners_admins = [var.github_owner_secondary]
   # codeowners_owners = [var.github_owner_secondary]
 

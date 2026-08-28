@@ -1,5 +1,9 @@
 - name: Deploy Homarr
   hosts: homarr
   become: true
+  vars:
+    infisical_secret_paths:
+      - "/ansible/homarr"
   roles:
-    - role: apps/homarr
+    - infisical_secrets
+    - apps/homarr

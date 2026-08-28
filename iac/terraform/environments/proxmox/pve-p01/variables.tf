@@ -1,3 +1,17 @@
+variable "infisical_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "infisical_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+variable "infisical_project_id" {
+  type = string
+}
+
 
 variable "default_username" {
   type        = string
@@ -10,7 +24,4 @@ variable "default_password" {
   description = "Password Username [default is null]"
   #   default     = null
 }
-
-variable "PVE_P01_ENDPOINT" {}
-variable "PVE_P01_TERRAFORM_TOKEN" {}
 

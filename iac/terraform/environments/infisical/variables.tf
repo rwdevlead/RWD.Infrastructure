@@ -11,4 +11,3 @@ variable "infisical_client_secret" {
 variable "infisical_project_id" {
   type = string
 }
-

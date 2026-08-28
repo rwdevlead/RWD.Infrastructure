@@ -7,7 +7,7 @@ services:
       - "{{ homarr.port }}:7575"
     environment:
       - TZ={{ shared_timezone }}
-      - SECRET_ENCRYPTION_KEY={{ lookup('ansible.builtin.env', 'HOMMARR_SECRET_ENCRYPTION_KEY') }}
+      - SECRET_ENCRYPTION_KEY={{ secrets.ansible.homarr.SECRET_ENCRYPTION_KEY }}
     volumes:
       - "{{ homarr_base_dir }}:/appdata"
       - /var/run/docker.sock:/var/run/docker.sock:ro

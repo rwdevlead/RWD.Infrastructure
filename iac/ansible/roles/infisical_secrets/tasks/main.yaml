@@ -1,4 +1,14 @@
 # Login to Infisical
+
+# - name: Login to Infisical
+#   infisical.vault.login:
+#     url: "https://app.infisical.com"
+#     auth_method: universal_auth
+#     universal_auth_client_id: "{{ lookup('env', 'INFISICAL_CLIENT_ID') }}"
+#     universal_auth_client_secret: "{{ lookup('env', 'INFISICAL_CLIENT_SECRET') }}"
+#   register: infisical_login
+#   check_mode: false
+
 - name: Login to Infisical
   infisical.vault.login:
     url: "https://app.infisical.com"
@@ -6,12 +16,26 @@
     universal_auth_client_id: "{{ lookup('env', 'INFISICAL_CLIENT_ID') }}"
     universal_auth_client_secret: "{{ lookup('env', 'INFISICAL_CLIENT_SECRET') }}"
   register: infisical_login
+  delegate_to: localhost
+  run_once: true
+  become: false
+  check_mode: false
 
 # Read secrets from a list of paths and merge into a namespaced `secrets` fact.
 # Example of roles vars:
 # infisical_secret_paths:
 #   - "/"
 #   - "/ansible/mail"
+
+# - name: Read secrets from configured paths
+#   infisical.vault.read_secrets:
+#     login_data: "{{ infisical_login.login_data }}"
+#     project_id: "{{ lookup('env', 'INFISICAL_PROJECT_ID') }}"
+#     env_slug: "{{ infisical_env_slug | default('dev') }}"
+#     path: "{{ item }}"
+#     as_dict: true
+#   loop: "{{ infisical_secret_paths | default(['/']) }}"
+#   register: read_results
 
 - name: Read secrets from configured paths
   infisical.vault.read_secrets:
@@ -22,29 +46,25 @@
     as_dict: true
   loop: "{{ infisical_secret_paths | default(['/']) }}"
   register: read_results
+  delegate_to: localhost
+  run_once: true
+  become: false
+  check_mode: false
 
-- name: Initialize secrets dictionary
-  ansible.builtin.set_fact:
-    secrets: {}
+- name: Build nested secrets structure from path results
+  ansible.builtin.script: >-
+    merge_infisical_secrets.py
+  environment:
+    INFISICAL_RESULTS: "{{ read_results.results | default([]) | to_json }}"
+  register: merged_secrets
+  changed_when: false
+  check_mode: false
 
-- name: Merge path results into secrets
+- name: Load merged secrets into fact
   ansible.builtin.set_fact:
-    secrets: "{{ secrets | combine(item_dict | from_yaml, recursive=True) }}"
-  loop: "{{ read_results.results | default([]) }}"
-  vars:
-    clean_path: "{{ (item.item | default('/')) | trim('/') }}"
-    path_parts: "{{ clean_path.split('/') if clean_path != '' else [] }}"
-    raw_secrets: "{{ item.secrets | default({}) }}"
-    nested_dict: >-
-      {% set curr = raw_secrets %}
-      {% for part in path_parts | reverse %}
-        {% set curr = { part: curr } %}
-      {% endfor %}
-      {{ curr }}
-    dotted_key: "{{ clean_path | replace('/', '.') }}"
-    item_dict: >-
-      {% if clean_path == '' %}
-        {{ raw_secrets }}
-      {% else %}
-        {{ nested_dict | from_yaml | combine({ dotted_key: raw_secrets }, recursive=True) }}
-      {% endif %}
+    secrets: "{{ merged_secrets.stdout | from_json }}"
+
+- name: Debug loaded secrets fact
+  ansible.builtin.debug:
+    var: secrets
+#DELETEME remove debug

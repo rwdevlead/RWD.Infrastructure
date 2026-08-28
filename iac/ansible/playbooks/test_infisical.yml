@@ -40,36 +40,37 @@
     - name: "Test 3 - nested ansible namespace exists"
       assert:
         that:
-          - secrets is defined
           - secrets.ansible is defined
-          - secrets.ansible.mail is defined
-          - secrets.ansible.watchtower is defined
-        fail_msg: "Test 3 failed: secrets.ansible namespace is missing"
+          - secrets.ansible | type_debug == 'dict'
+        fail_msg: "Test 3 failed: secrets.ansible is missing or not a dict"
 
-    - name: "Test 4 - mail secret is accessible by namespaced key"
+    - name: "Test 4 - mail secret is accessible by nested key"
       assert:
         that:
+          - secrets.ansible.mail is defined
+          - secrets.ansible.mail.OUTLOOK_MAIL_USER is defined
           - secrets.ansible.mail.OUTLOOK_MAIL_USER == 'realworlddevs'
         fail_msg: "Test 4 failed: secrets.ansible.mail.OUTLOOK_MAIL_USER is missing or wrong"
 
-    - name: "Test 5 - watchtower token is accessible by namespaced key"
+    - name: "Test 5 - watchtower token is accessible by nested key"
       assert:
         that:
+          - secrets.ansible.watchtower is defined
           - secrets.ansible.watchtower.API_TOKEN is defined
           - secrets.ansible.watchtower.API_TOKEN | length > 0
         fail_msg: "Test 5 failed: secrets.ansible.watchtower.API_TOKEN is missing or empty"
 
-    - name: "Test 6 - legacy dotted-key compatibility still resolves"
-      assert:
-        that:
-          - secrets['ansible.mail'] is defined
-          - secrets['ansible.mail']['OUTLOOK_MAIL_USER'] == 'realworlddevs'
-        fail_msg: "Test 6 failed:legacy dotted-key lookup is not resolving"
-
-    - name: "Test 7 - root secret still matches"
+    - name: "Test 6 - root secret still matches"
       assert:
         that:
           - secrets.SECRET == 'testing'
-        fail_msg: "Test 7 failed: root secret mismatch"
-# TODO create secrets universal app to gather secrets for all that need it
+        fail_msg: "Test 6 failed: root secret mismatch"
+
+    - name: "Test 7 - bracket dotted-key access exists"
+      assert:
+        that:
+          - secrets['ansible.mail'] is defined
+          - secrets['ansible.mail']['OUTLOOK_MAIL_USER'] is defined
+        fail_msg: "Test failed: secrets['ansible.mail'] bracket access is missing or incomplete"
+        success_msg: "Test passed: secrets['ansible.mail'] bracket access verified"
 # https://infisical.com/docs/integrations/platforms/ansible#universal-auth

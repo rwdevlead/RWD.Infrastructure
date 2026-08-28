@@ -33,9 +33,9 @@ module "codeowners_winemakerssoftware" {
 
   repository   = module.winemakerssoftware.repository_name
   branch       = "master"
-  github_owner = var.github_owner_rwdevlead
+  github_owner = local.github_owner
   # admins       = [var.github_owner_primary]
-  owners = [var.github_owner_rwdevlead]
+  owners = [local.github_owner]
 
   depends_on = [module.winemakerssoftware]
 
@@ -48,7 +48,7 @@ module "branch_protection_winemakerssoftware" {
   repository_id = module.winemakerssoftware.repository_id
   branch        = "master"
 
-  github_owner = var.github_owner_rwdevlead
+  github_owner = local.github_owner
   # codeowners_admins = [var.github_owner_primary]
   # codeowners_owners = [var.github_owner_primary]
 

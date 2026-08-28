@@ -1,3 +1,17 @@
+variable "infisical_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "infisical_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+variable "infisical_project_id" {
+  type = string
+}
+
 
 variable "default_username" {
   type        = string
@@ -11,5 +25,3 @@ variable "default_password" {
   #   default     = null
 }
 
-variable "PROXMOX_ENDPOINT" {}
-variable "PROXMOX_TERRAFORM_TOKEN" {}

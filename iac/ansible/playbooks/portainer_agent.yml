@@ -2,5 +2,9 @@
 - name: Deploy Portainer Agent
   hosts: portainer_agents
   become: true
+  vars:
+    infisical_secret_paths:
+      - "/ansible/portainer"
   roles:
+    - infisical_secrets
     - apps/portainer_agent
