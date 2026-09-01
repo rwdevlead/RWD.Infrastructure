@@ -15,6 +15,12 @@ variable "visibility" {
   default     = "private"
 }
 
+variable "archived" {
+  description = "Whether the repository is archived. When true, do not manage write-only repo settings in the same apply."
+  type        = bool
+  default     = false
+}
+
 variable "topics" {
   description = "List of repository topics."
   type        = list(string)

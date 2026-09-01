@@ -124,6 +124,28 @@ terraform plan
 terraform apply
 ```
 
+## Archiving a Repository Safely
+
+When a repository is archived, GitHub treats it as read-only. Do not run an apply that tries to update CODEOWNERS or branch protection at the same time.
+
+Use this sequence:
+
+1. Comment out the CODEOWNERS and branch protection modules for the target repository.
+2. Keep only the repository module in place.
+3. Run `terraform apply` to leave the repo active.
+4. Change the repository module's `archived` value to `true`.
+5. Run `terraform apply` again to archive the repo.
+6. Do not manage CODEOWNERS or branch protection while the repo remains archived.
+
+To unarchive later, reverse the same process:
+
+1. Comment out the archived repo setting or set it back to `false`.
+2. Re-enable the CODEOWNERS and branch protection modules.
+3. Run `terraform apply`.
+4. Then unarchive the repository in GitHub.
+
+This pattern avoids GitHub API write failures on archived repositories.
+
 ## Managing Repositories
 
 ### Adding a New Repository
