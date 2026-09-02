@@ -3,6 +3,7 @@ resource "github_repository" "this" {
   name                   = var.repository_name
   description            = var.description
   visibility             = var.visibility
+  archived               = var.archived
   topics                 = var.topics
   has_issues             = var.has_issues
   has_projects           = var.has_projects
