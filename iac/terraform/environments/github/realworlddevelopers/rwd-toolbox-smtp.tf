@@ -22,6 +22,7 @@ module "rwd_toolbox_smtp" {
   repository_name = "RWD.Toolbox.SMTP"
   description     = "A tool to assist with sending emails via an SMTP server - ${local.managed_by}"
   visibility      = "public"
+  archived        = true
 
   topics          = ["csharp", "net6", "nuget", "shared"]
   has_issues      = local.repo_features.has_issues
@@ -32,41 +33,43 @@ module "rwd_toolbox_smtp" {
 
 }
 
-# Use CODEOWNERS module to manage the CODEOWNERS file
-module "codeowners_rwd_toolbox_smtp" {
-  source = "../../../modules/github/github-codeowners"
+# uncomment from here down if unarchiving.
 
-  repository   = module.rwd_toolbox_smtp.repository_name
-  branch       = "master"
-  github_owner = local.github_owner
-  # admins       = [var.github_owner_secondary]
-  owners = [local.github_owner]
+# # Use CODEOWNERS module to manage the CODEOWNERS file
+# module "codeowners_rwd_toolbox_smtp" {
+#   source = "../../../modules/github/github-codeowners"
 
-  depends_on = [module.rwd_toolbox_smtp]
+#   repository   = module.rwd_toolbox_smtp.repository_name
+#   branch       = "master"
+#   github_owner = local.github_owner
+#   # admins       = [var.github_owner_secondary]
+#   owners = [local.github_owner]
 
-}
+#   depends_on = [module.rwd_toolbox_smtp]
 
-# create classic branch protection instead of a ruleset
-module "branch_protection_rwd_toolbox_smtp" {
-  source = "../../../modules/github/github-branch-protection"
+# }
 
-  repository_id = module.rwd_toolbox_smtp.repository_id
-  branch        = "master"
+# # create classic branch protection instead of a ruleset
+# module "branch_protection_rwd_toolbox_smtp" {
+#   source = "../../../modules/github/github-branch-protection"
 
-  github_owner = local.github_owner
-  # codeowners_admins = [var.github_owner_secondary]
-  # codeowners_owners = [var.github_owner_secondary]
+#   repository_id = module.rwd_toolbox_smtp.repository_id
+#   branch        = "master"
 
-  # Branch protection settings
-  enforce_admins = local.branch_protection_settings.enforce_admins
-  # //// strict_required_status_checks   = local.branch_protection_settings.strict_required_status_checks
-  # //// required_status_check_contexts  = local.branch_protection_settings.required_status_check_contexts
-  # //dismiss_stale_reviews           = local.branch_protection_settings.dismiss_stale_reviews
-  require_code_owner_reviews      = local.branch_protection_settings.require_code_owner_reviews
-  required_approving_review_count = local.branch_protection_settings.required_approving_review_count
+#   github_owner = local.github_owner
+#   # codeowners_admins = [var.github_owner_secondary]
+#   # codeowners_owners = [var.github_owner_secondary]
 
-  depends_on = [module.codeowners_rwd_toolbox_smtp]
+#   # Branch protection settings
+#   enforce_admins = local.branch_protection_settings.enforce_admins
+#   # //// strict_required_status_checks   = local.branch_protection_settings.strict_required_status_checks
+#   # //// required_status_check_contexts  = local.branch_protection_settings.required_status_check_contexts
+#   # //dismiss_stale_reviews           = local.branch_protection_settings.dismiss_stale_reviews
+#   require_code_owner_reviews      = local.branch_protection_settings.require_code_owner_reviews
+#   required_approving_review_count = local.branch_protection_settings.required_approving_review_count
 
-}
+#   depends_on = [module.codeowners_rwd_toolbox_smtp]
+
+# }
 
 
