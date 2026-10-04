@@ -3,6 +3,11 @@ services:
     image: {{ pulse_image }}:{{ pulse_tag }}
     container_name: {{ pulse_instance.container }}
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "{{ pulse_instance.port }}:7655"
     environment:
