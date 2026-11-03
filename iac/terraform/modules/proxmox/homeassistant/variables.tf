@@ -20,6 +20,11 @@ variable "vm_description" {
   default     = "Home Assistant Instance"
 }
 
+variable "vm_on_boot" {
+  type        = bool
+  description = "Start VM on Proxmox node boot"
+}
+
 variable "vm_os" {
   type        = string
   description = "OS of Template [default is l26]"

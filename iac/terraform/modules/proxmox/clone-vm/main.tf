@@ -35,7 +35,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
     enabled = true
   }
 
-  on_boot = true
+  on_boot = var.vm_on_boot
 
 
   cpu {

@@ -50,6 +50,7 @@ module "Dev_Docker_02" {
   vm_node_name   = "pve-d01"
   vm_name        = "dev-docker-02"
   vm_description = "Development Docker Instance"
+  vm_on_boot     = false
   #   keyboard      
 
   vm_username = var.default_username
@@ -110,6 +111,7 @@ module "Dev_Docker_02" {
 #   vm_name           = "dev-truenas-01"
 #   vm_id             = 200
 #   vm_description    = "TrueNAS SCALE - Managed by Terraform"
+#   vm_on_boot        = false
 #   proxmox_node_name = "proxmox"
 #   proxmox_node_ip   = "192.168.50.11"
 

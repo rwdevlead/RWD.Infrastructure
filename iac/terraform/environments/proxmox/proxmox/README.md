@@ -49,6 +49,16 @@ Home Assistant smart home server.
 - **OS:** Ubuntu 24.04 (via template)
 - **Use Case:** Home automation and smart home management
 
+#### dev-truenas-01 (VM ID: 200)
+
+TrueNAS SCALE storage appliance for development network storage.
+
+- **Status:** Running
+- **Hardware:** 2 CPU cores, 8192 MB RAM, 32 GB boot disk
+- **Data Disk:** Physical disk passthrough (`ata-ST1000DM003-1ER162_Z4YCRN9L`)
+- **Network:** Static IP `192.168.50.13/24`
+- **Use Case:** Development network storage and backups
+
 ## Configuration Structure
 
 ```hcl
@@ -66,6 +76,7 @@ module "ubuntu_template" {
   vm_name       = "ubuntu-2404-template"
   node_name     = "proxmox"
   template_mode = false  # See template creation workflow
+  vm_startup    = false
 
   # Configuration...
 }
@@ -77,10 +88,36 @@ module "Dev_Docker_01" {
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id        = 201
-  vm_name      = "dev-docker-01"
-  vm_node_name = "proxmox"
-  vm_static_ip = "192.168.50.12/24"
+  vm_id          = 201
+  vm_name        = "dev-docker-01"
+  vm_node_name   = "proxmox"
+  vm_on_boot     = false
+  vm_static_ip   = "192.168.50.12/24"
+
+  # Configuration...
+}
+
+# Home Assistant VM
+module "homeassistant" {
+  source = "../../../modules/proxmox/homeassistant"
+
+  vm_id          = 102
+  node_name      = "proxmox"
+  vm_name        = "homeassistant"
+  vm_on_boot     = false
+
+  # Configuration...
+}
+
+# TrueNAS Storage VM
+module "truenas_vm" {
+  source            = "../../../modules/proxmox/truenas-vm"
+  vm_name           = "dev-truenas-01"
+  vm_id             = 200
+  vm_on_boot        = false
+  proxmox_node_name = "proxmox"
+  proxmox_node_ip   = "192.168.50.11"
+  data_disk_id      = "ata-ST1000DM003-1ER162_Z4YCRN9L"
 
   # Configuration...
 }
@@ -90,11 +127,12 @@ module "Dev_Docker_01" {
 
 All VMs are connected to bridge `vmbr0` for LAN access.
 
-| VM Name         | IP Address       | Purpose            |
-| --------------- | ---------------- | ------------------ |
-| ubuntu-template | N/A              | Template (off)     |
-| dev-docker-01   | 192.168.50.12/24 | Development Docker |
-| homeassistant   | Dynamic (DHCP)   | Home Automation    |
+| VM Name         | IP Address       | Purpose                 |
+| --------------- | ---------------- | ----------------------- |
+| ubuntu-template | N/A              | Template (off)          |
+| dev-docker-01   | 192.168.50.12/24 | Development Docker host |
+| homeassistant   | Dynamic (DHCP)   | Home Automation         |
+| dev-truenas-01  | 192.168.50.13/24 | TrueNAS Storage         |
 
 **Gateway:** 192.168.50.1
 **DNS:** Configured via DHCP
@@ -142,6 +180,7 @@ module "dev_docker" {
 
   vm_id        = 201
   vm_name      = "dev-docker-01"
+  vm_on_boot   = false
   # ... other configuration
 }
 ```
@@ -162,45 +201,28 @@ ssh ka8kgj@dev-docker-01.local
 
 ### Prerequisites
 
-1. **Proxmox API Token**
-   - Create in Proxmox UI: Datacenter > Permissions > API Tokens
-   - Required scopes: Datastore, Nodes, VMs, Firewall
+- **HCP Terraform Token:** Run `terraform login` to authenticate with HCP Terraform (`app.terraform.io`) for remote state in the `proxmox-legacy` workspace. The token is stored locally in `~/.terraform.d/credentials.tfrc.json`.
+- **Not Stored in Infisical:** **The Terraform Cloud user API token is NOT stored in Infisical.** It must be generated and maintained on your local workstation via `terraform login`.
+- **Infisical Secrets:** Universal Auth credentials configured in `.env` (`INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, `INFISICAL_PROJECT_ID`). Proxmox host connection secrets (`PVE_ENDPOINT`, `PVE_TOKEN`) are stored in and dynamically retrieved from the Infisical vault at `/terraform/proxmox/proxmox`.
 
-2. **Environment Variables**
-
-   ```bash
-   export PROXMOX_VE_ENDPOINT="https://proxmox.example.com:8006"
-   export PROXMOX_VE_API_TOKEN="user@pam!terraform=<token>"
-   export PROXMOX_VE_INSECURE=true
-   ```
-
-3. **SSH Keys**
-   - Public key: `~/.ssh/id_ed25519.pub`
-   - Private key: `~/.ssh/id_ed25519`
+All operations should be performed via the repository root Makefile:
 
 ### Initialize
 
 ```bash
-terraform init
+make init TARGET=proxmox/proxmox
 ```
 
 ### Plan Changes
 
 ```bash
-terraform plan
+make plan TARGET=proxmox/proxmox
 ```
 
 ### Apply Configuration
 
 ```bash
-terraform apply
-```
-
-### Destroy (CAUTION)
-
-```bash
-# WARNING: This will delete all VMs!
-terraform destroy
+make apply TARGET=proxmox/proxmox
 ```
 
 ## Common Tasks
@@ -219,7 +241,8 @@ module "dev_test_vm" {
   vm_id        = 202
   vm_name      = "dev-test-02"
   vm_node_name = "proxmox"
-  vm_static_ip = "192.168.50.13/24"
+  vm_on_boot   = false
+  vm_static_ip = "192.168.50.15/24"
 
   vm_cores      = 2
   vm_memory_min = 4096
@@ -233,8 +256,8 @@ module "dev_test_vm" {
 2. Apply changes:
 
 ```bash
-terraform plan
-terraform apply
+make plan TARGET=proxmox/proxmox
+make apply TARGET=proxmox/proxmox
 ```
 
 ### Updating VM Hardware

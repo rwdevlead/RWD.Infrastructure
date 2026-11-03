@@ -12,6 +12,7 @@ resource "proxmox_virtual_environment_vm" "truenas_scale" {
   description = var.vm_description
   node_name   = var.proxmox_node_name
   vm_id       = var.vm_id
+  on_boot     = var.vm_on_boot
 
   scsi_hardware = "virtio-scsi-pci"
   machine       = var.vm_machine

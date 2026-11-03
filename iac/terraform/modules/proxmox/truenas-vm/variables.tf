@@ -10,6 +10,11 @@ variable "vm_description" {
   default     = "Virtual Machine"
 }
 
+variable "vm_on_boot" {
+  type        = bool
+  description = "Start VM on Proxmox node boot"
+}
+
 variable "ssh_private_key_content" {
   description = "The content of the SSH private key to inject into the VM. [default is ~/.ssh/id_ed25519]"
   type        = string
