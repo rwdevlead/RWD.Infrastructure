@@ -50,6 +50,7 @@ module "Dev_Docker_01" {
   vm_node_name   = "proxmox"
   vm_name        = "dev-docker-01"
   vm_description = "Development Docker Instance"
+  vm_on_boot     = false
   #   keyboard      
 
   vm_username = var.default_username
@@ -86,6 +87,7 @@ module "homeassistant" {
   node_name      = "proxmox"
   vm_name        = "homeassistant"
   vm_description = "Home Assistance Instance"
+  vm_on_boot     = false
 
   vm_cores  = 2
   vm_memory = 4096
@@ -110,6 +112,7 @@ module "truenas_vm" {
   vm_name           = "dev-truenas-01"
   vm_id             = 200
   vm_description    = "TrueNAS SCALE - Managed by Terraform"
+  vm_on_boot        = false
   proxmox_node_name = "proxmox"
   proxmox_node_ip   = "192.168.50.11"
 

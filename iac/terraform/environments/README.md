@@ -11,7 +11,9 @@ Each environment is organized by platform or use case:
   - `rwdevlead/` - RWD Leadership organization
 - **[proxmox/](./proxmox/)** - Proxmox Virtual Environment configurations
   - `proxmox/` - Development/test Proxmox cluster
+  - `pve-d01/` - Development standalone Proxmox node
   - `pve-p01/` - Production Proxmox environment
+- **[infisical/](./infisical/)** - Infisical secret management testing environment
 
 ## Root Module Pattern
 
@@ -34,11 +36,17 @@ environments/
 │   │   └── *.tf                       # Repository-specific files
 │   └── rwdevlead/
 │       └── (similar structure)
+├── infisical/
+│   ├── main.tf                        # Infisical secret retrieval testing
+│   ├── providers.tf                   # Infisical provider & HCP cloud workspace
+│   └── variables.tf                   # Machine identity variables
 └── proxmox/
     ├── proxmox/
     │   ├── main.tf                    # Template, VMs, storage
     │   ├── providers.tf
     │   └── variables.tf
+    ├── pve-d01/
+    │   └── (similar structure)
     └── pve-p01/
         └── (similar structure)
 ```
@@ -84,18 +92,18 @@ Or:
 make apply TARGET=github/realworlddevelopers
 ```
 
-## State Management
+## State Management & HCP Terraform Authentication
 
-Each root module has its own state file:
+All environments in this repository manage state remotely using **HCP Terraform (Terraform Cloud)** under organization `realworlddevelopers` and project `RWD Infrastructure`.
 
-```
-environments/github/realworlddevelopers/
-├── terraform.tfstate              # Current state
-├── terraform.tfstate.backup       # Previous state
-└── .terraform.tfstate.lock.info   # Lock file (when locked)
-```
-
-**Important:** State files are gitignored for security. They are local to each environment and contain sensitive information.
+### Acquiring the Terraform Token
+- **Using `terraform login`:** To authenticate your local workstation, run:
+  ```bash
+  terraform login
+  ```
+  Follow the terminal prompts to open the browser, create an API token, and allow Terraform to store it in `~/.terraform.d/credentials.tfrc.json`.
+- **Not Stored in Infisical:** **The Terraform Cloud user API token is NOT stored in Infisical.** It must be generated and managed directly on your workstation via `terraform login`. Infisical manages secrets such as Infisical credentials, GitHub tokens, and Proxmox credentials, but does not manage the CLI's HCP Terraform authentication token.
+- **Token Expiration:** If `make init` or `make plan` reports an `unauthorized` error against `app.terraform.io`, refresh your credentials by re-running `terraform login`.
 
 ## Environment-Specific Configuration
 

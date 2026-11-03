@@ -13,14 +13,34 @@ Development/Test Proxmox cluster configuration.
 **Primary VMs:**
 
 - Ubuntu templates (VM ID 901+)
-- Development Docker instances (VM ID 201+)
+- Development Docker instances (`dev-docker-01`, VM ID 201)
 - Home Assistant instance (VM ID 102)
+- TrueNAS storage VM (`dev-truenas-01`, VM ID 200)
 
 **Use Case:**
 
 - Template development and testing
 - VM cloning testing
-- Development workloads
+- Development workloads and network storage
+
+---
+
+### [pve-d01/](./pve-d01/)
+
+Development standalone Proxmox environment configuration.
+
+**Node:** `pve-d01`
+**Environment:** Development staging
+**Storage:** `local-zfs`
+**Primary VMs:**
+
+- Ubuntu templates (VM ID 901+)
+- Development Docker instances (`dev-docker-02`, VM ID 101)
+
+**Use Case:**
+
+- Staging containerized services
+- Secondary development workloads
 
 ---
 
@@ -33,8 +53,8 @@ Production Proxmox environment configuration.
 **Primary VMs:**
 
 - Ubuntu templates (VM ID 801+)
-- Production Docker instances (VM ID 101+)
-- TrueNAS storage VM
+- Production Docker instances (`prod-docker-01`, VM ID 101)
+- OpenMediaVault storage VM (`dev-omv-01`, VM ID 102)
 
 **Use Case:**
 
@@ -46,7 +66,7 @@ Production Proxmox environment configuration.
 
 ## Common Configuration Pattern
 
-Both environments follow a standard workflow for VM provisioning:
+All environments follow a standard workflow for VM provisioning:
 
 ### 1. Template Creation
 
@@ -86,6 +106,7 @@ module "production_docker" {
   vm_id        = 101
   vm_name      = "prod-docker-01"
   vm_node_name = "pve-p01"
+  vm_on_boot   = false
 
   vm_static_ip = "192.168.50.14/24"
   vm_cores     = 2
@@ -99,32 +120,47 @@ module "production_docker" {
 
 ### 3. Specialized Configurations
 
-Special-purpose VMs like Home Assistant and TrueNAS use dedicated modules:
+Special-purpose VMs like Home Assistant, TrueNAS, and OpenMediaVault use dedicated modules:
 
 ```hcl
 module "homeassistant" {
   source = "../../modules/proxmox/homeassistant"
 
-  vm_id         = 102
-  vm_name       = "homeassistant"
-  node_name     = "proxmox"
+  vm_id          = 102
+  vm_name        = "homeassistant"
+  vm_description = "Home Assistant Instance"
+  vm_on_boot     = false
+  node_name      = "proxmox"
 
-  vm_cores      = 2
-  vm_memory     = 4096
-  disk_size     = 32
+  vm_cores  = 2
+  vm_memory = 4096
+  disk_size = 32
 }
 
 module "truenas" {
-  source = "../../modules/proxmox/truenas-vm"
+  source            = "../../modules/proxmox/truenas-vm"
+  vm_name           = "dev-truenas-01"
+  vm_id             = 200
+  vm_on_boot        = false
+  proxmox_node_name = "proxmox"
+  proxmox_node_ip   = "192.168.50.11"
+  data_disk_id      = "ata-ST1000DM003-1ER162_Z4YCRN9L"
+}
 
-  vm_id        = 500
-  data_disk_id = "ata-ST4000DM004-2CX173_ZDH0EYT0"
+module "omv_vm" {
+  source            = "../../modules/proxmox/omv-vm"
+  vm_name           = "dev-omv-01"
+  vm_id             = 102
+  vm_on_boot        = false
+  proxmox_node_name = "pve-p01"
+  proxmox_node_ip   = "192.168.50.10"
+  data_disk_id      = "ata-HGST_HTS541010A9E680_JA1009C033492P"
 }
 ```
 
 ## SSH Key Management
 
-Both environments use SSH keys for cloud-init configuration:
+All environments use SSH keys for cloud-init configuration:
 
 ```hcl
 locals {
@@ -144,6 +180,14 @@ locals {
 | ubuntu-template | 901   | N/A              | Template (not running)  |
 | dev-docker-01   | 201   | 192.168.50.12/24 | Development Docker host |
 | homeassistant   | 102   | Dynamic          | Home Assistant          |
+| dev-truenas-01  | 200   | 192.168.50.13/24 | TrueNAS Storage         |
+
+### Development Environment (pve-d01)
+
+| VM Name         | VM ID | Static IP        | Purpose                 |
+| --------------- | ----- | ---------------- | ----------------------- |
+| ubuntu-template | 901   | N/A              | Template (not running)  |
+| dev-docker-02   | 101   | 192.168.50.16/24 | Development Docker host |
 
 ### Production Environment (pve-p01)
 
@@ -151,7 +195,7 @@ locals {
 | --------------- | ----- | ---------------- | ---------------------- |
 | ubuntu-template | 801   | N/A              | Template (not running) |
 | prod-docker-01  | 101   | 192.168.50.14/24 | Production Docker host |
-| truenas         | 500   | Manual           | NFS/Storage server     |
+| dev-omv-01      | 102   | 192.168.50.17/24 | OpenMediaVault Storage |
 
 ## Template Creation Workflow
 
@@ -165,52 +209,41 @@ See the [main Terraform README](../README.md#creating-templates-in-proxmox) for 
 
 ### Prerequisites
 
-1. **Proxmox API Token**
-   - Create in Proxmox UI: Datacenter > Permissions > API Tokens
-   - Set environment variables:
-     - `PROXMOX_VE_ENDPOINT` - Proxmox API endpoint
-     - `PROXMOX_VE_API_TOKEN` - API token value
-     - `PROXMOX_VE_INSECURE` - true if using self-signed certificates
+1. **HCP Terraform Token**
+   - Run `terraform login` to authenticate with HCP Terraform (`app.terraform.io`).
+   - Token is saved locally in `~/.terraform.d/credentials.tfrc.json`.
+   - **Important:** **The Terraform Cloud API token is NOT stored in Infisical.** It must be generated and managed directly on your local workstation via `terraform login`.
 
-2. **SSH Keys**
+2. **Infisical Secrets**
+   - Universal Auth credentials configured in `.env` (`INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, `INFISICAL_PROJECT_ID`).
+   - Proxmox host connection secrets (`PVE_ENDPOINT`, `PVE_TOKEN`) are stored in and dynamically retrieved from the Infisical vault under `/terraform/proxmox/<environment>`.
+
+3. **SSH Keys**
    - Public key for cloud-init: `~/.ssh/id_ed25519.pub`
-   - Private key for Terraform connections: `~/.ssh/id_ed25519`
+   - Private key for Terraform host connections: `~/.ssh/id_ed25519`
 
-3. **Network Access**
-   - Terraform must be able to reach Proxmox API
-   - SSH access to Proxmox host for remote-exec operations
+### Operations via Makefile
 
-### Initialize Environment
+All actions should be executed via the repository root Makefile:
 
 ```bash
-export PROXMOX_VE_ENDPOINT="https://proxmox.example.com:8006"
-export PROXMOX_VE_API_TOKEN="user@pam!terraform=<token-value>"
-export PROXMOX_VE_INSECURE=true
+# Initialize target environment
+make init TARGET=proxmox/pve-p01
 
-cd environments/proxmox/pve-p01
-terraform init
-```
+# Preview planned changes
+make plan TARGET=proxmox/pve-p01
 
-### Preview Changes
-
-```bash
-terraform plan
-```
-
-### Apply Configuration
-
-```bash
-terraform apply
+# Apply changes
+make apply TARGET=proxmox/pve-p01
 ```
 
 ## State Management
 
-Each Proxmox environment maintains separate state:
+All Proxmox environments maintain remote state in **HCP Terraform (Terraform Cloud)** under organization `realworlddevelopers` and project `RWD Infrastructure`:
 
-- `environments/proxmox/proxmox/terraform.tfstate` - Dev/test infrastructure
-- `environments/proxmox/pve-p01/terraform.tfstate` - Production infrastructure
-
-**Important:** These files contain sensitive information and are gitignored.
+- `environments/proxmox/proxmox` -> Workspace: `proxmox-legacy`
+- `environments/proxmox/pve-d01` -> Workspace: `proxmox-pve-d01`
+- `environments/proxmox/pve-p01` -> Workspace: `proxmox-pve-p01`
 
 ## Important Notes
 

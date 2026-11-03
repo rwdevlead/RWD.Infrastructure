@@ -17,6 +17,12 @@ resource "proxmox_virtual_environment_file" "ha_image" {
     # Ensure you have unzipped the .xz file to this path
     path = "${path.module}/files/haos_ova-16.3.img"
   }
+
+  lifecycle {
+    ignore_changes = [
+      source_file,
+    ]
+  }
 }
 
 resource "proxmox_virtual_environment_vm" "home_assistant" {
@@ -75,13 +81,13 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
   }
 
   # Ensure the VM starts on boot
-  on_boot = true
+  on_boot = var.vm_on_boot
 
   tags = var.tags
 
   lifecycle {
     ignore_changes = [
-      disk[0].ssd,
+      disk,
     ]
   }
 

@@ -6,7 +6,7 @@ This directory contains the Terraform configuration for the production Proxmox c
 
 - **Proxmox Node:** `pve-p01`
 - **Purpose:** Production infrastructure and services
-- **Infrastructure:** Production Docker host, TrueNAS storage, and Ubuntu templates
+- **Infrastructure:** Production Docker host, OpenMediaVault storage, and Ubuntu templates
 - **Network:** 192.168.50.0/24
 - **Criticality:** High - contains production workloads
 
@@ -37,20 +37,21 @@ Production Docker host for running containerized services.
 - **Hardware:** 2 CPU cores, 4-8 GB RAM (dynamic), 40 GB disk
 - **Network:** Static IP `192.168.50.14/24`
 - **OS:** Ubuntu 24.04 (cloned from template)
+- **Start on Boot:** `false` (`vm_on_boot = false`)
 - **User:** ka8kgj
 - **Services:** Docker, Docker Compose, Traefik reverse proxy
 - **Use Case:** Production containerized applications
 
-#### truenas (VM ID: 500)
+#### dev-omv-01 (VM ID: 102)
 
-TrueNAS SCALE storage appliance for NFS and SMB storage.
+OpenMediaVault (OMV) storage appliance for network storage.
 
-- **Hardware:** Custom (CPU, RAM, disk via Terraform)
-- **Boot Disk:** 32 GB
-- **Data Disk:** Physical disk via passthrough
-- **Network:** Static IP (manual via Web UI)
-- **Use Case:** Network storage, backups, NFS exports
-- **Management:** Web UI at https://192.168.50.13:6000 (approx)
+- **Status:** Running
+- **Hardware:** 2 CPU cores, 4096 MB RAM, 32 GB boot disk
+- **Data Disk:** Physical disk via passthrough (`ata-HGST_HTS541010A9E680_JA1009C033492P`)
+- **Network:** Static IP `192.168.50.17/24`
+- **Start on Boot:** `false` (`vm_on_boot = false`)
+- **Use Case:** Network storage, file shares, backups
 
 ## Configuration Structure
 
@@ -69,6 +70,7 @@ module "ubuntu_template" {
   vm_name       = "ubuntu-2404-template"
   node_name     = "pve-p01"
   template_mode = true  # Production template (always in template mode)
+  vm_startup    = false
 
   # Configuration...
 }
@@ -80,10 +82,25 @@ module "Prod_Docker_01" {
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id        = 101
-  vm_name      = "prod-docker-01"
-  vm_node_name = "pve-p01"
-  vm_static_ip = "192.168.50.14/24"
+  vm_id          = 101
+  vm_name        = "prod-docker-01"
+  vm_node_name   = "pve-p01"
+  vm_on_boot     = false
+  vm_static_ip   = "192.168.50.14/24"
+
+  # Configuration...
+}
+
+# OpenMediaVault VM
+module "omv_vm" {
+  source            = "../../../modules/proxmox/omv-vm"
+  vm_name           = "dev-omv-01"
+  vm_id             = 102
+  vm_on_boot        = false
+  proxmox_node_name = "pve-p01"
+  proxmox_node_ip   = "192.168.50.10"
+  data_disk_id      = "ata-HGST_HTS541010A9E680_JA1009C033492P"
+  vm_static_ip      = "192.168.50.17/24"
 
   # Configuration...
 }
@@ -93,11 +110,11 @@ module "Prod_Docker_01" {
 
 All VMs are connected to bridge `vmbr0` for LAN access.
 
-| VM Name         | IP Address       | Purpose           |
-| --------------- | ---------------- | ----------------- |
-| ubuntu-template | N/A              | Template (off)    |
-| prod-docker-01  | 192.168.50.14/24 | Production Docker |
-| truenas         | 192.168.50.13/24 | NFS/SMB Storage   |
+| VM Name         | IP Address       | Purpose                |
+| --------------- | ---------------- | ---------------------- |
+| ubuntu-template | N/A              | Template (off)         |
+| prod-docker-01  | 192.168.50.14/24 | Production Docker      |
+| dev-omv-01      | 192.168.50.17/24 | OpenMediaVault Storage |
 
 **Gateway:** 192.168.50.1
 **DNS:** Configured via DHCP/Manual
@@ -109,9 +126,6 @@ Production VMs are accessible via SSH:
 ```bash
 # Access production Docker host
 ssh ka8kgj@192.168.50.14
-
-# Access via hostname (if DNS configured)
-ssh ka8kgj@prod-docker-01.local
 ```
 
 ## Storage Architecture
@@ -124,8 +138,8 @@ ssh ka8kgj@prod-docker-01.local
 
 ### Data Storage
 
-- **Type:** TrueNAS NFS storage
-- **Location:** 192.168.50.13
+- **Type:** OpenMediaVault storage
+- **Location:** 192.168.50.17
 - **Mount Points:**
   - `/mnt/docker/` - Docker volumes and data
   - `/mnt/backups/` - Backup storage
@@ -178,7 +192,7 @@ Services are monitored via:
 
 ### Backup Strategy
 
-- Regular backups to TrueNAS
+- Regular backups to OpenMediaVault
 - Database dumps for stateful services
 - Configuration version control via Git
 
@@ -186,36 +200,22 @@ Services are monitored via:
 
 ### Prerequisites
 
-1. **Proxmox API Token** (high privilege)
-   - Create in Proxmox UI: Datacenter > Permissions > API Tokens
-   - Requires full VM management permissions
+- **HCP Terraform Token:** Run `terraform login` to authenticate with HCP Terraform (`app.terraform.io`) for remote state in the `proxmox-pve-p01` workspace. The token is stored locally in `~/.terraform.d/credentials.tfrc.json`.
+- **Not Stored in Infisical:** **The Terraform Cloud user API token is NOT stored in Infisical.** It must be generated and maintained on your local workstation via `terraform login`.
+- **Infisical Secrets:** Universal Auth credentials configured in `.env` (`INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, `INFISICAL_PROJECT_ID`). Proxmox host connection secrets (`PVE_ENDPOINT`, `PVE_TOKEN`) are stored in and dynamically retrieved from the Infisical vault at `/terraform/proxmox/pve-p01`.
 
-2. **Environment Variables**
-
-   ```bash
-   export PROXMOX_VE_ENDPOINT="https://pve-p01.example.com:8006"
-   export PROXMOX_VE_API_TOKEN="user@pam!terraform=<token>"
-   export PROXMOX_VE_INSECURE=true
-   ```
-
-3. **SSH Keys** (ED25519 for security)
-   - Public key: `~/.ssh/id_ed25519.pub`
-   - Private key: `~/.ssh/id_ed25519`
-
-4. **Access Control**
-   - Only authorized administrators
-   - Review all changes via `terraform plan` before applying
+All operations should be executed via the repository root Makefile:
 
 ### Initialize
 
 ```bash
-terraform init
+make init TARGET=proxmox/pve-p01
 ```
 
 ### Plan Changes (Always Required!)
 
 ```bash
-terraform plan
+make plan TARGET=proxmox/pve-p01
 # Review output carefully before applying
 ```
 
@@ -223,7 +223,7 @@ terraform plan
 
 ```bash
 # Only after thorough review of plan
-terraform apply
+make apply TARGET=proxmox/pve-p01
 ```
 
 ### Emergency Procedures
@@ -297,7 +297,7 @@ If a VM is accidentally deleted:
 
 ### Storage Issues
 
-1. Check TrueNAS Web UI
+1. Check OpenMediaVault Web UI
 2. Verify NFS mount: `sudo mount | grep nfs`
 3. Check disk space: `df -h`
 

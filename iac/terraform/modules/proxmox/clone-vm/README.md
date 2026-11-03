@@ -25,6 +25,7 @@ module "dev_docker" {
   vm_name        = "dev-docker-01"
   vm_node_name   = "proxmox"
   vm_description = "Development Docker Host"
+  vm_on_boot     = false
 
   vm_username = "ubuntu"
   vm_password = "password123"
@@ -71,6 +72,7 @@ module "dev_docker" {
 | vm_memory_min          | Minimum memory in MB                | `number` | `2048`              | no       |
 | vm_memory_max          | Maximum memory in MB (0 = no limit) | `number` | `0`                 | no       |
 | vm_description         | VM description                      | `string` | `"Virtual Machine"` | no       |
+| vm_on_boot             | Start VM on Proxmox node boot       | `bool`   | n/a                 | yes      |
 | disk_size              | Disk size in GB                     | `number` | `32`                | no       |
 | disk_interface         | Disk interface type                 | `string` | `"virtio0"`         | no       |
 | disk_storage_id        | Storage location for disk           | `string` | `"local-lvm"`       | no       |

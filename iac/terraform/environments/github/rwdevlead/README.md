@@ -14,15 +14,15 @@ This directory contains the Terraform configuration for managing the **RWD Leade
 
 The organization maintains repositories for different purposes:
 
-### Infrastructure & Tools
+### Managed Repositories
 
-- **RWD.Infrastructure** - Infrastructure as Code (Terraform, Ansible, Packer)
-- **RWD.Automation** - Automation and deployment scripts
-
-### Leadership & Documentation
-
-- **RWD.Leadership** - Leadership documentation and policies
-- **RWD.Governance** - Organization governance and processes
+- **rwd-agents** - Shared AI agents guidance and developer tooling
+- **rwd-graphics** - Graphics and branding assets
+- **rwd-infrastructure-diagram** - Infrastructure topology diagrams and documentation
+- **rwd-numpicker** - Number selection utility
+- **rwd-poker-clock** - Poker tournament clock timer application
+- **rwd-web-react** - React-based web applications
+- **winemakerssofter** - Community winemaking software
 
 ## Repository Configuration
 
@@ -150,47 +150,40 @@ terraform apply
 
 ### Prerequisites
 
-- GitHub Personal Access Token with organization admin permissions
-- Token requires: `repo`, `admin:org`, `admin:org_hook` scopes
-- Set `GITHUB_TOKEN` environment variable
+- Infisical Machine Identity credentials configured in repository `.env` (`INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, `INFISICAL_PROJECT_ID`).
+- GitHub token and organization are retrieved automatically from the Infisical vault at `/terraform/github/rwdevlead`.
 
-### Initialize
+### Operations via Makefile
 
-```bash
-export GITHUB_TOKEN="your_pat_token"
-terraform init
-```
-
-### Plan Changes
+All actions should be run from the repository root:
 
 ```bash
-terraform plan
-```
+# Initialize Terraform
+make init TARGET=github/rwdevlead
 
-### Apply Changes
+# Plan changes
+make plan TARGET=github/rwdevlead
 
-```bash
-terraform apply
-```
-
-### Import Existing Repository
-
-```bash
-terraform import 'module.rwd_infrastructure.github_repository.this' "RWD.Infrastructure"
+# Apply changes
+make apply TARGET=github/rwdevlead
 ```
 
 ## File Organization
 
 ```
 rwdevlead/
-├── main.tf                      # Configuration and locals
-├── providers.tf                 # GitHub provider setup
-├── variables.tf                 # Input variables
-├── rwd-graphics.tf              # Graphics/branding repository
-├── rwd-numpicker.tf             # Num picker project
-├── rwd-web-react.tf             # React web applications
-├── winemakerssofter.tf          # Community wine project
-└── terraform.tfstate*           # State files (gitignored)
+├── main.tf                          # Organization settings and default feature flags
+├── data.tf                          # Infisical vault data source
+├── locals.tf                        # Secret extraction (GITHUB_TOKEN, GITHUB_OWNER)
+├── providers.tf                     # Provider setups (Infisical, GitHub, HCP cloud)
+├── variables.tf                     # Input variables (Infisical credentials)
+├── rwd-agents.tf                    # Shared agents guidance repository & CODEOWNERS
+├── rwd-graphics.tf                  # Graphics/branding repository & CODEOWNERS
+├── rwd-infrastructure-diagram.tf    # Infrastructure diagrams repository & CODEOWNERS
+├── rwd-numpicker.tf                 # Num picker utility repository & CODEOWNERS
+├── rwd-poker-clock.tf               # Poker clock utility repository & CODEOWNERS
+├── rwd-web-react.tf                 # React web repository & CODEOWNERS
+└── winemakerssofter.tf              # Community winemaking project & CODEOWNERS
 ```
 
 ## Important Notes

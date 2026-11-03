@@ -32,6 +32,7 @@ terraform/
 │       ├── template-ubuntu/               # Ubuntu template creation
 │       ├── clone-vm/                      # VM cloning from templates
 │       ├── homeassistant/                 # Home Assistant VM provisioning
+│       ├── omv-vm/                        # OpenMediaVault storage VM
 │       └── truenas-vm/                    # TrueNAS storage VM
 └── environments/
     ├── README.md                          # Environment overview
@@ -39,9 +40,11 @@ terraform/
     │   ├── README.md                      # GitHub environments
     │   ├── realworlddevelopers/           # Real World Developers org
     │   └── rwdevlead/                     # RWD Leadership org
+    ├── infisical/                         # Infisical secrets testing
     └── proxmox/
         ├── README.md                      # Proxmox environments
         ├── proxmox/                       # Dev/test cluster
+        ├── pve-d01/                       # Dev standalone node
         └── pve-p01/                       # Production cluster
 ```
 
@@ -62,6 +65,7 @@ Reusable infrastructure components are located in [./modules/](./modules/):
 - **[clone-vm](./modules/proxmox/clone-vm/)** - Clones VMs from templates
 - **[homeassistant](./modules/proxmox/homeassistant/)** - Home Assistant VM provisioning
 - **[truenas-vm](./modules/proxmox/truenas-vm/)** - TrueNAS SCALE appliance provisioning
+- **[omv-vm](./modules/proxmox/omv-vm/)** - OpenMediaVault storage VM provisioning
 
 See [modules/README.md](./modules/README.md) for detailed module documentation.
 
@@ -73,12 +77,17 @@ Each environment is a complete Terraform root module that can be initialized and
 
 ### GitHub Environments
 
-- **[realworlddevelopers/](./environments/github/realworlddevelopers/)** - Real World Developers organization (multiple repositories and teams)
-- **[rwdevlead/](./environments/github/rwdevlead/)** - RWD Leadership organization (infrastructure and governance)
+- **[realworlddevelopers/](./environments/github/realworlddevelopers/)** - Real World Developers organization (developer utility toolboxes)
+- **[rwdevlead/](./environments/github/rwdevlead/)** - RWD Leadership organization (shared tooling, web apps, diagrams)
+
+### Infisical Environment
+
+- **[infisical/](./environments/infisical/)** - Infisical secret management testing and verification
 
 ### Proxmox Environments
 
 - **[proxmox/](./environments/proxmox/proxmox/)** - Development/test cluster (template development, testing)
+- **[pve-d01/](./environments/proxmox/pve-d01/)** - Development standalone node (Docker staging)
 - **[pve-p01/](./environments/proxmox/pve-p01/)** - Production cluster (production workloads, storage)
 
 See [environments/README.md](./environments/README.md) for environment-specific details.
@@ -100,12 +109,18 @@ terraform plan
 terraform apply
 ```
 
-### State Management
+### State Management & HCP Terraform Authentication
 
-- Each root module (environment) has its own state file
-- State files are **gitignored** for security (they contain sensitive data)
-- State files are stored locally: `environments/*/*/terraform.tfstate`
-- Never commit state files to version control
+All root environments in this repository manage state remotely using **HCP Terraform (Terraform Cloud)** under organization `realworlddevelopers` and project `RWD Infrastructure`.
+
+#### HCP Terraform Token Acquisition
+- **Using `terraform login`:** To authenticate your local workstation, run:
+  ```bash
+  terraform login
+  ```
+  Follow the terminal and browser prompts to generate an API token. Terraform automatically saves this token locally in `~/.terraform.d/credentials.tfrc.json`.
+- **Not Stored in Infisical:** **The Terraform Cloud user API token is NOT stored in Infisical.** It must be generated and maintained directly on your local workstation via `terraform login`. Infisical manages application secrets, Proxmox host credentials, and provider API keys, but does not manage CLI authentication to HCP Terraform.
+- **Troubleshooting Expirations:** If you receive `unauthorized` errors when running `make init` or `make plan`, your HCP Terraform token has expired. Re-authenticate by running `terraform login`.
 
 ### Common Workflows
 
@@ -204,6 +219,7 @@ module "dev_docker" {
   vm_id        = 201
   vm_name      = "dev-docker-01"
   vm_node_name = "proxmox"
+  vm_on_boot   = false
 
   # Clone-specific configuration...
 }

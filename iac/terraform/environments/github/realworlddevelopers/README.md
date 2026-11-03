@@ -24,18 +24,6 @@ A collection of developer utility tools:
 - **rwd-toolbox-smtp** - SMTP email utilities
 - **rwd-toolbox-ui-middleware** - UI middleware components
 
-### Media & Resources
-
-- **rwd-graphics** - Graphics and branding assets
-
-### Web Applications
-
-- **rwd-web-react** - React-based web applications
-
-### Community Projects
-
-- **winemakerssofter** - Community wine-making project
-
 ## Repository Configuration
 
 All repositories follow a standard configuration pattern:
@@ -154,48 +142,39 @@ terraform apply
 
 ### Prerequisites
 
-- GitHub Personal Access Token with appropriate scopes
-- Set `GITHUB_TOKEN` environment variable
+- Infisical Machine Identity credentials configured in repository `.env` (`INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, `INFISICAL_PROJECT_ID`).
+- GitHub token and organization are retrieved automatically from the Infisical vault at `/terraform/github/realworlddevelopers`.
 
-### Initialize
+### Operations via Makefile
 
-```bash
-export GITHUB_TOKEN="your_pat_token"
-terraform init
-```
-
-### Plan Changes
+All actions should be run from the repository root:
 
 ```bash
-terraform plan
-```
+# Initialize Terraform
+make init TARGET=github/realworlddevelopers
 
-### Apply Changes
+# Plan changes
+make plan TARGET=github/realworlddevelopers
 
-```bash
-terraform apply
-```
-
-### Import Existing Repository
-
-If a repository was manually created, import it:
-
-```bash
-terraform import 'module.rwd_graphics.github_repository.this' "rwd-graphics"
+# Apply changes
+make apply TARGET=github/realworlddevelopers
 ```
 
 ## File Organization
 
 ```
 realworlddevelopers/
-├── main.tf                      # Configuration and locals
-├── providers.tf                 # GitHub provider setup
-├── variables.tf                 # Input variables
-├── rwd-graphics.tf              # Real World Developers Graphics
-├── rwd-toolbox-*.tf             # Toolbox repositories (6 files)
-├── rwd-web-react.tf             # Web applications
-├── winemakerssofter.tf          # Community projects
-└── terraform.tfstate*           # State files (gitignored)
+├── main.tf                          # Organization settings and default feature flags
+├── data.tf                          # Infisical vault data source
+├── locals.tf                        # Secret extraction (GITHUB_TOKEN, GITHUB_OWNER)
+├── providers.tf                     # Provider setups (Infisical, GitHub, HCP cloud)
+├── variables.tf                     # Input variables (Infisical credentials)
+├── rwd-toolbox-address-parser.tf    # Address parser repository & CODEOWNERS
+├── rwd-toolbox-conversion.tf        # Conversion utility repository & CODEOWNERS
+├── rwd-toolbox-logging.tf           # Logging utility repository & CODEOWNERS
+├── rwd-toolbox-password-generator.tf# Password generator repository & CODEOWNERS
+├── rwd-toolbox-smtp.tf              # SMTP utility repository & CODEOWNERS
+└── rwd-toolbox-ui-middleware.tf     # UI middleware repository & CODEOWNERS
 ```
 
 ## Important Notes

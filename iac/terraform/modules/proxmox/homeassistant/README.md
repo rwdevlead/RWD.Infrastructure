@@ -20,6 +20,7 @@ module "homeassistant" {
   vm_id         = 102
   vm_name       = "homeassistant"
   vm_description = "Home Assistant Instance"
+  vm_on_boot    = false
   node_name     = "proxmox"
 
   vm_cores      = 2
@@ -52,6 +53,7 @@ module "homeassistant" {
 | vm_id                  | Unique Proxmox VM ID          | `number` | n/a           | yes      |
 | vm_name                | Name of the HA VM             | `string` | n/a           | yes      |
 | vm_description         | VM description                | `string` | n/a           | yes      |
+| vm_on_boot             | Start VM on Proxmox node boot | `bool`   | n/a           | yes      |
 | node_name              | Proxmox node name             | `string` | n/a           | yes      |
 | vm_cores               | Number of CPU cores           | `number` | `2`           | no       |
 | vm_memory              | Memory in MB                  | `number` | `2048`        | no       |

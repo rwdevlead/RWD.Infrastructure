@@ -11,16 +11,15 @@ Manages the **Real World Developers** GitHub organization.
 **Configuration:**
 
 - Organization: `realworlddevelopers`
-- Repositories: Real World Developers projects
-- Teams: Development, leadership, and specialized teams
-- Access Control: Branch protection and CODEOWNERS management
+- Repositories: Developer utility toolbox packages (`rwd-toolbox-*`)
+- Teams: Development, admin, and owner teams
+- Access Control: Branch protection and automated CODEOWNERS management
 
 **Key Features:**
 
-- Multiple repository types (learning, tools, graphics)
-- Team-based access control
+- Standardized developer toolbox repositories
 - Automated CODEOWNERS file management
-- Branch protection on main branches
+- Branch protection on `main` branch
 
 ---
 
@@ -31,16 +30,16 @@ Manages the **RWD Leadership** GitHub organization.
 **Configuration:**
 
 - Organization: `rwdevlead`
-- Focus: Leadership and infrastructure repositories
-- Teams: Admin and leadership teams
+- Focus: Shared developer tooling, infrastructure diagrams, web apps, and utility projects
+- Repositories: `rwd-agents`, `rwd-graphics`, `rwd-infrastructure-diagram`, `rwd-numpicker`, `rwd-poker-clock`, `rwd-web-react`, `winemakerssofter`
+- Teams: Admin, owner, and maintainer teams
 - Access Control: Strict branch protection and code review requirements
 
 **Key Features:**
 
-- Leadership repository management
-- Strict access controls
-- Comprehensive branch protection
-- Infrastructure-as-code repositories
+- Shared tooling and frontend application repositories
+- Strict access controls and branch protection
+- Automated CODEOWNERS management
 
 ---
 
@@ -73,55 +72,38 @@ locals {
 
 ## Repository Structure
 
-Each environment's `main.tf` file typically includes:
+Each environment's `main.tf` file defines common locals and defaults, and individual repositories are managed in dedicated `.tf` files:
 
-1. **Repository Modules** - One per repository (e.g., `module "rwd_graphics"`)
-2. **CODEOWNERS Modules** - One per repository (e.g., `module "codeowners_rwd_graphics"`)
-3. **Optional Branch Protection** - For repositories requiring special rules
-
-### Repository File Pattern
-
-Individual repositories are often configured in separate files:
-
-```
-realworlddevelopers/
-├── main.tf                          # Configuration
-├── rwd-graphics.tf                  # Real World Developers Graphics
-├── rwd-toolbox-*.tf                 # Toolbox repositories
-├── rwd-web-react.tf                 # Web applications
-└── winemakerssofter.tf              # Other projects
-```
+- **Repository Module** - Provisions repository visibility, features, and settings (`modules/github/github-repository`)
+- **CODEOWNERS Module** - Generates and manages the `.github/CODEOWNERS` file (`modules/github/github-codeowners`)
+- **Branch Protection Module** - Enforces review rules on the `main` branch (`modules/github/github-branch-protection`)
 
 ## Working with GitHub Environments
 
 ### Prerequisites
 
-1. **GitHub Personal Access Token (PAT)**
-   - Needs `repo`, `org:read`, and `admin:org_hook` scopes
-   - Set via environment variable: `GITHUB_TOKEN`
+1. **Infisical Secret Management**
+   - Universal Auth client ID and secret configured in `.env` (`INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, `INFISICAL_PROJECT_ID`).
+   - GitHub credentials (`GITHUB_TOKEN`, `GITHUB_OWNER`) are stored in and dynamically retrieved from the Infisical vault at runtime (under `/terraform/github/<environment>`).
 
-2. **Provider Configuration**
-   - Usually configured in `providers.tf`
-   - May use multiple GitHub providers for different organizations
+2. **HCP Terraform Workspaces & Authentication**
+   - Remote state is maintained in HCP Terraform (`github-realworlddevelopers-repos` and `github-rwdevlead-repos`).
+   - Run `terraform login` to authenticate with HCP Terraform (`app.terraform.io`). The token is saved in `~/.terraform.d/credentials.tfrc.json`.
+   - **Important:** **The Terraform Cloud user API token is NOT stored in Infisical.** It must be generated and managed directly on your workstation via `terraform login`. Infisical manages application secrets and GitHub tokens, but not the CLI's HCP Terraform authentication token.
 
-### Initialize Environment
+### Operations via Makefile
 
-```bash
-export GITHUB_TOKEN="your_pat_token"
-cd environments/github/realworlddevelopers
-terraform init
-```
-
-### Preview Changes
+All actions should be executed via the repository root Makefile:
 
 ```bash
-terraform plan
-```
+# Initialize Terraform target
+make init TARGET=github/realworlddevelopers
 
-### Apply Changes
+# Plan changes
+make plan TARGET=github/realworlddevelopers
 
-```bash
-terraform apply
+# Apply changes
+make apply TARGET=github/realworlddevelopers
 ```
 
 ## Archiving a Repository Safely

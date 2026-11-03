@@ -36,6 +36,11 @@ variable "vm_description" {
   default     = "Virtual Machine"
 }
 
+variable "vm_on_boot" {
+  type        = bool
+  description = "Start VM on Proxmox node boot"
+}
+
 variable "vm_username" {
   type        = string
   description = "User for VM [default is null]"

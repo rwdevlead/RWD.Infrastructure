@@ -53,7 +53,7 @@ Clones virtual machines from existing templates on Proxmox.
 - Cloud-init customization
 - Hardware configuration (CPU, RAM, disk)
 - SSH key injection
-- Automatic VM startup
+- Start on boot control
 
 **Key Variables:**
 
@@ -62,6 +62,7 @@ Clones virtual machines from existing templates on Proxmox.
 - `vm_id` - Unique ID for the new VM
 - `vm_name` - Name of the cloned VM
 - `vm_node_name` - Proxmox node for new VM
+- `vm_on_boot` - Start VM on Proxmox node boot
 - `vm_static_ip` - Static IP configuration (CIDR format)
 - `vm_cores`, `vm_memory_min`, `vm_memory_max` - Hardware specs
 - `vm_username`, `vm_password` - VM credentials
@@ -94,6 +95,7 @@ Provisions Home Assistant virtual machines on Proxmox.
 
 - `vm_id` - Unique VM ID
 - `vm_name` - VM name
+- `vm_on_boot` - Start VM on Proxmox node boot
 - `node_name` - Proxmox node
 - `vm_cores`, `vm_memory`, `disk_size` - Hardware configuration
 - `vm_description` - VM description
@@ -125,11 +127,13 @@ Provisions the hardware "shell" for a TrueNAS SCALE appliance on Proxmox.
 
 - Physical disk passthrough via `qm set` remote execution
 - Boot disk configuration
+- Start on boot control
 - Customizable hardware
 
 **Key Variables:**
 
 - `vm_id` - Unique Proxmox VM ID
+- `vm_on_boot` - Start VM on Proxmox node boot
 - `data_disk_id` - Physical drive ID (e.g., `ata-ST1000...`)
 - `boot_datastore` - Proxmox storage for OS
 
@@ -150,6 +154,43 @@ Provisions the hardware "shell" for a TrueNAS SCALE appliance on Proxmox.
 - Disk passthrough uses `null_resource` with `remote-exec` to run `qm set` directly
 - After `terraform apply`, complete TrueNAS installation manually via Proxmox console
 - Set static IP and SSL certificates in TrueNAS Web UI to ensure they're saved to internal config
+
+---
+
+### [omv-vm](./omv-vm/)
+
+Provisions the hardware "shell" for an OpenMediaVault (OMV) storage appliance on Proxmox.
+
+**Scope:**
+
+- **Terraform:** Manages CPU, RAM, OS Boot Disk (32GB default), EFI Disk, and Physical Disk Passthrough
+- **Manual:** Initial OS Installation via ISO (when installing) and initial Web UI configuration
+- **Ansible:** Manages storage filesystems, shared folders, users, and service configuration
+
+**Features:**
+
+- Physical disk passthrough via `qm set` remote execution
+- Boot disk and EFI disk configuration
+- Start on boot control
+- Customizable hardware
+
+**Key Variables:**
+
+- `vm_id` - Unique Proxmox VM ID
+- `vm_name` - Name of the OMV VM
+- `vm_on_boot` - Start VM on Proxmox node boot
+- `proxmox_node_name` - Proxmox node to deploy to
+- `proxmox_node_ip` - IP address of the Proxmox host node
+- `ssh_private_key_content` - Private SSH key content for Proxmox host connection
+- `data_disk_id` - Physical drive ID (e.g., `ata-HGST...`)
+- `boot_datastore` - Proxmox storage for OS and EFI disks
+- `iso_file_id` - Path to OMV ISO or `"none"`
+
+**Provisioning Workflow:**
+
+1. **Terraform:** Creates VM shell and handles physical disk passthrough (`qm set`)
+2. **Manual:** OS installation and Web UI network/share setup
+3. **Ansible:** Configure filesystems, shared folders, users, and services
 
 ---
 
@@ -186,6 +227,7 @@ module "dev_docker" {
   vm_id        = 201
   vm_name      = "dev-docker-01"
   vm_node_name = "proxmox"
+  vm_on_boot   = false
 
   vm_static_ip = "192.168.50.12/24"
   vm_cores     = 2
@@ -199,7 +241,7 @@ module "dev_docker" {
 
 ### Template Conversion Workflow
 
-See the main [Terraform README](../README.md#creating-templates-in-proxmox) for the complete template creation and conversion workflow.
+See the main [Terraform README](../README.md#proxmox-template-creation-workflow) for the complete template creation and conversion workflow.
 
 ## Environment Configuration
 

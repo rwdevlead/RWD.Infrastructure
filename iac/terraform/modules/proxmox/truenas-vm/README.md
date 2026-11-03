@@ -23,6 +23,7 @@ Because the Proxmox API occasionally restricts raw disk mapping, this module use
 | Name             | Description                                          | Default     |
 | ---------------- | ---------------------------------------------------- | ----------- |
 | `vm_id`          | Unique Proxmox VM ID                                 | N/A         |
+| `vm_on_boot`     | Start VM on Proxmox node boot                        | N/A         |
 | `data_disk_id`   | The ID of the physical drive (e.g., `ata-ST1000...`) | N/A         |
 | `boot_datastore` | Proxmox storage for the OS                           | `local-lvm` |
 
