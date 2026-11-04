@@ -171,6 +171,7 @@ Provisions the hardware "shell" for an OpenMediaVault (OMV) storage appliance on
 
 - Physical disk passthrough via `qm set` remote execution
 - Boot disk and EFI disk configuration
+- QEMU guest agent for IP address retrieval and host communication
 - Start on boot control
 - Customizable hardware
 

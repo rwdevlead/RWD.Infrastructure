@@ -14,6 +14,13 @@ resource "proxmox_virtual_environment_vm" "omv" {
   vm_id       = var.vm_id
   on_boot     = var.vm_on_boot
 
+  agent {
+    # The QEMU guest agent is enabled to allow Proxmox to retrieve VM IP addresses and execute guest commands.
+    # Requires qemu-guest-agent package installed and running inside the OMV guest OS.
+    # See https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_vm#qemu-guest-agent for details.
+    enabled = true
+  }
+
   scsi_hardware = "virtio-scsi-pci"
   machine       = var.vm_machine
   bios          = var.vm_bios
