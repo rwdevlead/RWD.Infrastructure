@@ -4,7 +4,7 @@ This module provisions the hardware "shell" for an OpenMediaVault (OMV) storage 
 
 ## Scope
 
-- **Terraform:** Manages CPU, RAM, OS Boot Disk (32GB default), EFI Disk, and Physical Disk Passthrough.
+- **Terraform:** Manages CPU, RAM, OS Boot Disk (32GB default), EFI Disk, QEMU guest agent, and Physical Disk Passthrough.
 - **Manual:** Initial OS installation via ISO (when installing) and initial Web UI configuration.
 - **Ansible:** Manages storage filesystems, shared folders, users, and service configuration.
 
@@ -49,7 +49,10 @@ qm set ${var.vm_id} -scsi1 /dev/disk/by-id/${var.data_disk_id},serial=1,backup=0
 
 ## Outputs
 
-No output values are exported by this module.
+| Name | Description |
+| --- | --- |
+| `vm_ipv4_address` | Assigned IPv4 address of the OMV VM (or status message via QEMU guest agent) |
+| `vm_id` | The VM ID of the OMV instance |
 
 ## Usage
 
@@ -88,6 +91,6 @@ module "omv_vm" {
 ## Provisioning Workflow
 
 1. **Terraform:** Provisions the VM hardware shell, OS drive, EFI disk, and executes the remote SSH passthrough command (`qm set`) to attach the data drive.
-2. **OS Install:** If installing from scratch, set `iso_file_id` to the installer ISO and complete installation via the Proxmox console. Once installed, set `iso_file_id = "none"`.
+2. **OS Install:** If installing from scratch, set `iso_file_id` to the installer ISO and complete installation via the Proxmox console. Ensure `qemu-guest-agent` is installed and running inside Debian (`apt install qemu-guest-agent && systemctl enable --now qemu-guest-agent`) for IP detection and graceful shutdown. Once installed, set `iso_file_id = "none"`.
 3. **Web UI:** Access the OMV administration panel to configure storage file systems, users, and shares.
 4. **Ansible:** Manage automated configurations, user groups, and services.

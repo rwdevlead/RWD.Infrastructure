@@ -37,3 +37,4 @@
 - `2026-09-30`: Initialized project AI operating surface (`.agents/`, `AGENTS.md`) using `RWD.Ai.Stack` framework.
 - `2026-10-04`: Refreshed project AI guidance, aligned `AGENTS.md` build/run targets with `Makefile`, and normalized standard paths.
 - `2026-11-02`: Added required `vm_on_boot` attribute to `clone-vm`, `truenas-vm`, `homeassistant`, and `omv-vm` modules (set to `false` across environments), fixed HA image replacement drift, codified Makefile-only execution policy for all Terraform operations, documented future HA multi-instance refactoring strategy, and completed comprehensive documentation sync across all `iac/terraform/` modules and environments (Proxmox, GitHub, Infisical).
+- `2026-11-03`: Enabled QEMU guest agent in `omv-vm` module, added module outputs (`vm_ipv4_address`, `vm_id`), and updated documentation.
