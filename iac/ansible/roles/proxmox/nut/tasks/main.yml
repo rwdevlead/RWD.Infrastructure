@@ -1,0 +1,84 @@
+---
+# 1. Package Installation
+- name: Install NUT packages
+  ansible.builtin.apt:
+    name: >-
+      {{
+        ['nut', 'nut-server', 'nut-client', 'curl']
+        if nut_instances[inventory_hostname].role == 'master'
+        else ['nut-client']
+      }}
+    state: present
+    update_cache: true
+
+# 2. Common Configuration Files (Master & Slaves)
+- name: Deploy common NUT client configurations
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ nut_config_dir }}/{{ item }}"
+    owner: root
+    group: nut
+    mode: "0640"
+  loop:
+    - nut.conf
+    - upsmon.conf
+  notify: Restart NUT client
+
+# 3. Master-Only Server, Scheduler, Scripts & Systemd Service
+- name: Configure NUT master server and staged orchestration
+  when: nut_instances[inventory_hostname].role == 'master'
+  block:
+    - name: Deploy NUT server configurations
+      ansible.builtin.template:
+        src: "{{ item }}.j2"
+        dest: "{{ nut_config_dir }}/{{ item }}"
+        owner: root
+        group: nut
+        mode: "0640"
+      loop:
+        - upsd.conf
+        - upsd.users
+        - ups.conf
+      notify: Restart NUT server
+
+    - name: Deploy NUT scheduler and staged power scripts
+      ansible.builtin.template:
+        src: "{{ item.name }}.j2"
+        dest: "{{ nut_config_dir }}/{{ item.name }}"
+        owner: root
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { name: "upssched.conf", group: "nut", mode: "0640" }
+        - { name: "upssched-cmd", group: "nut", mode: "0750" }
+        - { name: "staged_takedown.sh", group: "root", mode: "0750" }
+        - { name: "staged_bringup.sh", group: "root", mode: "0750" }
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Deploy nut-bringup systemd service
+      ansible.builtin.template:
+        src: nut-bringup.service.j2
+        dest: /etc/systemd/system/nut-bringup.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Enable nut-bringup service
+      ansible.builtin.systemd:
+        name: nut-bringup.service
+        enabled: true
+
+    - name: Ensure nut-server is enabled and running
+      ansible.builtin.service:
+        name: nut-server
+        state: started
+        enabled: true
+
+# 4. Client Service Management (Master & Slaves)
+- name: Ensure nut-client is enabled and running
+  ansible.builtin.service:
+    name: nut-client
+    state: started
+    enabled: true

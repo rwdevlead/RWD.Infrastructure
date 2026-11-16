@@ -1,0 +1,36 @@
+{% set is_master = (nut_instances[inventory_hostname].role == 'master') %}
+{% set master = (nut_instances | dict2items | selectattr('value.role', 'equalto', 'master') | first) %}
+{% set target_host = 'localhost' if is_master else hostvars[master.key].ansible_host %}
+# {{ nut_config_dir }}/upsmon.conf — Managed by Ansible (role: proxmox/nut)
+# UPS monitoring client configuration ({{ nut_instances[inventory_hostname].role }} mode)
+MONITOR {{ master.value.ups.name }}@{{ target_host }} 1 {{ secrets.ansible.nut.USER }} {{ secrets.ansible.nut.USER_PASSWORD }} {{ nut_instances[inventory_hostname].role }}
+MINSUPPLIES {{ nut_min_supplies }}
+SHUTDOWNCMD "{{ nut_shutdown_cmd }}"
+{% if is_master %}
+NOTIFYCMD {{ nut_notify_cmd }}
+{% endif %}
+POLLFREQ {{ nut_poll_freq }}
+POLLFREQALERT {{ nut_poll_freq_alert }}
+HOSTSYNC {{ nut_host_sync }}
+DEADTIME {{ nut_deadtime }}
+POWERDOWNFLAG {{ nut_powerdown_flag }}
+{% if is_master %}
+NOTIFYFLAG ONLINE   SYSLOG+WALL+EXEC
+NOTIFYFLAG ONBATT   SYSLOG+WALL+EXEC
+NOTIFYFLAG LOWBATT  SYSLOG+WALL+EXEC
+NOTIFYFLAG FSD      SYSLOG+WALL+EXEC
+NOTIFYFLAG COMMOK   SYSLOG+WALL+EXEC
+NOTIFYFLAG COMMBAD  SYSLOG+WALL+EXEC
+NOTIFYFLAG SHUTDOWN SYSLOG+WALL+EXEC
+NOTIFYFLAG REPLBATT SYSLOG+WALL+EXEC
+NOTIFYFLAG NOCOMM   SYSLOG+WALL+EXEC
+NOTIFYFLAG NOPARENT SYSLOG+WALL+EXEC
+RBWARNTIME {{ nut_rb_warn_time }}
+NOCOMMWARNTIME {{ nut_nocomm_warn_time }}
+{% else %}
+NOTIFYFLAG ONLINE   SYSLOG+WALL
+NOTIFYFLAG ONBATT   SYSLOG+WALL
+NOTIFYFLAG LOWBATT  SYSLOG+WALL
+NOTIFYFLAG FSD      SYSLOG+WALL
+{% endif %}
+FINALDELAY {{ nut_final_delay }}

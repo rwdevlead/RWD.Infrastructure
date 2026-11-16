@@ -25,7 +25,6 @@ ansible/
 │   ├── traefik.yml           # Traefik reverse proxy deployment
 │   ├── portainer.yml         # Portainer container management UI
 │   ├── pihole.yml            # Pi-hole DNS and ad-blocking
-│   ├── homepage.yml          # Homepage dashboard
 │   ├── mailrise.yml          # MailRise SMTP router
 │   ├── watchtower.yml        # Watchtower automatic container updates
 │   └── docker.yml            # Docker Compose stack setup
@@ -33,7 +32,6 @@ ansible/
 │   ├── docker.yml            # Primary inventory for Docker hosts
 │   ├── ubuntu.yml            # Ubuntu system inventory
 │   └── apps/                 # Application-specific inventories
-│       ├── homepage.yml
 │       ├── mailrise.yml
 │       ├── pihole.yml
 │       ├── portainer.yml
@@ -52,7 +50,6 @@ ansible/
 │   └── apps/                 # Application-specific deployment roles
 │       ├── traefik/          # Traefik reverse proxy
 │       ├── portainer/        # Portainer container management
-│       ├── homepage/         # Homepage dashboard
 │       ├── pihole/           # Pi-hole DNS filtering
 │       ├── mailrise/         # MailRise SMTP gateway
 │       ├── watchtower/       # Automatic container updates
@@ -257,31 +254,6 @@ The `storage.yml` playbook manages persistent storage:
 
 ---
 
-### Homepage
-
-**Role**: `apps/homepage` | **Playbook**: `homepage.yml`
-
-**Purpose**: Customizable dashboard application for quick access to all services.
-
-**Key Features**:
-
-- Web-based dashboard and service aggregator
-- Service status monitoring
-- Quick links to applications
-- Customizable layout and appearance
-- Docker integration for container status
-
-**Configuration**:
-
-- Deployed via Docker Compose
-- Accessible via Traefik at `https://homepage.local.rwdevs.com`
-- Configuration files in `/mnt/docker/homepage/config`
-- Supports custom templates and widgets
-
-**Use Case**: Provides a centralized landing page for accessing all deployed services with status monitoring.
-
----
-
 ### MailRise
 
 **Role**: `apps/mailrise` | **Playbook**: `mailrise.yml`
@@ -374,7 +346,6 @@ docker_network: traefik
 services:
   traefik: proxy.local.rwdevs.com
   portainer: portainer.local.rwdevs.com
-  homepage: homepage.local.rwdevs.com
   pihole: pihole.local.rwdevs.com
 
 # NFS storage
@@ -591,7 +562,6 @@ ansible-playbook playbooks/traefik.yml -i inventories/docker.yml
 # 5. Deploy applications
 ansible-playbook playbooks/portainer.yml -i inventories/docker.yml
 ansible-playbook playbooks/pihole.yml -i inventories/docker.yml
-ansible-playbook playbooks/homepage.yml -i inventories/docker.yml
 ```
 
 ### Update Existing Application
@@ -639,7 +609,6 @@ ansible-playbook playbooks/base.yml -i inventories/docker.yml -l docker-host01
 - [Traefik Role](roles/apps/traefik/README.md)
 - [Portainer Role](roles/apps/portainer/README.md)
 - [Pi-hole Role](roles/apps/pihole/README.md)
-- [Homepage Role](roles/apps/homepage/README.md)
 - [MailRise Role](roles/apps/mailrise/README.md)
 - [Watchtower Role](roles/apps/watchtower/README.md)
 - [Semaphore Role](roles/apps/semaphore/README.md)

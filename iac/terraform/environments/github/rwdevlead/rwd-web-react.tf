@@ -15,7 +15,7 @@ module "rwd_web_react" {
   source = "../../../modules/github/github-repository"
 
   repository_name = "RWD.Web.REACT"
-  description     = "Homepage for Real World Developers - ${local.managed_by}"
+  description     = "Public Webpage for Real World Developers - ${local.managed_by}"
   visibility      = "public"
 
   topics          = ["reactjs", "vite", "tailwindcss"]

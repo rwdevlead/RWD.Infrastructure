@@ -1,0 +1,4 @@
+# {{ nut_config_dir }}/nut.conf — Managed by Ansible (role: proxmox/nut)
+# netserver: runs UPS driver, upsd data server, and upsmon client (master)
+# netclient: runs only upsmon client connected to remote master (slave)
+MODE={{ 'netserver' if nut_instances[inventory_hostname].role == 'master' else 'netclient' }}

@@ -1,0 +1,8 @@
+# {{ nut_config_dir }}/upssched.conf — Managed by Ansible (role: proxmox/nut)
+# Starts a {{ nut_onbatt_timer_seconds }}s countdown when on battery; cancels if utility power returns
+CMDSCRIPT {{ nut_config_dir }}/upssched-cmd
+PIPEFN {{ nut_upssched_pipe_file }}
+LOCKFN {{ nut_upssched_lock_file }}
+
+AT ONBATT * START-TIMER onbatt-timer {{ nut_onbatt_timer_seconds }}
+AT ONLINE * CANCEL-TIMER onbatt-timer

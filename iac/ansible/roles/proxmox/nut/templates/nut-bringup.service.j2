@@ -1,0 +1,15 @@
+# /etc/systemd/system/nut-bringup.service — Managed by Ansible (role: proxmox/nut)
+# Runs {{ nut_config_dir }}/staged_bringup.sh once on boot after networking and Proxmox cluster services start
+[Unit]
+Description=Automated NUT Staged Bring-Up Sequence
+After=network-online.target pve-cluster.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash {{ nut_config_dir }}/staged_bringup.sh
+RemainAfterExit=yes
+TimeoutSec=900
+
+[Install]
+WantedBy=multi-user.target

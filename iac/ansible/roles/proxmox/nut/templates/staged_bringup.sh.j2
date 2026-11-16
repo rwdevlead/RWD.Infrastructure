@@ -1,0 +1,64 @@
+#!/bin/bash
+# {{ nut_config_dir }}/staged_bringup.sh — Managed by Ansible (role: proxmox/nut)
+# Coordinates the safe boot sequence of cluster VMs after a power outage:
+#   1. Verify outage flag exists (exit on normal reboot)
+#   2. Wait for all slave Proxmox hosts in nut_instances to respond to SSH
+#   3. Start storage VMs (is_storage: true) first, wait for ping + NFS mount initialization
+#   4. Start remaining remote slave VMs, then local master VMs, and remove the outage flag
+
+LOGFILE="{{ nut_bringup_log }}"
+
+# --- SAFETY CHECK ---
+if [ ! -f {{ nut_outage_flag_file }} ]; then
+    echo "=== $(date) - Normal reboot detected (No outage flag). Exiting. ===" | tee -a "$LOGFILE"
+    exit 0
+fi
+echo "Power outage flag found. Proceeding with automated bring-up..." | tee -a "$LOGFILE"
+# --------------------
+
+echo "=== $(date) - Initiating Staged Bring-Up Sequence ===" | tee -a "$LOGFILE"
+
+# 1. Wait for physical slave hosts to be accessible via SSH
+{% for node_name, node in nut_instances.items() if node.role == 'slave' %}
+echo "Waiting for {{ node.alias }}({{ node_name }}) host to come online..." | tee -a "$LOGFILE"
+while ! ssh -o ConnectTimeout=2 root@{{ hostvars[node_name].ansible_host }} "echo up" >/dev/null 2>&1; do sleep 5; done
+{% endfor %}
+echo "All Proxmox hosts are online." | tee -a "$LOGFILE"
+
+# 2. Start Storage VMs and wait for NFS shares to initialize
+{% for node_name, node in nut_instances.items() %}
+{% for vm in node.vms | default([]) if vm.is_storage | default(false) %}
+echo "Starting {{ vm.name }} ({{ node.alias }}({{ node_name }}) VM {{ vm.id }})..." | tee -a "$LOGFILE"
+{% if node_name == inventory_hostname %}
+qm start {{ vm.id }}
+{% else %}
+ssh root@{{ hostvars[node_name].ansible_host }} "qm start {{ vm.id }}"
+{% endif %}
+
+echo "Waiting for {{ vm.name }} ({{ vm.ip }}) network stack to respond..." | tee -a "$LOGFILE"
+while ! ping -c 1 -W 2 "{{ vm.ip }}" >/dev/null 2>&1; do
+    sleep 5
+done
+echo "{{ vm.name }} is pingable. Giving services {{ nut_storage_init_wait_seconds }} seconds to initialize mounts..." | tee -a "$LOGFILE"
+sleep {{ nut_storage_init_wait_seconds }}
+{% endfor %}
+{% endfor %}
+
+# 3. Start Core & Secondary VMs on slave nodes
+echo "Starting Core & Secondary VMs..." | tee -a "$LOGFILE"
+{% for node_name, node in nut_instances.items() if node.role == 'slave' %}
+{% for vm in node.vms | default([]) if not (vm.is_storage | default(false)) %}
+ssh root@{{ hostvars[node_name].ansible_host }} "qm start {{ vm.id }}" # {{ node.alias }}({{ node_name }}): {{ vm.name }}
+{% endfor %}
+{% endfor %}
+
+# 4. Start Master VMs locally
+{% for vm in nut_instances[inventory_hostname].vms | default([]) if not (vm.is_storage | default(false)) %}
+echo "Starting {{ nut_instances[inventory_hostname].alias }}({{ inventory_hostname }}) {{ vm.name }} VM ({{ vm.id }})..." | tee -a "$LOGFILE"
+qm start {{ vm.id }}
+{% endfor %}
+
+# 5. Clean up the state flag
+rm -f {{ nut_outage_flag_file }}
+echo "Removed power outage flag." | tee -a "$LOGFILE"
+echo "=== $(date) - Bring-Up Sequence Complete ===" | tee -a "$LOGFILE"
