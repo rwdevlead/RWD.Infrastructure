@@ -63,8 +63,3 @@
 - name: Load merged secrets into fact
   ansible.builtin.set_fact:
     secrets: "{{ merged_secrets.stdout | from_json }}"
-
-- name: Debug loaded secrets fact
-  ansible.builtin.debug:
-    var: secrets
-#DELETEME remove debug

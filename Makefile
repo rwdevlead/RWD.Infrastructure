@@ -14,6 +14,7 @@
 	pihole pihole-check \
 	watchtower watchtower-check \
 	truenas truenas-check \
+	ups-nut ups-nut-check \
 	setup-updates run-upgrade \
 	check-tf-vars
 
@@ -329,8 +330,6 @@ watchtower: ## Deploy Watchtower automated container updates service
 		-i iac/ansible/inventories/hosts.yml
 
 
-# === NAS Storage Configuration ===
-
 truenas-check: ## Dry-run: Review TrueNAS pool, dataset, and share configuration
 	ansible-playbook iac/ansible/playbooks/deploy_nas_storage.yml \
 		-i iac/ansible/inventories/truenas.yml \
@@ -339,3 +338,12 @@ truenas-check: ## Dry-run: Review TrueNAS pool, dataset, and share configuration
 truenas: ## Deploy TrueNAS storage pools, datasets, and NFS shares
 	ansible-playbook iac/ansible/playbooks/deploy_nas_storage.yml \
 		-i iac/ansible/inventories/truenas.yml
+
+ups-nut-check: ## Dry-run: UPS with NUT configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/nut.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
+		--check --diff
+
+ups-nut: ## Deploy UPS with NUT configuration
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/nut.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml

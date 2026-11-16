@@ -1,0 +1,29 @@
+---
+# NUT daemon & polling defaults
+nut_port: 3493
+nut_poll_interval: 2
+nut_max_retry: 3
+nut_min_supplies: 1
+nut_poll_freq: 5
+nut_poll_freq_alert: 2
+nut_host_sync: 15
+nut_deadtime: 15
+nut_rb_warn_time: 43200
+nut_nocomm_warn_time: 300
+nut_final_delay: 5
+
+# Timer & recovery defaults
+nut_onbatt_timer_seconds: 300
+nut_storage_init_wait_seconds: 45
+nut_ssh_connect_timeout: 5
+
+# System paths
+nut_config_dir: /etc/nut
+nut_shutdown_cmd: /sbin/poweroff
+nut_notify_cmd: /sbin/upssched
+nut_powerdown_flag: /etc/killpower
+nut_upssched_pipe_file: /run/nut/upssched.pipe
+nut_upssched_lock_file: /run/nut/upssched.lock
+nut_outage_flag_file: /etc/nut/power_outage.flag
+nut_takedown_log: /var/log/nut_takedown.log
+nut_bringup_log: /var/log/nut_bringup.log

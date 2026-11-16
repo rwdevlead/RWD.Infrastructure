@@ -45,6 +45,8 @@ output-*/
 .vault_pass
 **/*.retry
 .ansible/fact-cache/
+# Check/diff output (make *-check) can contain rendered secrets
+*.diff
 # Note: ansible.cfg, roles/, collections/, and inventories/ are tracked in git
 # These contain the infrastructure-as-code definitions and should be committed
 

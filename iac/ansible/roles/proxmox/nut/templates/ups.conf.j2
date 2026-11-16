@@ -1,0 +1,13 @@
+{% set ups = nut_instances[inventory_hostname].ups %}
+# {{ nut_config_dir }}/ups.conf — Managed by Ansible (role: proxmox/nut)
+# Local USB UPS driver configuration for {{ nut_instances[inventory_hostname].alias }}({{ inventory_hostname }})
+pollinterval = {{ nut_poll_interval }}
+maxretry = {{ nut_max_retry }}
+
+[{{ ups.name }}]
+    driver = {{ ups.driver }}
+    port = {{ ups.port }}
+    desc = "{{ ups.desc }}"
+    vendorid = "{{ ups.vendorid }}"
+    productid = "{{ ups.productid }}"
+    pollinterval = {{ nut_poll_interval }}

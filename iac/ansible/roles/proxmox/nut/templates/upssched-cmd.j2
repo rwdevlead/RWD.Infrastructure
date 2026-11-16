@@ -1,0 +1,12 @@
+#!/bin/bash
+# {{ nut_config_dir }}/upssched-cmd — Managed by Ansible (role: proxmox/nut)
+# Invoked by upssched when the on-battery timer expires
+case $1 in
+    onbatt-timer)
+        logger -t upssched-cmd "UPS on battery for {{ nut_onbatt_timer_seconds }} seconds. Triggering staged takedown."
+        {{ nut_config_dir }}/staged_takedown.sh &
+        ;;
+    *)
+        logger -t upssched-cmd "Unrecognized command: $1"
+        ;;
+esac

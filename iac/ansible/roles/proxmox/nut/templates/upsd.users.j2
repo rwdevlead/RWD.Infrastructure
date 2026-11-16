@@ -1,0 +1,10 @@
+# {{ nut_config_dir }}/upsd.users — Managed by Ansible (role: proxmox/nut)
+# NUT administrative and monitoring user credentials
+[{{ secrets.ansible.nut.ADMIN_USER }}]
+    password = {{ secrets.ansible.nut.ADMIN_PASSWORD }}
+    actions = SET
+    instcmds = ALL
+
+[{{ secrets.ansible.nut.USER }}]
+    password = {{ secrets.ansible.nut.USER_PASSWORD }}
+    upsmon master

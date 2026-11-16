@@ -1,0 +1,4 @@
+# {{ nut_config_dir }}/upsd.conf — Managed by Ansible (role: proxmox/nut)
+# Bind NUT data server to localhost and the master node LAN address for slave nodes
+LISTEN 127.0.0.1 {{ nut_port }}
+LISTEN {{ ansible_host }} {{ nut_port }}

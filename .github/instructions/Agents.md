@@ -364,7 +364,6 @@ Document recurring problems:
 1. **Agent A starts**:
    - Reads [ANSIBLE.md](ANSIBLE.md) app role pattern
    - Creates role directory structure
-   - Updates copilot-instructions.md: "Starting homepage app role"
 
 2. **Agent B continues**:
    - Reads copilot-instructions.md progress

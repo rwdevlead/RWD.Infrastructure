@@ -1,0 +1,10 @@
+---
+- name: Deploy and Configure Network UPS Tools (NUT) Cluster
+  hosts: proxmox_cluster
+  gather_facts: true
+  vars:
+    infisical_secret_paths:
+      - "/ansible/nut"
+  roles:
+    - infisical_secrets
+    - proxmox/nut
