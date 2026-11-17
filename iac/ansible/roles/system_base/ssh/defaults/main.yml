@@ -1,7 +1,8 @@
 ---
 ssh_port: 22
 
-ssh_permit_root_login: "yes" # explicitly allowed per your requirement
+# Kept enabled for Proxmox automation and root-level cluster tasks
+ssh_permit_root_login: "yes"
 ssh_password_authentication: false
 ssh_pubkey_authentication: true
 ssh_permit_empty_passwords: false

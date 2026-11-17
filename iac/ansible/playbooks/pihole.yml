@@ -10,6 +10,7 @@
       register: nfs_check
       ignore_errors: true
       changed_when: false
+      # Run preflight check even during --check dry-runs so missing TrueNAS NFS exports fail early
       check_mode: false
 
     - name: Fail if NFS share is missing

@@ -9,6 +9,6 @@ output "repository_url" {
 }
 
 output "repository_name" {
-  description = "The HTML URL of the GitHub repository."
+  description = "The name of the GitHub repository."
   value       = github_repository.this.name
 }

@@ -1,15 +1,8 @@
-# Container
+---
 pihole_image: pihole/pihole:latest
-
-# Paths
 pihole_base_dir: "{{ docker_base_dir }}/pihole"
-
-# Web DNS
 pihole_dns1: 1.1.1.1
 pihole_dns2: 8.8.8.8
-
-# Promotion control
-pihole_bind_dns: true # <-- THIS is the keon off switch
-
-# Integrations
+# Set false on standby instances to avoid binding host ports 53 and 8888
+pihole_bind_dns: true
 pihole_watchtower_enable: true

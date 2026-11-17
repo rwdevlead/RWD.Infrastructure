@@ -45,10 +45,6 @@
     state: present
   when: not ansible_check_mode
 
-# ========================
-# Health Checks & Assertions
-# ========================
-
 - name: Wait for Traefik container to be healthy
   community.docker.docker_container_info:
     name: "{{ traefik_instance.name }}"

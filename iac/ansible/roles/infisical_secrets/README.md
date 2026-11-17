@@ -1,42 +1,71 @@
-# Infisical Secrets role
+# infisical_secrets
 
-## Purpose
+Logs into Infisical using Universal Auth, reads configured secret paths via the `infisical.vault` collection, and merges them into a single `secrets` fact for downstream roles.
 
-This role logs in to Infisical and reads secrets from configured paths, merging them into a single `secrets` fact for callers.
+---
 
-## Defaults
+## Requirements
 
-The role provides a default list of paths to read in `defaults/main.yml`:
+- `infisical.vault` Ansible collection (`iac/ansible/collections/requirements.yml`)
+- Environment variables loaded (typically via root `.env` and `Makefile`):
+  - `INFISICAL_CLIENT_ID`
+  - `INFISICAL_CLIENT_SECRET`
+  - `INFISICAL_PROJECT_ID`
 
-- `infisical_secret_paths` (default):
-  - `/`
-  - `/ansible/mail`
+---
 
-You can override this in a playbook or inventory:
+## Variables
 
-vars:
-infisical_secret_paths: - "/" - "/my/other/path"
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `infisical_secret_paths` | List of Infisical paths to read and merge | `['/']` (fallback in `tasks/main.yaml`; `defaults/main.yml` is commented out) |
+| `infisical_env_slug` | Infisical environment slug to query | `'dev'` |
 
-## Secrets structure
+---
 
-The role sets a `secrets` fact with these properties:
+## Secrets Structure
 
-- Nested maps for paths: e.g. `secrets.ansible.mail.OUTLOOK_MAIL_USER`.
-- Dotted-key mapping preserved: `secrets['ansible.mail']['OUTLOOK_MAIL_USER']`.
-- Root secrets promoted: keys under `/` are merged into top-level `secrets` so `secrets.SECRET` works.
+`files/merge_infisical_secrets.py` merges all retrieved paths (last-merge-wins via recursive combine) into the `secrets` fact with three access patterns:
 
-## Usage example
+- **Nested path map:** `secrets.ansible.mail.OUTLOOK_MAIL_USER`
+- **Dotted-key bracket access:** `secrets['ansible.mail']['OUTLOOK_MAIL_USER']`
+- **Promoted root keys (`/`):** `secrets.SECRET`
 
-- Access a namespaced secret:
+---
 
-  {{ "{{ secrets.ansible.mail.OUTLOOK_MAIL_USER }}" }}
+## Example
 
-- Access a promoted root secret:
+```yaml
+- name: Deploy Mailrise Alerts
+  hosts: prod-docker-01
+  become: true
+  vars:
+    infisical_secret_paths:
+      - "/ansible/mail"
+      - "/ansible/mailrise"
+  roles:
+    - infisical_secrets
+    - apps/mailrise
+```
 
-  {{ "{{ secrets.SECRET }}" }}
+Accessing a secret in a downstream task or template:
+
+```yaml
+username: "{{ secrets.ansible.mail.OUTLOOK_MAIL_USER }}"
+```
+
+---
+
+## Make Targets
+
+```bash
+# Run local Infisical integration assertions (playbooks/test_infisical.yml)
+make test-infisical
+```
+
+---
 
 ## Notes
 
-- This role relies on the external `infisical.vault` Ansible collection; do not vendor it into this repo.
-- The merging strategy is last-merge-wins for key collisions (recursive combine).
-- For larger deployments you may prefer to drive `infisical_secret_paths` from inventory/group_vars.
+- Login and secret reads run with `delegate_to: localhost`, `run_once: true`, `become: false`, and `check_mode: false` so secrets remain available during `--check` dry-runs.
+- Do not vendor `infisical.vault` into the repository; install it with `ansible-galaxy collection install -r iac/ansible/collections/requirements.yml`.

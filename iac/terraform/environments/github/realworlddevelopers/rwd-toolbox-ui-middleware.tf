@@ -1,21 +1,3 @@
-
-# *** import repo ***
-# import {
-#   id = "RWD.Toolbox.Ui.Middleware"
-#   to = module.rwd_toolbox_ui_middleware.github_repository.this
-# }
-
-# import {
-#   id = "RWD.Toolbox.Ui.Middleware:master"
-#   to = module.branch_protection_rwd_toolbox_ui_middleware.github_branch_protection.branch
-# }
-
-# import {
-#   id = "RWD.Toolbox.Ui.Middleware/.github/CODEOWNERS"
-#   to = module.codeowners_rwd_toolbox_ui_middleware.github_repository_file.codeowners
-# }
-
-# create an open repo
 module "rwd_toolbox_ui_middleware" {
   source = "../../../modules/github/github-repository"
 

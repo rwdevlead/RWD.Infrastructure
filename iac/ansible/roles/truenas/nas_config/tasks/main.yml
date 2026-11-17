@@ -18,6 +18,8 @@
   failed_when: false
   changed_when: false
 
+# Clear residual LVM, ZFS, and MD RAID metadata before zpool create because Proxmox/TrueNAS disks often retain stale labels;
+# shell tasks suppress errors because missing metadata on clean disks returns non-zero exit codes
 - name: Clean up LVM configurations
   shell: "lvremove -f $(lvs -o lv_path 2>/dev/null | grep {{ data_disk | basename }} || echo '') || true"
   when: pool_exists.rc != 0
@@ -73,6 +75,7 @@
   register: zpool_result
   changed_when: true
 
+# zfs create -p returns exit code 1 when a dataset already exists; treat rc=1 as unchanged for idempotency
 - name: Create Datasets
   shell: "zfs create -p {{ item.path }}"
   loop: "{{ datasets }}"

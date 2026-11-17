@@ -1,14 +1,12 @@
-# Global Settings
 ansible_user: ka8kgj
 shared_timezone: "America/New_York"
 
-# Security Defaults
 security_fail2ban_enabled: true
 security_sysctl_enabled: true
 security_firewall_enabled: true
 ssh_port: 22
 
-# Global Docker Info
+# Pin Docker API version for compatibility across container integrations (Traefik, Watchtower)
 shared_docker_api_version: "1.52"
 shared_docker_network: "traefik"
 docker_base_dir: /opt/docker
@@ -20,7 +18,6 @@ nfs_mounts:
     src: "{{ vms['dev-truenas-01'].ip }}:/mnt/tank/docker/{{ inventory_hostname }}"
     opts: "rw,soft,intr"
 
-# --- PiHole and Nebula Sync Configuration Variables ---
 pihole_instances:
   prod-docker-01:
     name: "pihole-p01"
@@ -38,15 +35,13 @@ pihole_instances:
     env_user_pwd: "PIHOLE_D02_PASSWORD"
 
 nebula_sync_url: "http://{{ vms['prod-docker-01'].ip }}:8888/api/auth"
-# Core API Endpoint Configuration (Pi-hole v6 App Endpoints)
-nebula_sync_primary_node: "http://{{ vms['prod-docker-01'].ip }}:8888" # Replace with your primary Pi-hole IP/DNS
-nebula_sync_replica1_node: "http://{{ vms['dev-docker-02'].ip }}:8888" # Replace with your replica Pi-hole IP/DNS
+# Pi-hole v6 app endpoints used by nebula-sync
+nebula_sync_primary_node: "http://{{ vms['prod-docker-01'].ip }}:8888"
+nebula_sync_replica1_node: "http://{{ vms['dev-docker-02'].ip }}:8888"
 
-# webhook for monitoring
 uptime_kuma_nebula_push_url_success: "https://{{ uptime_kuma.domain }}/api/push/{{ secrets.ansible.uptime_kuma.NEBULA_PUSH_TOKEN }}?status=up&msg=Sync+Success"
 uptime_kuma_nebula_push_url_fail: "https://{{ uptime_kuma.domain }}/api/push/{{ secrets.ansible.uptime_kuma.NEBULA_PUSH_TOKEN }}?status=down&msg=Sync+Failed"
 
-# traefik
 traefik_instance:
   name: "traefik-d02"
   domain: "traefik-d02.local.rwdevs.com"
@@ -54,7 +49,6 @@ traefik_instance:
   container: traefik-d02
   url: "https://traefik-d02.local.rwdevs.com"
 
-# --- Proxmox Instances ---
 proxmox_instances:
   - name: "proxmox"
     domain: "proxmox.local.rwdevs.com"

@@ -1,4 +1,3 @@
-# infisical secrets from vault
 data "infisical_secrets" "proxmox" {
   env_slug     = "dev"
   folder_path  = "/terraform/proxmox/pve-d01"

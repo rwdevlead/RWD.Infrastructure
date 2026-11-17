@@ -18,12 +18,13 @@ This file defines the project instructions, conventions, and operational workflo
 
 ## 2. Directory Map & Key Files
 
-- `iac/terraform/environments/`: Target-specific Terraform roots (e.g. `proxmox`, `github`, etc.).
-- `iac/terraform/modules/`: Reusable Terraform modules.
-- `iac/ansible/playbooks/`: Ansible playbooks for service provisioning and node configurations.
-- `iac/ansible/roles/`: Modular Ansible roles.
-- `iac/ansible/inventories/`: Environment inventories and host variables.
-- `Makefile`: Universal entry point for all IaC operations (`init`, `plan`, `apply`, `validate`, `fmt`, `lint`).
+- `iac/shared/infrastructure.yml`: Single source of truth for non-secret network, Proxmox node, and VM topology shared by Terraform and Ansible.
+- `iac/terraform/environments/`: Target-specific Terraform roots (e.g. `proxmox/pve-p01`, `github/realworlddevelopers`, `infisical`).
+- `iac/terraform/modules/`: Reusable Terraform modules (`github/`, `proxmox/`).
+- `iac/ansible/playbooks/`: Ansible playbooks for service provisioning, storage, UPS/NUT, and node configurations.
+- `iac/ansible/roles/`: Modular Ansible roles (`infisical_secrets`, `system_base`, `docker`, `proxmox`, `truenas`, `apps`).
+- `iac/ansible/inventories/`: Environment inventories (`hosts.yml`, `truenas.yml`) and `group_vars/` (`all.yml` loads `iac/shared/infrastructure.yml`).
+- `Makefile`: Universal entry point for all IaC operations (Terraform `init`/`plan`/`apply`/`validate`/`fmt`/`clean`/`destroy`, and Ansible `<target>-check`/`<target>`).
 - `.agents/standards/`: Mandatory workflow, coding, git/PR, and documentation standards.
 - `.agents/memory/`: Project long-term context (`PROJECT_CONTEXT.md`) and session handoff (`AI_HANDOFF.md`).
 - `.agents/skills/`: Agent skills (`/commit-cleanup`, `/create-pr`, `/generate-docs`, `/handoff`, `/project-ai-refresh`, `/project-ai-setup`, `/refactor-code`, `/review`).
@@ -33,10 +34,12 @@ This file defines the project instructions, conventions, and operational workflo
 ## 3. Verified Build & Run Commands
 
 - **Help & Available Targets:** `make help`
-- **Terraform Init:** `make init TARGET=<target>`
-- **Terraform Plan:** `make plan TARGET=<target> ENV=<env>`
-- **Terraform Validate:** `make validate TARGET=<target>`
-- **Format Code:** `make fmt TARGET=<target>`
+- **Terraform Init:** `make init TARGET=<env-path>` (e.g. `TARGET=proxmox/pve-p01`)
+- **Terraform Plan:** `make plan TARGET=<env-path>`
+- **Terraform Apply:** `make apply TARGET=<env-path>`
+- **Terraform Validate / Format:** `make validate TARGET=<env-path>` / `make fmt TARGET=<env-path>`
+- **Ansible Config & Infisical Check:** `make ansible-config` / `make test-infisical`
+- **Ansible Dry-Run / Apply:** `make <target>-check` / `make <target>` (e.g. `make docker-check`, `make traefik-check`, `make ups-nut-check`)
 
 ---
 

@@ -4,7 +4,7 @@ mailrise_tag: "1.4.0"
 mailrise_base_dir: "/opt/mailrise"
 mailrise_data_dir: "/mnt/docker/mailrise"
 
-# Use the exact variable names from your .env file
+# Mail relay credentials and target address loaded from Infisical (/ansible/mail, /ansible/mailrise)
 mailrise_icloud_user: "{{ secrets.ansible.mail.ICLOUD_MAIL_USER }}"
 mailrise_icloud_pass: "{{ secrets.ansible.mail.ICLOUD_MAIL_PASS }}"
 mailrise_icloud_from: "{{ secrets.ansible.mail.ICLOUD_MAIL_FROM }}"

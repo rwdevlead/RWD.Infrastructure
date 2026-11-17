@@ -1,28 +1,27 @@
-
 variable "keyboard" {
   type        = string
-  description = "Keyboard Layout [default is en-us]"
+  description = "Keyboard layout [default is en-us]"
   default     = "en-us"
 }
 
 variable "tempate_node_id" {
   type        = number
-  description = "Name of the Node (server)"
+  description = "Source template VM ID to clone"
 }
 
 variable "tempate_node_name" {
   type        = string
-  description = "Name of the Node (server)"
+  description = "Proxmox node hosting the source template"
 }
 
 variable "vm_node_name" {
   type        = string
-  description = "Name of the Node (server)"
+  description = "Target Proxmox node name"
 }
 
 variable "vm_id" {
   type        = number
-  description = "VM ID Number (Index)"
+  description = "VM ID number"
 }
 
 variable "vm_name" {
@@ -43,104 +42,99 @@ variable "vm_on_boot" {
 
 variable "vm_username" {
   type        = string
-  description = "User for VM [default is null]"
-  # default     = null
+  description = "Username input for VM configuration"
 }
 
 variable "vm_password" {
   type        = string
-  description = "Password Username [default is null]"
-  # default     = null
+  description = "Password input for VM configuration"
 }
 
 variable "ssh_public_key_content" {
-  description = "The content of the SSH public key to inject into the VM. [default is ~/.ssh/id_ed25519.pub]"
+  description = "SSH public key content injected into the VM via cloud-init"
   type        = string
-  # default     = file("~/.ssh/id_ed25519.pub")
 }
 
 variable "vm_os" {
   type        = string
-  description = "OS of VM [default is l26]"
+  description = "Guest OS type [default is l26]"
   default     = "l26"
 }
 
 variable "vm_bios" {
   type        = string
-  description = "Bios of VM [default is omvf]"
+  description = "BIOS type for VM [default is ovmf]"
   default     = "ovmf"
 }
 
 variable "efi_storage_id" {
   type        = string
-  description = "Where to Put EFI Data [default is local-lvm]"
+  description = "Datastore ID for EFI disk [default is local-lvm]"
   default     = "local-lvm"
 }
 
 variable "vm_machine" {
   type        = string
-  description = "Machine Type of VM (pc, q35) [default is q35]"
+  description = "Machine type for VM (pc, q35) [default is q35]"
   default     = "q35"
 }
 
 variable "vm_cores" {
   type        = number
-  description = "Number of Cores for VM [default is 2]"
+  description = "Number of CPU cores for VM [default is 2]"
   default     = 2
 }
 
 variable "vm_memory_min" {
   type        = number
-  description = "Memeory for Template [default is 2048]"
+  description = "Minimum floating memory for VM in MiB [default is 2048]"
   default     = 2048
 }
 
 variable "vm_memory_max" {
   type        = number
-  description = "Max memeory for VM [default is 0]"
+  description = "Dedicated memory for VM in MiB [default is 0]"
   default     = 0
 }
 
 variable "disk_storage_id" {
   type        = string
-  description = "Where to assign Drive to [default is local-lvm]"
+  description = "Datastore ID for primary VM disk [default is local-lvm]"
   default     = "local-lvm"
 }
 
 variable "disk_interface" {
   type        = string
-  description = "Disk Interface [default is virtio0]"
+  description = "Disk interface [default is virtio0]"
   default     = "virtio0"
 }
 
 variable "disk_size" {
   type        = number
-  description = "Size of Disk (gigabytes)[default is 20]"
+  description = "Disk size in gigabytes [default is 20]"
   default     = 20
 }
 
 variable "vm_static_ip" {
   type        = string
-  description = "Static IP for VM [default is dhcp]"
+  description = "Static IPv4 CIDR for VM (null uses no static IP) [default is null]"
   default     = null
 }
 
 variable "network_gateway" {
   type        = string
-  description = "Gateway IP for VM"
+  description = "Gateway IP for VM [default is dhcp]"
   default     = "dhcp"
 }
 
 variable "network_device_model" {
   type        = string
-  description = "Model of Device on the Network [default is virtio]"
+  description = "Virtual network device model [default is virtio]"
   default     = "virtio"
 }
 
 variable "tags" {
   type        = set(string)
-  description = "tags for VM [default is 'vm']"
+  description = "Tags assigned to the VM [default is ['vm']]"
   default     = ["vm"]
 }
-
-

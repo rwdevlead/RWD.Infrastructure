@@ -1,5 +1,4 @@
 ---
-# 1. Package Installation
 - name: Install NUT packages
   ansible.builtin.apt:
     name: >-
@@ -11,7 +10,6 @@
     state: present
     update_cache: true
 
-# 2. Common Configuration Files (Master & Slaves)
 - name: Deploy common NUT client configurations
   ansible.builtin.template:
     src: "{{ item }}.j2"
@@ -24,7 +22,6 @@
     - upsmon.conf
   notify: Restart NUT client
 
-# 3. Master-Only Server, Scheduler, Scripts & Systemd Service
 - name: Configure NUT master server and staged orchestration
   when: nut_instances[inventory_hostname].role == 'master'
   block:
@@ -76,7 +73,6 @@
         state: started
         enabled: true
 
-# 4. Client Service Management (Master & Slaves)
 - name: Ensure nut-client is enabled and running
   ansible.builtin.service:
     name: nut-client

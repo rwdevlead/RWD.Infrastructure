@@ -1,7 +1,6 @@
 ---
 - name: Test Infisical Secret Retrieval
   hosts: localhost
-  # become: true
 
   vars:
     infisical_secret_paths:

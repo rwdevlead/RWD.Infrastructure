@@ -20,7 +20,6 @@ terraform {
   }
 }
 
-# --- Infisical provider ---
 provider "infisical" {
   host = "https://app.infisical.com"
   auth = {
@@ -31,10 +30,7 @@ provider "infisical" {
   }
 }
 
-# --- GitHub provider ---
 provider "github" {
   token = local.github_token
   owner = local.github_owner
 }
-
-# https://registry.terraform.io/providers/Infisical/infisical/latest/docs#terraform

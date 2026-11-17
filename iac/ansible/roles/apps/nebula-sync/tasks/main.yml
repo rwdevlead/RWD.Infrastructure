@@ -8,22 +8,19 @@
     networks:
       - name: "{{ shared_docker_network }}"
     env:
-      # --- REQUIRED CORE PARAMS ---
       PRIMARY: "{{ nebula_sync_primary_node }}|{{ nebula_sync_primary_token }}"
       REPLICAS: "{{ nebula_sync_replica1_node }}|{{ nebula_sync_replica1_token }}"
       FULL_SYNC: "true"
 
-      # --- SCHEDULING & RUNTIME ---
       RUN_GRAVITY: "false"
-      CRON: "0 * * * *" # Explicitly runs at the top of every hour
+      CRON: "0 * * * *"
       TZ: "America/New_York"
 
-      # --- HTTP CLIENT ENGINE SPECS ---
       CLIENT_SKIP_TLS_VERIFICATION: "false"
       CLIENT_RETRY_DELAY_SECONDS: "1"
       CLIENT_TIMEOUT_SECONDS: "20"
 
-      # --- EXPLICIT FEATURE COUPLING (Disabled due to FULL_SYNC=true) ---
+      # Disabled explicitly because FULL_SYNC=true supersedes individual sync flags
       SYNC_CONFIG_DNS: "false"
       SYNC_CONFIG_DHCP: "false"
       SYNC_CONFIG_NTP: "false"
@@ -40,7 +37,6 @@
       SYNC_GRAVITY_CLIENT: "false"
       SYNC_GRAVITY_CLIENT_BY_GROUP: "false"
 
-      # --- WEBHOOK NOTIFICATIONS ---
       WEBHOOK_CLIENT_SKIP_TLS_VERIFICATION: "false"
       WEBHOOK_SYNC_SUCCESS_URL: "{{ uptime_kuma_nebula_push_url_success }}"
       WEBHOOK_SYNC_SUCCESS_METHOD: "GET"

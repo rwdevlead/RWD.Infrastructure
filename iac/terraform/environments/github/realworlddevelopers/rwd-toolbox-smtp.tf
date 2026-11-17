@@ -1,21 +1,3 @@
-
-# *** import repo ***
-# import {
-#   id = "RWD.Toolbox.SMTP"
-#   to = module.rwd_toolbox_smtp.github_repository.this
-# }
-
-# import {
-#   id = "RWD.Toolbox.SMTP:master"
-#   to = module.branch_protection_rwd_toolbox_smtp.github_branch_protection.branch
-# }
-
-# import {
-#   id = "RWD.Toolbox.SMTP/.github/CODEOWNERS"
-#   to = module.codeowners_rwd_toolbox_smtp.github_repository_file.codeowners
-# }
-
-# create a open repo
 module "rwd_toolbox_smtp" {
   source = "../../../modules/github/github-repository"
 

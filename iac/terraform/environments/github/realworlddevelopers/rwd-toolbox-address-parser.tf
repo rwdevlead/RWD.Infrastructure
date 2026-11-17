@@ -1,21 +1,3 @@
-
-# *** import repo ***
-# import {
-#   id = "RWD.Toolbox.AddressParser"
-#   to = module.rwd_toolbox_address_parser.github_repository.this
-# }
-
-# import {
-#   id = "RWD.Toolbox.AddressParser:master"
-#   to = module.branch_protection_rwd_toolbox_address_parser.github_branch_protection.branch
-# }
-
-# import {
-#   id = "RWD.Toolbox.AddressParser/.github/CODEOWNERS"
-#   to = module.codeowners_rwd_toolbox_address_parser.github_repository_file.codeowners
-# }
-
-# create a open repo
 module "rwd_toolbox_address_parser" {
   source = "../../../modules/github/github-repository"
 
@@ -29,24 +11,20 @@ module "rwd_toolbox_address_parser" {
   has_wiki        = local.repo_features.has_wiki
   auto_init       = local.repo_features.auto_init
   has_discussions = local.repo_features.has_discussions
-
 }
 
-# Use CODEOWNERS module to manage the CODEOWNERS file
 module "codeowners_rwd_toolbox_address_parser" {
   source = "../../../modules/github/github-codeowners"
 
   repository   = module.rwd_toolbox_address_parser.repository_name
   branch       = "master"
   github_owner = local.github_owner
-  # admins       = [var.github_owner_secondary]
-  owners = [local.github_owner]
+  owners       = [local.github_owner]
 
+  # Ensure the repository and initial branch exist before committing .github/CODEOWNERS
   depends_on = [module.rwd_toolbox_address_parser]
-
 }
 
-# create classic branch protection instead of a ruleset
 module "branch_protection_rwd_toolbox_address_parser" {
   source = "../../../modules/github/github-branch-protection"
 
@@ -54,19 +32,11 @@ module "branch_protection_rwd_toolbox_address_parser" {
   branch        = "master"
 
   github_owner = local.github_owner
-  # codeowners_admins = [var.github_owner_secondary]
-  # codeowners_owners = [var.github_owner_secondary]
 
-  # Branch protection settings
-  enforce_admins = local.branch_protection_settings.enforce_admins
-  # //// strict_required_status_checks   = local.branch_protection_settings.strict_required_status_checks
-  # //// required_status_check_contexts  = local.branch_protection_settings.required_status_check_contexts
-  # //dismiss_stale_reviews           = local.branch_protection_settings.dismiss_stale_reviews
+  enforce_admins                  = local.branch_protection_settings.enforce_admins
   require_code_owner_reviews      = local.branch_protection_settings.require_code_owner_reviews
   required_approving_review_count = local.branch_protection_settings.required_approving_review_count
 
+  # Require CODEOWNERS file before enabling require_code_owner_reviews on the branch
   depends_on = [module.codeowners_rwd_toolbox_address_parser]
-
 }
-
-

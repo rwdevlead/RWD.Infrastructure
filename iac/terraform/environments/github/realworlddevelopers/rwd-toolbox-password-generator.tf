@@ -1,21 +1,3 @@
-
-# *** import repo ***
-# import {
-#   id = "RWD.Toolbox.PasswordGenerator"
-#   to = module.rwd_toolbox_password_generator.github_repository.this
-# }
-
-# import {
-#   id = "RWD.Toolbox.PasswordGenerator:master"
-#   to = module.branch_protection_rwd_toolbox_password_generator.github_branch_protection.branch
-# }
-
-# import {
-#   id = "RWD.Toolbox.PasswordGenerator/.github/CODEOWNERS"
-#   to = module.codeowners_rwd_toolbox_password_generator.github_repository_file.codeowners
-# }
-
-# create a open repo
 module "rwd_toolbox_password_generator" {
   source = "../../../modules/github/github-repository"
 

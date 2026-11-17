@@ -1,5 +1,4 @@
 ---
-# Portainer defaults
 portainer_image: "portainer/portainer-ce"
 portainer_tag: "latest"
 

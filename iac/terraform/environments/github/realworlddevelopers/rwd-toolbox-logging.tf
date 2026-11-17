@@ -1,21 +1,3 @@
-
-# *** import repo ***
-# import {
-#   id = "RWD.Toolbox.Logging"
-#   to = module.rwd_toolbox_logging.github_repository.this
-# }
-
-# import {
-#   id = "RWD.Toolbox.Logging:master"
-#   to = module.branch_protection_rwd_toolbox_logging.github_branch_protection.branch
-# }
-
-# import {
-#   id = "RWD.Toolbox.Logging/.github/CODEOWNERS"
-#   to = module.codeowners_rwd_toolbox_logging.github_repository_file.codeowners
-# }
-
-# create a open repo
 module "rwd_toolbox_logging" {
   source = "../../../modules/github/github-repository"
 

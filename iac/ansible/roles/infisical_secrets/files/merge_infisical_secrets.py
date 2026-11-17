@@ -15,6 +15,7 @@ def deep_merge(dst, src):
 
 
 def main():
+    """Merge Infisical path lookup results from INFISICAL_RESULTS into nested and dotted JSON maps."""
     raw = os.environ.get("INFISICAL_RESULTS", "[]")
     try:
         results = json.loads(raw)
@@ -28,12 +29,11 @@ def main():
         path = (entry.get("item") or "/").strip("/")
         secrets = entry.get("secrets") or {}
 
-        # Root level: merge directly into final
+        # Promote root ('/') keys directly to top-level `secrets.<KEY>`
         if not path:
             deep_merge(final, secrets)
             continue
 
-        # 1. Nested paths: create nested dict structure (secrets.ansible.mail)
         parts = [part for part in path.split("/") if part]
         cursor = final
         for part in parts:
@@ -42,7 +42,7 @@ def main():
             cursor = cursor[part]
         deep_merge(cursor, secrets)
 
-        # 2. Dotted legacy key access (secrets['ansible.mail'])
+        # Also emit dotted keys (e.g. secrets['ansible.mail']) alongside nested dicts for backward compatibility
         dotted_key = ".".join(parts)
         if dotted_key not in final:
             final[dotted_key] = {}

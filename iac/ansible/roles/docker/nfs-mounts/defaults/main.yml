@@ -1,5 +1,4 @@
 ---
-# NFS configuration for Docker mounts
 nfs_mounts:
   - src: "{{ vms['dev-truenas-01'].ip }}:/mnt/tank/docker"
     path: "/mnt/docker"

@@ -20,6 +20,7 @@
     url: https://download.docker.com/linux/ubuntu/gpg
     dest: /etc/apt/keyrings/docker.asc
     mode: "0644"
+  # Ensure repo keyring and sources exist during --check so subsequent package tasks evaluate accurately
   check_mode: no
 
 - name: Add Docker repository (modern DEB822 format)
@@ -64,6 +65,7 @@
     name: docker
     state: started
     enabled: yes
+  # Keep docker service running during --check so downstream container/network tasks can inspect the daemon
   check_mode: no
 
 - name: Create systemd override directory for Docker
@@ -89,6 +91,7 @@
     append: yes
   loop: "{{ docker_users }}"
 
+# Free host port 53 so containerized Pi-hole can bind DNS directly on the host interface
 - name: DNS | Disable systemd-resolved stub listener
   ansible.builtin.lineinfile:
     path: /etc/systemd/resolved.conf
