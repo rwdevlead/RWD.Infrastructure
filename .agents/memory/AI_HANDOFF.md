@@ -12,7 +12,7 @@ Deliver the user's 6-step IaC improvement request:
 The full plan, decisions, IP map and IP review log are in [PLAN-iac-refactor.md](PLAN-iac-refactor.md).
 
 ## Current Status
-Steps 1–6 and inline comment cleanup are merged into `main` (`chore/agents-iac-tooling` merged at `fa7bdd6`). On branch `fix/nut-security-and-bugs`, NUT `diff: false` suppression and all 5 backlog bug-fix/cleanup items are implemented and validated (`terraform fmt`, `make validate`, `make ups-nut-check`). NUT credential rotation in Infisical was intentionally skipped by the user for now, and remaining runtime/dry-run tests (`docker-check`, `traefik-check`, `make plan` after refreshing the HCP Terraform token) will resume next session.
+Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, and the IaC bug-fix/cleanup pass are all complete and merged into `main` (`5af7f08`). Remaining TODO: rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`) and re-deploy `make ups-nut` when ready.
 
 ## Operating Constraints (MANDATORY — read first)
 - **PRIORITY 1 — NEVER ACT WITHOUT EXPLICIT APPROVAL:** Do **not** create, edit, or delete any file, and do **not** run any command, without explicit user approval first. When proposing a plan or batch of edits, **end the turn with no write/delete/command tool calls** and wait for the user's explicit go-ahead. "Approved plan" ≠ approval to execute each detail.
@@ -41,8 +41,8 @@ Steps 1–6 and inline comment cleanup are merged into `main` (`chore/agents-iac
 | Step 5 — Root docs (`docs/ansible-documentation`) | Complete | Merged into `main` (`4e34754`) |
 | Inline comments & `.env.example` cleanup (`docs/ansible-documentation`) | Complete | Merged into `main` (`4e34754`) |
 | Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Complete | Merged into `main` (`fa7bdd6`) |
-| Final NUT security (`diff: false`) & IaC bug-fix/cleanup pass (`fix/nut-security-and-bugs`) | Complete (PR pending) | Added `diff: false` on `upsmon.conf` / `upsd.users` (credential rotation skipped per user); fixed `staged_takedown.sh.j2` shebang order, `docker/engine` handler & unused defaults, `clone-vm` credentials + `sensitive = true`, `rwd-numpicker.tf` branch mismatch; cleaned `TEST_VAR`, `github-repository` unused vars, Traefik unused `default-whitelist`/`secured` middlewares, empty `scripts/`, and `.DS_Store`. |
-| Resume dry-run / plan testing (next session) | Pending | Run `make docker-check`, `make traefik-check`, and `make plan` (after refreshing expired HCP Terraform token via `terraform login`; watch for `clone-vm` `user_account` diff if `default_password` differs from `"password123"`). |
+| Final NUT security (`diff: false`) & IaC bug-fix/cleanup pass (`fix/nut-security-and-bugs`) | Complete | Merged into `main` (`5af7f08`) |
+| Rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`) and re-deploy `make ups-nut` | Pending | Paused until ready; `diff: false` is already active on `upsmon.conf` and `upsd.users`. |
 
 ## Step 1 Resolved Decisions
 1. **Remove the `infisical_secrets` debug task:** ✅ Removed lines 67–70 in `iac/ansible/roles/infisical_secrets/tasks/main.yaml`.
@@ -67,8 +67,7 @@ Steps 1–6 and inline comment cleanup are merged into `main` (`chore/agents-iac
 - Deployed `make ups-nut` live across `proxmox_cluster`, verified zero drift (`changed=0, failed=0`), verified `nut-server` / `nut-client` / `upsc` telemetry, and completed a full physical cluster staged takedown and automated `nut-bringup.service` recovery test across `pve-d01`, `pve-p01`, and `proxmox`.
 - Merged Step 1 (`UPS-NUT`), created `refactor/shared-infrastructure-vars` for Step 2, created `iac/shared/infrastructure.yml` and `iac/ansible/inventories/group_vars/all.yml`, refactored Terraform Proxmox environments and Ansible inventories/group_vars/playbooks/roles/templates onto the shared config, cleaned up 6 redundant/broken items, and verified zero drift in both Terraform and Ansible.
 - Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`, and merged PR #20.
-- Merged `docs/ansible-documentation` (`4e34754`) and `chore/agents-iac-tooling` (`fa7bdd6`) into `main`.
-- Created branch `fix/nut-security-and-bugs` from `main` (`fa7bdd6`), set `diff: false` on `upsmon.conf` and `upsd.users` in `proxmox/nut` (NUT password rotation skipped per user), fixed `staged_takedown.sh.j2` shebang order, `docker/engine` handler/defaults, `clone-vm` variable wiring (`sensitive = true` on `vm_password`/`default_password`), and `rwd-numpicker.tf` `codeowners` branch (`main`), and removed `TEST_VAR`, unused `github-repository` team vars, unused Traefik `default-whitelist`/`secured` middlewares, empty `scripts/`, and local `.DS_Store` files. Verified with `terraform fmt -check -recursive iac/terraform`, `make validate` (`proxmox/pve-p01`, `proxmox/pve-d01`, `proxmox/proxmox`, `github/rwdevlead`), and `make ups-nut-check`.
+- Merged `docs/ansible-documentation` (`4e34754`), `chore/agents-iac-tooling` (`fa7bdd6`), and `fix/nut-security-and-bugs` (`5af7f08`) into `main`.
 
 ## Immediate Next Action
-Merge the `fix/nut-security-and-bugs` PR on GitHub, sync `main`, and in the next session refresh the HCP Terraform token (`terraform login`) and resume testing (`make plan`, `make docker-check`, `make traefik-check`, and optional `make ups-nut` to apply the updated `staged_takedown.sh`/`staged_bringup.sh` templates).
+When ready, rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical under `/ansible/nut` and run `make ups-nut` to deploy the rotated credentials.
