@@ -1,60 +1,93 @@
 # apps/mailrise
 
-Deploys MailRise SMTP alert router.
+Deploys the Mailrise SMTP-to-Apprise relay container via Docker Compose on `prod-docker-01`, forwarding local infrastructure alert emails through iCloud and Outlook SMTP relays.
 
-## Responsibilities
+---
 
-- Render MailRise config
-- Deploy container via Docker Compose
+## Requirements
 
-## Ports
+- Docker Engine and Compose v2 (`docker/engine`, `docker/compose`)
+- Infisical secrets populated under `/ansible/mail` and `/ansible/mailrise`
 
-- SMTP: configurable (default 8025)
+---
+
+## Variables
+
+### Role Defaults (`defaults/main.yml`)
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `mailrise_image` | Docker image repository | `"yoryan/mailrise"` |
+| `mailrise_tag` | Docker image tag | `"1.4.0"` |
+| `mailrise_base_dir` | Host directory for `docker-compose.yml` | `"/opt/mailrise"` |
+| `mailrise_data_dir` | Host directory for `config/mailrise.conf` | `"/mnt/docker/mailrise"` |
+| `mailrise_icloud_user` | iCloud SMTP username | `"{{ secrets.ansible.mail.ICLOUD_MAIL_USER }}"` |
+| `mailrise_icloud_pass` | iCloud SMTP app password | `"{{ secrets.ansible.mail.ICLOUD_MAIL_PASS }}"` |
+| `mailrise_icloud_from` | iCloud sender address | `"{{ secrets.ansible.mail.ICLOUD_MAIL_FROM }}"` |
+| `mailrise_outlook_user` | Outlook SMTP username | `"{{ secrets.ansible.mail.OUTLOOK_MAIL_USER }}"` |
+| `mailrise_outlook_pass` | Outlook SMTP password | `"{{ secrets.ansible.mail.OUTLOOK_MAIL_PASS }}"` |
+| `mailrise_outlook_from` | Outlook sender address | `"{{ secrets.ansible.mail.OUTLOOK_MAIL_FROM }}"` |
+| `mailrise_target_email` | Destination alert email address | `"{{ secrets.ansible.mailrise.EMAIL_DEST }}"` |
+
+### Group Variables (`inventories/group_vars/docker_hosts.yml`)
+
+- `mailrise`: `{ name: mailrise-p01, domain: "mailrise.local.rwdevs.com", email: "email@mailrise.xyz", port: 8025 }`
+- `shared_docker_network`: `"traefik"`
+
+---
+
+## Infisical Secrets
+
+| Path | Secret Keys |
+| :--- | :--- |
+| `/ansible/mail` | `ICLOUD_MAIL_USER`, `ICLOUD_MAIL_PASS`, `ICLOUD_MAIL_FROM`, `OUTLOOK_MAIL_USER`, `OUTLOOK_MAIL_PASS`, `OUTLOOK_MAIL_FROM` |
+| `/ansible/mailrise` | `EMAIL_DEST` |
+
+---
+
+## Dependencies
+
+- `infisical_secrets` (invoked by `playbooks/mailrise.yml`)
+- `community.docker` collection
+
+---
+
+## Example
+
+```yaml
+- name: Deploy Mailrise Alerts
+  hosts: prod-docker-01
+  become: true
+  vars:
+    infisical_secret_paths:
+      - "/ansible/mail"
+      - "/ansible/mailrise"
+  roles:
+    - infisical_secrets
+    - apps/mailrise
+```
+
+---
+
+## Make Targets
+
+```bash
+make mailrise-check
+make mailrise
+```
+
+---
 
 ## Notes
 
-- No web UI
-- Credentials should be stored in Ansible Vault
+- Exposes SMTP on `8025:8025` (plus `8081:8080`) and configures a Traefik TCP router on entrypoint `smtp` (`HostSNI(*)`).
+- Defines `email`, `icloud`, and `outlook` Mailrise routes in `config/mailrise.conf`.
+- Note: `tasks/main.yml` renders `mailrise.conf` and `docker-compose.yml` with `check_mode: no` even during `--check`.
 
-## Working Test Script
-
-```bash
-ka8kgj on Jims-MBP at 󰋜 ~ swaks --to email@mailrise.xyz --server 192.168.50.14 --port 8025
-or swaks --to email@mailrise.xyz --server mailrise.local.rwdevs.com --port 8025
-```
-
-### should return this:
+### Manual SMTP Test (`swaks`)
 
 ```bash
-=== Trying 192.168.50.14:8025...
-=== Connected to 192.168.50.14.
-<- 220 c706c1d44589 Mailrise 1.4.0
--> EHLO jims-mbp
-<- 250-c706c1d44589
-<- 250-SIZE 33554432
-<- 250-8BITMIME
-<- 250-SMTPUTF8
-<- 250-AUTH LOGIN PLAIN
-<- 250 HELP
--> MAIL FROM:<ka8kgj@jims-mbp>
-<- 250 OK
--> RCPT TO:<alerts@mailrise.xyz>
-<- 250 OK
--> DATA
-<- 354 End data with <CR><LF>.<CR><LF>
--> Date: Sun, 17 May 2026 20:37:27 -0400
--> To: alerts@mailrise.xyz
--> From: ka8kgj@jims-mbp
--> Subject: test Sun, 17 May 2026 20:37:27 -0400
--> Message-Id: <20260517203727.041366@jims-mbp>
--> X-Mailer: swaks v20240103.0 jetmore.org/john/code/swaks/
-->
--> This is a test mailing
-->
-->
--> .
-<- 250 OK
--> QUIT
-<- 221 Bye
-=== Connection closed with remote host.
+swaks --to email@mailrise.xyz --server 192.168.50.14 --port 8025
+# or
+swaks --to email@mailrise.xyz --server mailrise.local.rwdevs.com --port 8025
 ```

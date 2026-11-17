@@ -12,7 +12,7 @@ Deliver the user's 6-step IaC improvement request:
 The full plan, decisions, IP map and IP review log are in [PLAN-iac-refactor.md](PLAN-iac-refactor.md).
 
 ## Current Status
-Steps 1 (`UPS-NUT`), 2 (`refactor/shared-infrastructure-vars`), and 3 (`fix/infisical-secrets`) are complete. All hardcoded push tokens (`NEBULA_PUSH_TOKEN` in `/ansible/uptime_kuma`) and ACME registration emails (`ACME_EMAIL` in `/ansible/cloudflare`) now come from Infisical, the unused `apps/semaphore` role has been removed, and `iac/ansible/ansible.cfg` uses portable relative paths (`export ANSIBLE_CONFIG` in `Makefile`). Next up is Step 4 (Document all Ansible folders and roles) on a new branch.
+Steps 1 (`UPS-NUT`, PR #18), 2 (`refactor/shared-infrastructure-vars`, PR #19), and 3 (`fix/infisical-secrets`, PR #20) are complete and merged to `main`. **Steps 4 (Ansible documentation) and 5 (root documentation: `README.md`, `AGENTS.md`, `PROJECT_CONTEXT.md`) are complete on branch `docs/ansible-documentation`**, ready for commit/PR and then **Step 6** on a new branch.
 
 ## Operating Constraints (MANDATORY — read first)
 - **Plan before every action.** For each step (and each sub-action inside a step), describe exactly what will change and which commands will run. Wait for explicit user approval before editing files or running commands. "Approved plan" ≠ approval to execute each detail.
@@ -35,10 +35,10 @@ Steps 1 (`UPS-NUT`), 2 (`refactor/shared-infrastructure-vars`), and 3 (`fix/infi
 | IP review — `.12`, `.14`, `.16`, `.8` | Complete | All resolved and applied via `iac/shared/infrastructure.yml` |
 | Step 1 — NUT refactor (`UPS-NUT`) | Complete | Merged in PR #18 |
 | Step 2 — shared `infrastructure.yml` (`refactor/shared-infrastructure-vars`) | Complete | Merged in PR #19 |
-| Step 3 — Infisical secrets (`fix/infisical-secrets`) | Complete | `NEBULA_PUSH_TOKEN` & `ACME_EMAIL` moved to Infisical, `apps/semaphore` removed, `ansible.cfg` relative paths verified (`make ansible-config`, `make nebula-check`, `make traefik-check`). |
-| Step 4 — Ansible docs | Pending | New branch |
-| Step 5 — Root docs | Pending | New branch |
-| Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Pending | New branch |
+| Step 3 — Infisical secrets (`fix/infisical-secrets`) | Complete | Merged in PR #20 |
+| Step 4 — Ansible docs (`docs/ansible-documentation`) | Complete | Rewrote `iac/ansible/README.md`, added `inventories/README.md`, `playbooks/README.md`, `roles/README.md`, `apps/README.md`, `proxmox/README.md`, updated/created all platform, storage, base, and app role READMEs, and removed unused `DNS_CHECK_LIST.md`. |
+| Step 5 — Root docs (`docs/ansible-documentation`) | Complete | Rewrote root `README.md`, updated `AGENTS.md` §2/§3 and `PROJECT_CONTEXT.md`. Ready for commit & PR on `docs/ansible-documentation`. |
+| Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Pending | New branch after Step 4/5 PR merges |
 | Final: resolve all `TODO` / `DELETEME` markers + **rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical, re-deploy, and set `diff: false` on `upsd.users` / `upsmon.conf`** | Pending | **Remind the user before finishing.** |
 
 ## Step 1 Resolved Decisions
@@ -63,7 +63,8 @@ Steps 1 (`UPS-NUT`), 2 (`refactor/shared-infrastructure-vars`), and 3 (`fix/infi
 - Planned and reviewed every file of Step 1 one-by-one with the user before writing.
 - Deployed `make ups-nut` live across `proxmox_cluster`, verified zero drift (`changed=0, failed=0`), verified `nut-server` / `nut-client` / `upsc` telemetry, and completed a full physical cluster staged takedown and automated `nut-bringup.service` recovery test across `pve-d01`, `pve-p01`, and `proxmox`.
 - Merged Step 1 (`UPS-NUT`), created `refactor/shared-infrastructure-vars` for Step 2, created `iac/shared/infrastructure.yml` and `iac/ansible/inventories/group_vars/all.yml`, refactored Terraform Proxmox environments and Ansible inventories/group_vars/playbooks/roles/templates onto the shared config, cleaned up 6 redundant/broken items, and verified zero drift in both Terraform and Ansible.
-- Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, and verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`.
+- Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`, and merged PR #20.
+- Created and synced branch `docs/ansible-documentation` (`9a0eca0`) and completed **Step 4** (all Ansible folder, inventory, playbook, and role READMEs; removed unused `DNS_CHECK_LIST.md`) and **Step 5** (rewrote root `README.md`, updated `AGENTS.md` and `PROJECT_CONTEXT.md`).
 
 ## Immediate Next Action
-Complete the `fix/infisical-secrets` Pull Request review/merge on GitHub, then create a new branch for Step 4 (Document all Ansible folders and roles) and plan Step 4 with the user.
+Commit, push, and merge `docs/ansible-documentation` (Steps 4 & 5), then create a new branch from `main` to plan and execute **Step 6** (`.agents` skills, standards, templates, and consolidating/removing `.github/instructions` + copilot instructions).
