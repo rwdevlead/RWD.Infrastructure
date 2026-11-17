@@ -43,8 +43,8 @@ nebula_sync_primary_node: "http://{{ vms['prod-docker-01'].ip }}:8888" # Replace
 nebula_sync_replica1_node: "http://{{ vms['dev-docker-02'].ip }}:8888" # Replace with your replica Pi-hole IP/DNS
 
 # webhook for monitoring
-uptime_kuma_nebula_push_url_success: "https://uptime-kuma-p01.local.rwdevs.com/api/push/mOzdLaaXRzsew7xovxoy7K594cMkj9qb?status=up&msg=Sync+Success"
-uptime_kuma_nebula_push_url_fail: "https://uptime-kuma-p01.local.rwdevs.com/api/push/mOzdLaaXRzsew7xovxoy7K594cMkj9qb?status=down&msg=Sync+Failed"
+uptime_kuma_nebula_push_url_success: "https://{{ uptime_kuma.domain }}/api/push/{{ secrets.ansible.uptime_kuma.NEBULA_PUSH_TOKEN }}?status=up&msg=Sync+Success"
+uptime_kuma_nebula_push_url_fail: "https://{{ uptime_kuma.domain }}/api/push/{{ secrets.ansible.uptime_kuma.NEBULA_PUSH_TOKEN }}?status=down&msg=Sync+Failed"
 
 # traefik
 traefik_instance:

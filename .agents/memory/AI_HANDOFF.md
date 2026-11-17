@@ -12,7 +12,7 @@ Deliver the user's 6-step IaC improvement request:
 The full plan, decisions, IP map and IP review log are in [PLAN-iac-refactor.md](PLAN-iac-refactor.md).
 
 ## Current Status
-Steps 1 (`UPS-NUT`) and 2 (`refactor/shared-infrastructure-vars`) are complete. `iac/shared/infrastructure.yml` is now the single source of truth for network, Proxmox node, and VM topology across Terraform (`yamldecode(file(...))`) and Ansible (`inventories/group_vars/all.yml` `lookup('ansible.builtin.file', ...) | from_yaml`), verified with zero drift across all 3 Terraform Proxmox environments and Ansible `ups-nut-check` / `traefik-check`. Next up is Step 3 (moving remaining hardcoded secrets to Infisical) on a new branch.
+Steps 1 (`UPS-NUT`), 2 (`refactor/shared-infrastructure-vars`), and 3 (`fix/infisical-secrets`) are complete. All hardcoded push tokens (`NEBULA_PUSH_TOKEN` in `/ansible/uptime_kuma`) and ACME registration emails (`ACME_EMAIL` in `/ansible/cloudflare`) now come from Infisical, the unused `apps/semaphore` role has been removed, and `iac/ansible/ansible.cfg` uses portable relative paths (`export ANSIBLE_CONFIG` in `Makefile`). Next up is Step 4 (Document all Ansible folders and roles) on a new branch.
 
 ## Operating Constraints (MANDATORY — read first)
 - **Plan before every action.** For each step (and each sub-action inside a step), describe exactly what will change and which commands will run. Wait for explicit user approval before editing files or running commands. "Approved plan" ≠ approval to execute each detail.
@@ -34,8 +34,8 @@ Steps 1 (`UPS-NUT`) and 2 (`refactor/shared-infrastructure-vars`) are complete. 
 | Move plan into repo | Complete | `.agents/memory/PLAN-iac-refactor.md` (decisions recorded) |
 | IP review — `.12`, `.14`, `.16`, `.8` | Complete | All resolved and applied via `iac/shared/infrastructure.yml` |
 | Step 1 — NUT refactor (`UPS-NUT`) | Complete | Merged in PR #18 |
-| Step 2 — shared `infrastructure.yml` (`refactor/shared-infrastructure-vars`) | Complete | Terraform `fmt`/`validate`/`plan` + Ansible `ups-nut-check`/`traefik-check` verified, redundant files/vars cleaned up, committed & pushed. |
-| Step 3 — Infisical secrets | Pending | New branch. ACME email to be discussed separately (Q8). |
+| Step 2 — shared `infrastructure.yml` (`refactor/shared-infrastructure-vars`) | Complete | Merged in PR #19 |
+| Step 3 — Infisical secrets (`fix/infisical-secrets`) | Complete | `NEBULA_PUSH_TOKEN` & `ACME_EMAIL` moved to Infisical, `apps/semaphore` removed, `ansible.cfg` relative paths verified (`make ansible-config`, `make nebula-check`, `make traefik-check`). |
 | Step 4 — Ansible docs | Pending | New branch |
 | Step 5 — Root docs | Pending | New branch |
 | Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Pending | New branch |
@@ -53,10 +53,17 @@ Steps 1 (`UPS-NUT`) and 2 (`refactor/shared-infrastructure-vars`) are complete. 
 2. **IP review resolutions:** ✅ `.14` (`prod-docker-01`) includes `uptime-kuma-p01`; `.16` (`dev-docker-02`) runs `homarr-d02` (replaced `homepage-d02`) and `pulse-d02`; `.12` (`dev-docker-01`) is in `infrastructure.yml` (for TF and NUT) and kept out of `hosts.yml` `docker_hosts`; `.8` printer stays out of the repo.
 3. **Redundant code & broken reference cleanups:** ✅ Removed redundant `alias`/`id`/`ip` from `proxmox_cluster.yml`, removed per-host `ansible_user`/`mailrise_ip`/`alert_email` from `hosts.yml` (using `docker_hosts.yml` in `system_updates.yml`), deleted `inventories/host_vars/*.yml`, deleted obsolete `playbooks/truenas.yml` and `roles/truenas/nfs/`, removed dead `storage`/`storage-check` targets in `Makefile`, fixed `deploy_nas_storage.yml` role path (`truenas/nas_config`), fixed Watchtower `mailrise.port` string interpolation bug, and removed commented-out duplicate modules in `pve-d01/main.tf`.
 
+## Step 3 Resolved Decisions
+1. **Uptime Kuma Nebula push token:** ✅ Stored in Infisical at `/ansible/uptime_kuma` → `NEBULA_PUSH_TOKEN`; added `"/ansible/uptime_kuma"` to `playbooks/nebula_sync.yml` and referenced `{{ uptime_kuma.domain }}` in `docker_hosts.yml`.
+2. **Unused `apps/semaphore` role:** ✅ Removed `iac/ansible/roles/apps/semaphore/` completely.
+3. **Traefik ACME email (Q8):** ✅ Stored in Infisical at `/ansible/cloudflare` → `ACME_EMAIL` and referenced via `{{ secrets.ansible.cloudflare.ACME_EMAIL }}` in `roles/apps/traefik/defaults/main.yml`.
+4. **Portable `ansible.cfg` paths:** ✅ Replaced hardcoded `/Users/ka8kgj/...` paths in `iac/ansible/ansible.cfg` with relative paths (`./collections:~/.ansible/collections`, `./inventories`, `./roles`) and exported `ANSIBLE_CONFIG=$(ANSIBLE_DIR)/ansible.cfg` in `Makefile`.
+
 ## Recent Progress
 - Planned and reviewed every file of Step 1 one-by-one with the user before writing.
 - Deployed `make ups-nut` live across `proxmox_cluster`, verified zero drift (`changed=0, failed=0`), verified `nut-server` / `nut-client` / `upsc` telemetry, and completed a full physical cluster staged takedown and automated `nut-bringup.service` recovery test across `pve-d01`, `pve-p01`, and `proxmox`.
 - Merged Step 1 (`UPS-NUT`), created `refactor/shared-infrastructure-vars` for Step 2, created `iac/shared/infrastructure.yml` and `iac/ansible/inventories/group_vars/all.yml`, refactored Terraform Proxmox environments and Ansible inventories/group_vars/playbooks/roles/templates onto the shared config, cleaned up 6 redundant/broken items, and verified zero drift in both Terraform and Ansible.
+- Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, and verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`.
 
 ## Immediate Next Action
-Complete the `refactor/shared-infrastructure-vars` Pull Request review/merge on GitHub, then create a new branch for Step 3 (moving remaining hardcoded secrets to Infisical) and plan Step 3 with the user.
+Complete the `fix/infisical-secrets` Pull Request review/merge on GitHub, then create a new branch for Step 4 (Document all Ansible folders and roles) and plan Step 4 with the user.

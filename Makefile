@@ -179,6 +179,7 @@ clean: ## Delete generated Terraform files (plan, .terraform dir) but preserve s
 # Configuration and Diagnostics
 ANSIBLE=ansible-playbook
 ANSIBLE_DIR=iac/ansible
+export ANSIBLE_CONFIG=$(ANSIBLE_DIR)/ansible.cfg
 
 ansible-config: ## Display current Ansible configuration settings
 	ansible-config dump --only-changed
