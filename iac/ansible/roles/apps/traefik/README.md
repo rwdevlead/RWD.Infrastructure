@@ -36,7 +36,6 @@ Deploys Traefik reverse proxy via Docker Compose on `dev-docker-02`, terminating
 | `traefik_dns_resolvers` | DNS resolvers used for ACME DNS-01 checks | `["1.1.1.1:53", "1.0.0.1:53"]` |
 | `traefik_insecure_skip_verify` | Skip TLS verification on proxied backends | `true` |
 | `traefik_hsts_max_age` | HSTS max-age header value (seconds) | `15552000` |
-| `traefik_ip_whitelist` | Allowed CIDRs for `default-whitelist` middleware | `["10.0.0.0/8", "{{ network.subnet }}", "172.18.0.0/16"]` |
 | `cloudflare_dns_api_token` | Cloudflare API token (`CF_DNS_API_TOKEN`) | `"{{ secrets.ansible.cloudflare.CF_DNS_API_TOKEN }}"` |
 
 ### Group Variables (`inventories/group_vars/docker_hosts.yml`)
@@ -92,5 +91,5 @@ make traefik
 ## Notes
 
 - **Entrypoints:** `web` (`:80`), `websecure` (`:443`, default with `cloudflare` resolver), and `smtp` (`:8025` for TCP routing). `--api.dashboard=true` and `--api.insecure=false` are set; the dashboard is served over HTTPS at `https://{{ traefik_instance.domain }}` (`api@internal`), while port `8080` serves `--ping` health checks.
-- **Dynamic File Routes (`templates/dynamic.yml.j2`):** Routes the Traefik dashboard, `proxmox_instances`, `pihole-p01.local.rwdevs.com` (`prod-docker-01:8888`), `tm.local.rwdevs.com` (`dev-omv-01`), `uptime-kuma-p01.local.rwdevs.com` (`prod-docker-01:3001`), and `ha.local.rwdevs.com` (`homeassistant:8123`), and defines `https-redirectscheme`, `pihole-redirect`, `default-headers`, `default-whitelist`, and `secured` middlewares.
+- **Dynamic File Routes (`templates/dynamic.yml.j2`):** Routes the Traefik dashboard, `proxmox_instances`, `pihole-p01.local.rwdevs.com` (`prod-docker-01:8888`), `tm.local.rwdevs.com` (`dev-omv-01`), `uptime-kuma-p01.local.rwdevs.com` (`prod-docker-01:3001`), and `ha.local.rwdevs.com` (`homeassistant:8123`), and defines `https-redirectscheme`, `pihole-redirect`, and `default-headers` middlewares.
 - **Health Checks:** Waits for container health status `healthy` (`traefik healthcheck --ping`) and verifies `http://localhost:8080/ping` returns HTTP `200`.

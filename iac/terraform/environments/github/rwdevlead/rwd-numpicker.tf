@@ -17,7 +17,7 @@ module "codeowners_numpicker" {
   source = "../../../modules/github/github-codeowners"
 
   repository   = module.rwd_numpicker.repository_name
-  branch       = "master"
+  branch       = "main"
   github_owner = local.github_owner
   owners       = [local.github_owner]
 

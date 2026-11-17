@@ -14,20 +14,9 @@ Installs Docker Community Edition and plugins via Docker's DEB822 apt repository
 
 ## Variables
 
-### Required / Consumed by `tasks/main.yml`
-
 | Variable | Description | Source / Default |
 | :--- | :--- | :--- |
-| `docker_users` | List of users added to the `docker` group | Defined in `inventories/group_vars/docker_hosts.yml` (`["ka8kgj"]`); no default in `defaults/main.yml` |
-
-### Defined in `defaults/main.yml` (Currently Unused by `tasks/main.yml`)
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `docker_packages` | Package list | `['docker-ce', 'docker-ce-cli', 'containerd.io']` |
-| `docker_daemon_config` | `daemon.json` config map | `json-file` log driver (`10m`, max `3`) |
-| `docker_manage_user` | Toggle user group management | `true` |
-| `docker_user` | Single user variable | `"{{ base_user_name }}"` |
+| `docker_users` | List of users added to the `docker` group | `[]` in `defaults/main.yml` (overridden in `inventories/group_vars/docker_hosts.yml` as `["ka8kgj"]`) |
 
 ---
 

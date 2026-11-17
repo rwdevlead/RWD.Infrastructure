@@ -56,15 +56,3 @@ variable "auto_init" {
   type        = bool
   default     = true
 }
-
-variable "teams" {
-  description = "Map of team slugs to permissions."
-  type        = map(string)
-  default     = {}
-}
-
-variable "external_team_ids" {
-  description = "Optional map of team IDs keyed by team name. Use this if teams are created outside this module."
-  type        = map(string)
-  default     = {}
-}

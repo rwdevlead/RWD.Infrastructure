@@ -82,7 +82,7 @@
       [Unit]
       Requires=mnt-docker.mount
       After=mnt-docker.mount
-  notify: Restart Docker daemon
+  notify: Restart Docker
 
 - name: Add users to docker group
   ansible.builtin.user:

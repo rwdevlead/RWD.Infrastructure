@@ -23,4 +23,5 @@ variable "default_username" {
 variable "default_password" {
   type        = string
   description = "Default admin password for provisioned VMs"
+  sensitive   = true
 }

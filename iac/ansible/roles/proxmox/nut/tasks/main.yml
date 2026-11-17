@@ -10,16 +10,24 @@
     state: present
     update_cache: true
 
-- name: Deploy common NUT client configurations
+- name: Deploy common NUT client configuration (nut.conf)
   ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ nut_config_dir }}/{{ item }}"
+    src: nut.conf.j2
+    dest: "{{ nut_config_dir }}/nut.conf"
     owner: root
     group: nut
     mode: "0640"
-  loop:
-    - nut.conf
-    - upsmon.conf
+  notify: Restart NUT client
+
+- name: Deploy NUT monitor configuration (upsmon.conf)
+  ansible.builtin.template:
+    src: upsmon.conf.j2
+    dest: "{{ nut_config_dir }}/upsmon.conf"
+    owner: root
+    group: nut
+    mode: "0640"
+  # Suppress diff output so upsmon credentials are not exposed in terminal logs
+  diff: false
   notify: Restart NUT client
 
 - name: Configure NUT master server and staged orchestration
@@ -34,8 +42,18 @@
         mode: "0640"
       loop:
         - upsd.conf
-        - upsd.users
         - ups.conf
+      notify: Restart NUT server
+
+    - name: Deploy NUT server users configuration (upsd.users)
+      ansible.builtin.template:
+        src: upsd.users.j2
+        dest: "{{ nut_config_dir }}/upsd.users"
+        owner: root
+        group: nut
+        mode: "0640"
+      # Suppress diff output so NUT user/admin passwords are not exposed in terminal logs
+      diff: false
       notify: Restart NUT server
 
     - name: Deploy NUT scheduler and staged power scripts

@@ -48,6 +48,7 @@ variable "vm_username" {
 variable "vm_password" {
   type        = string
   description = "Password input for VM configuration"
+  sensitive   = true
 }
 
 variable "ssh_public_key_content" {
