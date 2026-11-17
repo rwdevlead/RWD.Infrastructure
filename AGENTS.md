@@ -25,9 +25,10 @@ This file defines the project instructions, conventions, and operational workflo
 - `iac/ansible/roles/`: Modular Ansible roles (`infisical_secrets`, `system_base`, `docker`, `proxmox`, `truenas`, `apps`).
 - `iac/ansible/inventories/`: Environment inventories (`hosts.yml`, `truenas.yml`) and `group_vars/` (`all.yml` loads `iac/shared/infrastructure.yml`).
 - `Makefile`: Universal entry point for all IaC operations (Terraform `init`/`plan`/`apply`/`validate`/`fmt`/`clean`/`destroy`, and Ansible `<target>-check`/`<target>`).
-- `.agents/standards/`: Mandatory workflow, coding, git/PR, and documentation standards.
+- `.agents/standards/`: Mandatory workflow, coding, IaC (`ansible-standards.md`, `terraform-standards.md`, `shared-config-standards.md`), git/PR, and documentation standards.
+- `.agents/templates/`: Reusable templates (`plan`, `commit`, `pull-request`, `ansible-role-readme`, `ansible-role-skeleton`, `terraform-module-readme`).
 - `.agents/memory/`: Project long-term context (`PROJECT_CONTEXT.md`) and session handoff (`AI_HANDOFF.md`).
-- `.agents/skills/`: Agent skills (`/commit-cleanup`, `/create-pr`, `/generate-docs`, `/handoff`, `/project-ai-refresh`, `/project-ai-setup`, `/refactor-code`, `/review`).
+- `.agents/skills/`: Agent skills (`/commit-cleanup`, `/create-pr`, `/generate-docs`, `/handoff`, `/project-ai-refresh`, `/project-ai-setup`, `/refactor-code`, `/review`, `/new-ansible-role`, `/new-terraform-module`, `/add-infra-host`, `/secrets-audit`).
 
 ---
 
@@ -48,10 +49,11 @@ This file defines the project instructions, conventions, and operational workflo
 All agents must follow the standards located in `.agents/standards/`:
 - **Git & PR Standards:** Refer to [.agents/standards/git-and-pr-standards.md](.agents/standards/git-and-pr-standards.md). Branch protection prohibits direct commits to `main`. Follow Conventional Commits, provide squash-merge commit logs, and prepare PRs via git with server-side completion.
 - **Workflow Standards:** Refer to [.agents/standards/workflow-standards.md](.agents/standards/workflow-standards.md). Follow the 5-phase SDLC (`Orient` -> `Plan` -> `Execute` -> `Verify` -> `Hand Off`).
-- **Coding & IaC Standards:** Refer to [.agents/standards/coding-standards.md](.agents/standards/coding-standards.md). Keep Terraform modules modular and idempotent. Never commit secrets, credentials, or `.env` files.
+- **Coding & IaC Standards:** Refer to [.agents/standards/coding-standards.md](.agents/standards/coding-standards.md), [.agents/standards/ansible-standards.md](.agents/standards/ansible-standards.md), [.agents/standards/terraform-standards.md](.agents/standards/terraform-standards.md), and [.agents/standards/shared-config-standards.md](.agents/standards/shared-config-standards.md). Keep Terraform modules modular and idempotent. Never commit secrets, credentials, or `.env` files.
 - **Documentation Standards:** Refer to [.agents/standards/documentation-standards.md](.agents/standards/documentation-standards.md) and [.agents/standards/code-documentation-standards.md](.agents/standards/code-documentation-standards.md). Maintain clear documentation for targets, variables, and playbooks.
 - **Memory Policy:** Refer to [.agents/standards/memory-policy.md](.agents/standards/memory-policy.md). Maintain `.agents/memory/PROJECT_CONTEXT.md` for durable facts and `.agents/memory/AI_HANDOFF.md` for active session state and tasks.
 - **Questions Are Inquiries, Not Edits:** Answer questions and propose actions before making changes; do not execute edits on questions alone.
+- **Approval Gate (PRIORITY 1):** Never create, edit, delete files, or run commands without explicit user approval first. When proposing a plan, end the turn and wait for approval before issuing any write/delete/command tool calls.
 - **Strict Scope Control:** Do not refactor code or infrastructure definitions outside the defined scope of the instruction without explicit user permission.
 - **Selective Verification:** When changes are strictly limited to comments or documentation, running validation checks is unnecessary.
 

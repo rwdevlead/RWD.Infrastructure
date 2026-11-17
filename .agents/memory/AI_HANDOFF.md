@@ -12,10 +12,10 @@ Deliver the user's 6-step IaC improvement request:
 The full plan, decisions, IP map and IP review log are in [PLAN-iac-refactor.md](PLAN-iac-refactor.md).
 
 ## Current Status
-Steps 1 (`UPS-NUT`, PR #18), 2 (`refactor/shared-infrastructure-vars`, PR #19), and 3 (`fix/infisical-secrets`, PR #20) are complete and merged to `main`. **Steps 4 (Ansible documentation) and 5 (root documentation: `README.md`, `AGENTS.md`, `PROJECT_CONTEXT.md`) are complete on branch `docs/ansible-documentation`**, ready for commit/PR and then **Step 6** on a new branch.
+Steps 1 (`UPS-NUT`, PR #18), 2 (`refactor/shared-infrastructure-vars`, PR #19), 3 (`fix/infisical-secrets`, PR #20), 4, 5, and inline comment cleanup (`docs/ansible-documentation`, merged at `4e34754`) are complete. **Step 6 (`.agents` IaC standards, templates, skills, and removing legacy `.github/instructions` + `copilot-instructions.md`) is complete on branch `chore/agents-iac-tooling`**, leaving only the **Final** step (NUT password rotation + `diff: false`).
 
 ## Operating Constraints (MANDATORY — read first)
-- **Plan before every action.** For each step (and each sub-action inside a step), describe exactly what will change and which commands will run. Wait for explicit user approval before editing files or running commands. "Approved plan" ≠ approval to execute each detail.
+- **PRIORITY 1 — NEVER ACT WITHOUT EXPLICIT APPROVAL:** Do **not** create, edit, or delete any file, and do **not** run any command, without explicit user approval first. When proposing a plan or batch of edits, **end the turn with no write/delete/command tool calls** and wait for the user's explicit go-ahead. "Approved plan" ≠ approval to execute each detail.
 - **Speak up during planning.** Do not be a yes-man; provide reasoned pushback during planning if there is a better design or trade-off. Once the user decides, their decision is final.
 - **Include line numbers on large file previews.** When showing large files or templates in chat, include line numbers on the left so the user can reference lines easily.
 - **Dynamic Ansible patterns (like `pihole` and `traefik`).** Keep `defaults/main.yml` strictly for role-level constants/defaults (ports, timers, paths). Put host/instance topology in `group_vars` keyed by `inventory_hostname` (e.g., `nut_instances[inventory_hostname]`) and use `inventory_hostname`, `ansible_host`, `hostvars`, `secrets.ansible.<role>.*`, and Jinja loops directly in templates—never hardcode hostnames, VM names, or IPs in roles or templates.
@@ -36,10 +36,10 @@ Steps 1 (`UPS-NUT`, PR #18), 2 (`refactor/shared-infrastructure-vars`, PR #19), 
 | Step 1 — NUT refactor (`UPS-NUT`) | Complete | Merged in PR #18 |
 | Step 2 — shared `infrastructure.yml` (`refactor/shared-infrastructure-vars`) | Complete | Merged in PR #19 |
 | Step 3 — Infisical secrets (`fix/infisical-secrets`) | Complete | Merged in PR #20 |
-| Step 4 — Ansible docs (`docs/ansible-documentation`) | Complete | Committed (`7a37247`): rewrote `iac/ansible/README.md`, added `inventories/README.md`, `playbooks/README.md`, `roles/README.md`, `apps/README.md`, `proxmox/README.md`, updated/created all platform, storage, base, and app role READMEs, and removed unused `DNS_CHECK_LIST.md`. |
-| Step 5 — Root docs (`docs/ansible-documentation`) | Complete | Committed (`7a37247`): rewrote root `README.md`, updated `AGENTS.md` §2/§3 and `PROJECT_CONTEXT.md`. |
-| Inline comments & `.env.example` cleanup (`docs/ansible-documentation`) | Complete | Audited and updated inline comments, TF `description` fields, and `.env.example` across root (4), `iac/ansible/` (35), and `iac/terraform/` (60) files; removed `TODO`/`DELETEME` markers in code. |
-| Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Pending | New branch after `docs/ansible-documentation` PR merges |
+| Step 4 — Ansible docs (`docs/ansible-documentation`) | Complete | Merged into `main` (`4e34754`) |
+| Step 5 — Root docs (`docs/ansible-documentation`) | Complete | Merged into `main` (`4e34754`) |
+| Inline comments & `.env.example` cleanup (`docs/ansible-documentation`) | Complete | Merged into `main` (`4e34754`) |
+| Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Complete | Added 3 IaC standards, 3 templates, 4 skills; updated `AGENTS.md` and `.agents/` READMEs; removed `.github/instructions` and `.github/copilot-instructions.md` on `chore/agents-iac-tooling`. |
 | Final: **rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical, re-deploy, and set `diff: false` on `upsd.users` / `upsmon.conf`** | Pending | **Remind the user before finishing.** (`TODO`/`DELETEME` markers in code already resolved.) |
 
 ## Step 1 Resolved Decisions
@@ -65,8 +65,8 @@ Steps 1 (`UPS-NUT`, PR #18), 2 (`refactor/shared-infrastructure-vars`, PR #19), 
 - Deployed `make ups-nut` live across `proxmox_cluster`, verified zero drift (`changed=0, failed=0`), verified `nut-server` / `nut-client` / `upsc` telemetry, and completed a full physical cluster staged takedown and automated `nut-bringup.service` recovery test across `pve-d01`, `pve-p01`, and `proxmox`.
 - Merged Step 1 (`UPS-NUT`), created `refactor/shared-infrastructure-vars` for Step 2, created `iac/shared/infrastructure.yml` and `iac/ansible/inventories/group_vars/all.yml`, refactored Terraform Proxmox environments and Ansible inventories/group_vars/playbooks/roles/templates onto the shared config, cleaned up 6 redundant/broken items, and verified zero drift in both Terraform and Ansible.
 - Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`, and merged PR #20.
-- Created and synced branch `docs/ansible-documentation` (`9a0eca0`), completed and locally committed (`7a37247`) **Step 4** and **Step 5**.
-- Audited and cleaned up inline comments, Terraform `description` attributes, Python docstrings, and `.env.example` across 99 files (`Makefile`, `.env.example`, `cleanup_vm.sh`, `convert_to_template.sh`, `iac/ansible/`, and `iac/terraform/`), resolving all `TODO`/`DELETEME` markers in code and formatting Terraform with `terraform fmt -recursive iac/terraform`.
+- Merged `docs/ansible-documentation` (`4e34754`) into `main`.
+- Created branch `chore/agents-iac-tooling` and completed **Step 6** (added `.agents/standards/{ansible,terraform,shared-config}-standards.md`, `.agents/templates/{ansible-role-readme-template,ansible-role-skeleton,terraform-module-readme-template}.md`, `.agents/skills/{new-ansible-role,new-terraform-module,add-infra-host,secrets-audit}/SKILL.md`, updated `AGENTS.md` and `.agents/` READMEs, and removed legacy `.github/instructions` + `.github/copilot-instructions.md` while keeping `.github/pull_request_template.md`).
 
 ## Immediate Next Action
-Commit, push, and open/merge the PR for `docs/ansible-documentation` (Steps 4, 5, and inline comment cleanup), then create a new branch from `main` to plan and execute **Step 6** (`.agents` skills, standards, templates, and consolidating/removing `.github/instructions` + copilot instructions).
+Commit, push, and merge `chore/agents-iac-tooling` (Step 6), then complete the **Final** security step: rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`), re-deploy `make ups-nut`, and set `diff: false` on `upsd.users` and `upsmon.conf` in `iac/ansible/roles/proxmox/nut/tasks/main.yml`.
