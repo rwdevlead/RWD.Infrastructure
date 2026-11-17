@@ -5,6 +5,7 @@
   vars:
     infisical_secret_paths:
       - "/ansible/pihole"
+      - "/ansible/uptime_kuma"
   roles:
     - infisical_secrets
     - apps/nebula-sync

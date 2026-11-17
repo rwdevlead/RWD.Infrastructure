@@ -18,7 +18,7 @@
 | Q5 | ✅ New branch for each step. `UPS-NUT` = step 1. |
 | Q6 | Fix broken references, but **ask before each change** |
 | Q7 | ✅ Move/consolidate `.github/instructions` + copilot instructions into `.agents`, then remove them |
-| Q8 | ACME email: discuss separately |
+| Q8 | ✅ ACME email stored in Infisical (`/ansible/cloudflare` → `ACME_EMAIL`); unused `apps/semaphore` role removed |
 | Scope | All work stays inside the repository. No writes to user folders. |
 
 ### IP Map (from user)

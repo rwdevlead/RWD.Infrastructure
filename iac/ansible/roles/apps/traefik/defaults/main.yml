@@ -7,7 +7,7 @@ traefik_data_dir: "{{ docker_base_mnt }}/{{ traefik_instance.name }}"
 traefik_volumes_dir: "{{ traefik_data_dir }}/volumes"
 traefik_logs_dir: "{{ traefik_data_dir }}/logs"
 
-traefik_acme_email: "srdevlead@outlook.com"
+traefik_acme_email: "{{ secrets.ansible.cloudflare.ACME_EMAIL }}"
 traefik_acme_resolver: "cloudflare"
 traefik_acme_domain_main: "rwdevs.com"
 traefik_acme_domain_sans: "*.rwdevs.com,*.local.rwdevs.com"
