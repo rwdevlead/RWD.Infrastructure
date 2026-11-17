@@ -46,8 +46,8 @@ module "Dev_Docker_02" {
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id          = 101
-  vm_node_name   = "pve-d01"
+  vm_id          = local.infra.vms["dev-docker-02"].vm_id
+  vm_node_name   = local.infra.vms["dev-docker-02"].node
   vm_name        = "dev-docker-02"
   vm_description = "Development Docker Instance"
   vm_on_boot     = false
@@ -70,8 +70,8 @@ module "Dev_Docker_02" {
   disk_size       = 40
   disk_storage_id = "local-zfs"
 
-  network_gateway      = "192.168.50.1"
-  vm_static_ip         = "192.168.50.16/24"
+  network_gateway      = local.infra.network.gateway
+  vm_static_ip         = "${local.infra.vms["dev-docker-02"].ip}/${local.infra.network.prefix}"
   network_device_model = "virtio"
 
   tags = ["vm", "dev", "docker"]
@@ -80,65 +80,3 @@ module "Dev_Docker_02" {
 
 }
 
-# module "homeassistant" {
-#   source = "../../../modules/proxmox/homeassistant"
-
-#   vm_id          = 102
-#   node_name      = "proxmox"
-#   vm_name        = "homeassistant"
-#   vm_description = "Home Assistance Instance"
-
-#   vm_cores  = 2
-#   vm_memory = 4096
-
-#   efi_storage_id = "local-lvm"
-#   vm_os          = "l26"
-#   vm_bios        = "ovmf"
-#   vm_machine     = "q35"
-
-#   disk_interface  = "virtio0"
-#   disk_size       = 32
-#   disk_storage_id = "local-lvm"
-
-#   network_bridge = "vmbr0"
-
-#   tags = ["vm", "prod", "homeassistant"]
-
-# }
-
-# module "truenas_vm" {
-#   source            = "../../../modules/proxmox/truenas-vm"
-#   vm_name           = "dev-truenas-01"
-#   vm_id             = 200
-#   vm_description    = "TrueNAS SCALE - Managed by Terraform"
-#   vm_on_boot        = false
-#   proxmox_node_name = "proxmox"
-#   proxmox_node_ip   = "192.168.50.11"
-
-#   # Resource Allocation
-#   vm_cores = 2
-
-#   vm_bios    = "ovmf"
-#   vm_machine = "q35"
-
-#   vm_memory_max = 8192
-#   vm_memory_min = 8192
-
-#   # Storage & Media
-#   boot_datastore = "local-lvm"
-#   # iso_file_id    = "local:iso/TrueNAS-SCALE-25.10.2.1.iso"
-#   iso_file_id = "none"
-
-#   # Physical Disk Passthrough (sdb)
-#   data_disk_id   = "ata-ST1000DM003-1ER162_Z4YCRN9L"
-#   disk_interface = "scsi0"
-#   disk_size      = 32
-
-#   network_gateway = "192.168.50.1"
-#   vm_static_ip    = "192.168.50.13/24"
-
-#   tags = ["vm", "dev", "truenas"]
-
-#   ssh_private_key_content = local.ssh_private_key_content
-
-# }

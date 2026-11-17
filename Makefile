@@ -8,7 +8,6 @@
 	base base-check \
 	docker docker-check \
 	portainer portainer-check \
-	storage storage-check \
 	traefik traefik-check \
 	mailrise mailrise-check \
 	pihole pihole-check \
@@ -219,17 +218,6 @@ docker: ## Deploy Docker platform (NFS mounts, engine, compose)
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
 		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
 		--limit dev-docker-02 -v
-
-# === Storage Configuration for NAS ===
-
-storage-check: ## Dry-run: Review storage configuration
-	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/storage.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml \
-		--check --diff
-
-storage: ## Deploy storage configuration
-	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/storage.yml \
-		-i $(ANSIBLE_DIR)/inventories/docker.yml
 
 # === Reverse Proxy & Load Balancing ===
 

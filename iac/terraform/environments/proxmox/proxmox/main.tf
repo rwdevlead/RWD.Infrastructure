@@ -46,8 +46,8 @@ module "Dev_Docker_01" {
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id          = 201
-  vm_node_name   = "proxmox"
+  vm_id          = local.infra.vms["dev-docker-01"].vm_id
+  vm_node_name   = local.infra.vms["dev-docker-01"].node
   vm_name        = "dev-docker-01"
   vm_description = "Development Docker Instance"
   vm_on_boot     = false
@@ -70,8 +70,8 @@ module "Dev_Docker_01" {
   disk_size       = 40
   disk_storage_id = "local-lvm"
 
-  network_gateway      = "192.168.50.1"
-  vm_static_ip         = "192.168.50.12/24"
+  network_gateway      = local.infra.network.gateway
+  vm_static_ip         = "${local.infra.vms["dev-docker-01"].ip}/${local.infra.network.prefix}"
   network_device_model = "virtio"
 
   tags = ["vm", "dev", "docker"]
@@ -83,8 +83,8 @@ module "Dev_Docker_01" {
 module "homeassistant" {
   source = "../../../modules/proxmox/homeassistant"
 
-  vm_id          = 102
-  node_name      = "proxmox"
+  vm_id          = local.infra.vms["homeassistant"].vm_id
+  node_name      = local.infra.vms["homeassistant"].node
   vm_name        = "homeassistant"
   vm_description = "Home Assistance Instance"
   vm_on_boot     = false
@@ -110,11 +110,11 @@ module "homeassistant" {
 module "truenas_vm" {
   source            = "../../../modules/proxmox/truenas-vm"
   vm_name           = "dev-truenas-01"
-  vm_id             = 200
+  vm_id             = local.infra.vms["dev-truenas-01"].vm_id
   vm_description    = "TrueNAS SCALE - Managed by Terraform"
   vm_on_boot        = false
-  proxmox_node_name = "proxmox"
-  proxmox_node_ip   = "192.168.50.11"
+  proxmox_node_name = local.infra.vms["dev-truenas-01"].node
+  proxmox_node_ip   = local.infra.proxmox_nodes["proxmox"].ip
 
   # Resource Allocation
   vm_cores = 2
@@ -135,8 +135,8 @@ module "truenas_vm" {
   disk_interface = "scsi0"
   disk_size      = 32
 
-  network_gateway = "192.168.50.1"
-  vm_static_ip    = "192.168.50.13/24"
+  network_gateway = local.infra.network.gateway
+  vm_static_ip    = "${local.infra.vms["dev-truenas-01"].ip}/${local.infra.network.prefix}"
 
   tags = ["vm", "dev", "truenas"]
 

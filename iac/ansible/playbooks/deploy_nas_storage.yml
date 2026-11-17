@@ -16,4 +16,4 @@
       - { path: "tank/media/software", type: "smb" } # Nested structure
       - { path: "tank/documents", type: "smb" }
   roles:
-    - storage/nas_config
+    - truenas/nas_config

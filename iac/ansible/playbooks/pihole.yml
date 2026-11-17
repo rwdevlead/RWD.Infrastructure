@@ -6,7 +6,7 @@
       - "/ansible/pihole"
   pre_tasks:
     - name: Verify TrueNAS NFS share exists
-      shell: "showmount -e 192.168.50.13 | grep -q '/mnt/tank/docker/{{ inventory_hostname }}'"
+      shell: "showmount -e {{ vms['dev-truenas-01'].ip }} | grep -q '/mnt/tank/docker/{{ inventory_hostname }}'"
       register: nfs_check
       ignore_errors: true
       changed_when: false

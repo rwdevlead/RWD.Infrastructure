@@ -26,7 +26,7 @@ traefik_hsts_max_age: 15552000
 
 traefik_ip_whitelist:
   - "10.0.0.0/8"
-  - "192.168.50.0/24"
+  - "{{ network.subnet }}"
   - "172.18.0.0/16"
 
 cloudflare_dns_api_token: "{{ secrets.ansible.cloudflare.CF_DNS_API_TOKEN }}"

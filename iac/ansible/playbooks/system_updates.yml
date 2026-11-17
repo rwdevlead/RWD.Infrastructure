@@ -42,7 +42,7 @@
       loop:
         - {
             regexp: "^relayhost =",
-            line: "relayhost = [{{ mailrise_ip }}]:8025",
+            line: "relayhost = [{{ vms['prod-docker-01'].ip }}]:{{ mailrise.port }}",
           }
         - {
             regexp: "^smtp_tls_security_level =",
@@ -55,7 +55,7 @@
       lineinfile:
         path: /etc/apt/apt.conf.d/50unattended-upgrades
         regexp: "^//Unattended-Upgrade::Mail "
-        line: 'Unattended-Upgrade::Mail "{{ alert_email }}";'
+        line: 'Unattended-Upgrade::Mail "{{ mailrise.email }}";'
 
     - name: Configure Smart Automatic Reboots
       blockinfile:
@@ -79,7 +79,7 @@
 
     - name: Send an email via Mailrise
       shell: |
-        echo "Ansible just updated the update/reboot configuration on {{ inventory_hostname }}." | mail -s "Ansible Config Success" {{ alert_email }}
+        echo "Ansible just updated the update/reboot configuration on {{ inventory_hostname }}." | mail -s "Ansible Config Success" {{ mailrise.email }}
       when: postfix_config.changed | default(false)
       args:
         executable: /bin/bash
@@ -88,7 +88,7 @@
       shell: |
         echo "Manual upgrade completed on {{ inventory_hostname }}. 
         Summary:
-        {{ upgrade_output.stdout_lines | last }}" | mail -s "Upgrade Summary: {{ inventory_hostname }}" {{ alert_email }}
+        {{ upgrade_output.stdout_lines | last }}" | mail -s "Upgrade Summary: {{ inventory_hostname }}" {{ mailrise.email }}
       when: upgrade_output.changed
       tags: [never, manual_upgrade]
 

@@ -88,19 +88,19 @@ http:
     pihole-prod-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.50.14:8888"
+          - url: "http://{{ vms['prod-docker-01'].ip }}:8888"
     omv-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.50.17"
+          - url: "http://{{ vms['dev-omv-01'].ip }}"
     uptime-kuma-prod-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.50.14:3001"
+          - url: "http://{{ vms['prod-docker-01'].ip }}:3001"
     ha-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.50.15:8123"
+          - url: "http://{{ vms['homeassistant'].ip }}:8123"
 {% for pve in proxmox_instances %}
     {{ pve.name }}:
       loadBalancer:
