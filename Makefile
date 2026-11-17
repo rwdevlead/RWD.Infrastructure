@@ -30,8 +30,6 @@ export TF_VAR_infisical_project_id := $(INFISICAL_PROJECT_ID)
 ENV ?= unassigned
 TARGET ?= unassigned
 
-TEST_VAR ?= unassigned
-
 TERRAFORM_DIR := iac/terraform/environments/$(TARGET)
 
 

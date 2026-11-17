@@ -43,8 +43,6 @@ module "my_repo" {
 | has_wiki          | Enable wiki                                       | `bool`         | `false`     | no       |
 | has_discussions   | Enable discussions                                | `bool`         | `false`     | no       |
 | auto_init         | Initialize with README                            | `bool`         | `true`      | no       |
-| teams             | Map of team slugs to permissions (optional)       | `map(string)`  | `{}`        | no       |
-| external_team_ids | Map of external team IDs by name (optional)       | `map(string)`  | `{}`        | no       |
 
 ## Outputs
 

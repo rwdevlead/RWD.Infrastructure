@@ -1,6 +1,6 @@
-{% set master = nut_instances[inventory_hostname] %}
-{% set master_alias = proxmox_nodes[inventory_hostname].alias %}
 #!/bin/bash
+{% set master = nut_instances[inventory_hostname] -%}
+{% set master_alias = proxmox_nodes[inventory_hostname].alias -%}
 # {{ nut_config_dir }}/staged_takedown.sh — Managed by Ansible (role: proxmox/nut)
 # Dependency-ordered cluster shutdown driven dynamically by nut_instances:
 #   - Iterates shutdown tiers 1..3

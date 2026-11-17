@@ -133,14 +133,3 @@ http:
         customFrameOptionsValue: SAMEORIGIN
         customRequestHeaders:
           X-Forwarded-Proto: https
-    default-whitelist:
-      ipAllowList:
-        sourceRange:
-{% for ip in traefik_ip_whitelist %}
-          - "{{ ip }}"
-{% endfor %}   
-    secured:
-      chain:
-        middlewares:
-          - default-whitelist
-          - default-headers

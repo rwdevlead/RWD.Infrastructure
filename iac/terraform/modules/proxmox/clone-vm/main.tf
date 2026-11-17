@@ -72,8 +72,8 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
 
     user_account {
       keys     = [var.ssh_public_key_content]
-      username = "ka8kgj"
-      password = "password123"
+      username = var.vm_username
+      password = var.vm_password
     }
     dns {
       servers = [var.network_gateway, "1.1.1.1"]
