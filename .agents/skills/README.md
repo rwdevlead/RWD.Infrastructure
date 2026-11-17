@@ -12,3 +12,7 @@ This directory contains executable agent skills and slash commands available for
 - `/generate-docs`: Synchronizes READMEs, docstrings, and API documentation with code implementation.
 - `/commit-cleanup`: Performs pre-commit hygiene sweep and generates a commit readiness report.
 - `/create-pr`: Prepares, validates, and creates a GitHub pull request with a compliant description.
+- `/new-ansible-role`: Scaffolds a new Ansible role, playbook, `Makefile` target pair, and README.
+- `/new-terraform-module`: Scaffolds a new reusable Terraform module under `iac/terraform/modules/`.
+- `/add-infra-host`: Adds a new VM/host consistently across `iac/shared/infrastructure.yml`, Terraform, and Ansible.
+- `/secrets-audit`: Scans the repository for hardcoded secrets, PII, unsafe logging, or stale vault references.
