@@ -25,16 +25,11 @@ services:
 
     labels:
       - "traefik.enable=true"
-      # Watchtower Label
       - "com.centurylinklabs.watchtower.enable={{ portainer_watchtower_enable }}"
-
-      # Traefik Router
       - "traefik.http.routers.portainer.rule=Host(`{{ portainer_instance.domain }}`)"
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.tls.certresolver=cloudflare"
       - "traefik.http.routers.portainer.tls=true"
-
-      # Service
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
 
 networks:

@@ -20,7 +20,6 @@ terraform {
   }
 }
 
-# --- Infisical provider ---
 provider "infisical" {
   host = "https://app.infisical.com"
   auth = {

@@ -139,7 +139,6 @@ http:
 {% for ip in traefik_ip_whitelist %}
           - "{{ ip }}"
 {% endfor %}   
-    # Secured middleware for services - includes IP whitelist
     secured:
       chain:
         middlewares:

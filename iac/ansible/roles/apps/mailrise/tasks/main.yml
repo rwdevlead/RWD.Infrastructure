@@ -8,14 +8,15 @@
   loop:
     - "{{ mailrise_base_dir }}"
     - "{{ mailrise_data_dir }}"
-    - "{{ mailrise_data_dir }}/config" # <-- add config dir
+    - "{{ mailrise_data_dir }}/config"
+  # Create directories even during --check so subsequent template diff previews succeed on fresh hosts
   check_mode: no
 
 - name: Verify required environment variables are set
   ansible.builtin.assert:
     that:
       - mailrise_icloud_pass != ""
-    fail_msg: "ERROR: Make sure mailrise_icloud_pass are defined in your .env file!"
+    fail_msg: "ERROR: Make sure mailrise_icloud_pass is defined in Infisical (/ansible/mail)!"
 
 - name: Render Mailrise config
   ansible.builtin.template:
@@ -24,6 +25,7 @@
     owner: root
     group: root
     mode: "0644"
+  # Render config even during --check so compose/mount checks reference a complete config path
   check_mode: no
   notify: Restart Mailrise
 
@@ -32,6 +34,7 @@
     src: docker-compose.yml.j2
     dest: "{{ mailrise_base_dir }}/docker-compose.yml"
     mode: "0644"
+  # Render compose file during --check so docker_compose_v2 can evaluate diffs cleanly
   check_mode: no
   notify: Restart Mailrise
 

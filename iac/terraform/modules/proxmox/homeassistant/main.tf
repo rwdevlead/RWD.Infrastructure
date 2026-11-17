@@ -2,11 +2,9 @@ terraform {
   required_providers {
     proxmox = {
       source = "bpg/proxmox"
-      # version = "0.89.1" # version = ">=0.66"
     }
   }
 }
-
 
 resource "proxmox_virtual_environment_file" "ha_image" {
   content_type = "iso"
@@ -14,10 +12,11 @@ resource "proxmox_virtual_environment_file" "ha_image" {
   node_name    = var.node_name
 
   source_file {
-    # Ensure you have unzipped the .xz file to this path
+    # Expects an already-decompressed .img file (unzipped from .img.xz)
     path = "${path.module}/files/haos_ova-16.3.img"
   }
 
+  # Ignore local file metadata drift after the HAOS image has been imported into the VM disk
   lifecycle {
     ignore_changes = [
       source_file,
@@ -31,7 +30,6 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
   node_name   = var.node_name
   vm_id       = var.vm_id
 
-  # Home Assistant OS requires UEFI
   bios    = var.vm_bios
   machine = var.vm_machine
 
@@ -39,12 +37,10 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
     enabled = true
   }
 
-  # HAOS is very picky about the SCSI controller type. 
-  # 'virtio-scsi-single' is the most stable for HAOS.
+  # HAOS requires virtio-scsi-single for stable disk detection
   scsi_hardware = "virtio-scsi-single"
 
-  # THIS IS THE CRITICAL ADDITION:
-  # 'scsi0' (or whatever var.disk_interface is) must be first.
+  # Primary disk interface must precede net0 so HAOS boots from disk instead of PXE
   boot_order = [var.disk_interface, "net0"]
 
   cpu {
@@ -60,13 +56,11 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
     bridge = var.network_bridge
   }
 
-  # EFI Disk (Required for UEFI boot)
   efi_disk {
     datastore_id = var.efi_storage_id
     type         = "4m"
   }
 
-  # The Main Disk imported from the image
   disk {
     datastore_id = var.disk_storage_id
     file_id      = proxmox_virtual_environment_file.ha_image.id
@@ -80,16 +74,14 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
     type = var.vm_os
   }
 
-  # Ensure the VM starts on boot
   on_boot = var.vm_on_boot
 
   tags = var.tags
 
+  # Ignore post-import disk attribute differences managed internally by Proxmox/HAOS
   lifecycle {
     ignore_changes = [
       disk,
     ]
   }
-
 }
-

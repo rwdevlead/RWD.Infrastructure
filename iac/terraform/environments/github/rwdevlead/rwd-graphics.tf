@@ -1,12 +1,3 @@
-
-# *** import repo ***
-# import {
-#   id = "RWD.Graphics"
-#   to = module.rwd_graphics.github_repository.this
-# }
-
-
-# create a open repo
 module "rwd_graphics" {
   source = "../../../modules/github/github-repository"
 
@@ -20,20 +11,16 @@ module "rwd_graphics" {
   has_wiki        = local.repo_features.has_wiki
   auto_init       = local.repo_features.auto_init
   has_discussions = local.repo_features.has_discussions
-
 }
 
-# Use CODEOWNERS module to manage the CODEOWNERS file
 module "codeowners_rwd_graphics" {
   source = "../../../modules/github/github-codeowners"
 
   repository   = module.rwd_graphics.repository_name
   branch       = "main"
   github_owner = local.github_owner
-  # admins       = [var.github_owner_primary]
-  owners = [local.github_owner]
+  owners       = [local.github_owner]
 
+  # Ensure the repository and initial branch exist before committing .github/CODEOWNERS
   depends_on = [module.rwd_graphics]
-
 }
-

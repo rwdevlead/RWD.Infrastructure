@@ -10,10 +10,10 @@
     datasets:
       - { path: "tank/iso", type: "nfs" }
       - { path: "tank/backups", type: "nfs" }
-      - { path: "tank/media/music", type: "smb" } # Nested structure
-      - { path: "tank/media/pictures", type: "smb" } # Nested structure
-      - { path: "tank/media/video", type: "smb" } # Nested structure
-      - { path: "tank/media/software", type: "smb" } # Nested structure
+      - { path: "tank/media/music", type: "smb" }
+      - { path: "tank/media/pictures", type: "smb" }
+      - { path: "tank/media/video", type: "smb" }
+      - { path: "tank/media/software", type: "smb" }
       - { path: "tank/documents", type: "smb" }
   roles:
     - truenas/nas_config

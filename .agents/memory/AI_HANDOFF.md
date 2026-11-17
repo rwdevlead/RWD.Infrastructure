@@ -36,10 +36,11 @@ Steps 1 (`UPS-NUT`, PR #18), 2 (`refactor/shared-infrastructure-vars`, PR #19), 
 | Step 1 — NUT refactor (`UPS-NUT`) | Complete | Merged in PR #18 |
 | Step 2 — shared `infrastructure.yml` (`refactor/shared-infrastructure-vars`) | Complete | Merged in PR #19 |
 | Step 3 — Infisical secrets (`fix/infisical-secrets`) | Complete | Merged in PR #20 |
-| Step 4 — Ansible docs (`docs/ansible-documentation`) | Complete | Rewrote `iac/ansible/README.md`, added `inventories/README.md`, `playbooks/README.md`, `roles/README.md`, `apps/README.md`, `proxmox/README.md`, updated/created all platform, storage, base, and app role READMEs, and removed unused `DNS_CHECK_LIST.md`. |
-| Step 5 — Root docs (`docs/ansible-documentation`) | Complete | Rewrote root `README.md`, updated `AGENTS.md` §2/§3 and `PROJECT_CONTEXT.md`. Ready for commit & PR on `docs/ansible-documentation`. |
-| Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Pending | New branch after Step 4/5 PR merges |
-| Final: resolve all `TODO` / `DELETEME` markers + **rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical, re-deploy, and set `diff: false` on `upsd.users` / `upsmon.conf`** | Pending | **Remind the user before finishing.** |
+| Step 4 — Ansible docs (`docs/ansible-documentation`) | Complete | Committed (`7a37247`): rewrote `iac/ansible/README.md`, added `inventories/README.md`, `playbooks/README.md`, `roles/README.md`, `apps/README.md`, `proxmox/README.md`, updated/created all platform, storage, base, and app role READMEs, and removed unused `DNS_CHECK_LIST.md`. |
+| Step 5 — Root docs (`docs/ansible-documentation`) | Complete | Committed (`7a37247`): rewrote root `README.md`, updated `AGENTS.md` §2/§3 and `PROJECT_CONTEXT.md`. |
+| Inline comments & `.env.example` cleanup (`docs/ansible-documentation`) | Complete | Audited and updated inline comments, TF `description` fields, and `.env.example` across root (4), `iac/ansible/` (35), and `iac/terraform/` (60) files; removed `TODO`/`DELETEME` markers in code. |
+| Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Pending | New branch after `docs/ansible-documentation` PR merges |
+| Final: **rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical, re-deploy, and set `diff: false` on `upsd.users` / `upsmon.conf`** | Pending | **Remind the user before finishing.** (`TODO`/`DELETEME` markers in code already resolved.) |
 
 ## Step 1 Resolved Decisions
 1. **Remove the `infisical_secrets` debug task:** ✅ Removed lines 67–70 in `iac/ansible/roles/infisical_secrets/tasks/main.yaml`.
@@ -64,7 +65,8 @@ Steps 1 (`UPS-NUT`, PR #18), 2 (`refactor/shared-infrastructure-vars`, PR #19), 
 - Deployed `make ups-nut` live across `proxmox_cluster`, verified zero drift (`changed=0, failed=0`), verified `nut-server` / `nut-client` / `upsc` telemetry, and completed a full physical cluster staged takedown and automated `nut-bringup.service` recovery test across `pve-d01`, `pve-p01`, and `proxmox`.
 - Merged Step 1 (`UPS-NUT`), created `refactor/shared-infrastructure-vars` for Step 2, created `iac/shared/infrastructure.yml` and `iac/ansible/inventories/group_vars/all.yml`, refactored Terraform Proxmox environments and Ansible inventories/group_vars/playbooks/roles/templates onto the shared config, cleaned up 6 redundant/broken items, and verified zero drift in both Terraform and Ansible.
 - Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`, and merged PR #20.
-- Created and synced branch `docs/ansible-documentation` (`9a0eca0`) and completed **Step 4** (all Ansible folder, inventory, playbook, and role READMEs; removed unused `DNS_CHECK_LIST.md`) and **Step 5** (rewrote root `README.md`, updated `AGENTS.md` and `PROJECT_CONTEXT.md`).
+- Created and synced branch `docs/ansible-documentation` (`9a0eca0`), completed and locally committed (`7a37247`) **Step 4** and **Step 5**.
+- Audited and cleaned up inline comments, Terraform `description` attributes, Python docstrings, and `.env.example` across 99 files (`Makefile`, `.env.example`, `cleanup_vm.sh`, `convert_to_template.sh`, `iac/ansible/`, and `iac/terraform/`), resolving all `TODO`/`DELETEME` markers in code and formatting Terraform with `terraform fmt -recursive iac/terraform`.
 
 ## Immediate Next Action
-Commit, push, and merge `docs/ansible-documentation` (Steps 4 & 5), then create a new branch from `main` to plan and execute **Step 6** (`.agents` skills, standards, templates, and consolidating/removing `.github/instructions` + copilot instructions).
+Commit, push, and open/merge the PR for `docs/ansible-documentation` (Steps 4, 5, and inline comment cleanup), then create a new branch from `main` to plan and execute **Step 6** (`.agents` skills, standards, templates, and consolidating/removing `.github/instructions` + copilot instructions).

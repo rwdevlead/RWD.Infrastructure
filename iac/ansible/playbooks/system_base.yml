@@ -2,14 +2,10 @@
 - name: Configure Base Server
   hosts: all
   become: yes
-  # new_hostname can be overridden per host in inventory, defaults to inventory_hostname in role
-  # users_to_create:
-  #   - name: youruser
-  #     groups: sudo,docker
-  #     ssh_key: "ssh-rsa AAAA..." # Put actual public key here
 
   roles:
     - system_base/hostname
-    # - system_base/users
     - system_base/security
+    # User accounts and SSH hardening are handled elsewhere outside this playbook
+    # - system_base/users
     # - system_base/ssh

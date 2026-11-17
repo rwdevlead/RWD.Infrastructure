@@ -1,19 +1,15 @@
-
 terraform {
   required_providers {
     proxmox = {
       source = "bpg/proxmox"
-      # version = "0.89.1" # version = ">=0.66"
     }
   }
 }
 
 resource "proxmox_virtual_environment_vm" "template" {
-
   node_name = var.node_name
-
-  name  = var.vm_name
-  vm_id = var.vm_id
+  name      = var.vm_name
+  vm_id     = var.vm_id
 
   template = var.template_mode
   started  = var.vm_startup
@@ -55,16 +51,10 @@ resource "proxmox_virtual_environment_vm" "template" {
     size         = var.disk_size
   }
 
-
   initialization {
     datastore_id = var.disk_storage_id
 
-    # TODO The user account configuration (conflicts with user_data_file_id per the provider
-    # user_account {
-    #   keys     = [var.ssh_public_key_content]
-    #   username = "ka8kgj"
-    #   password = "password123"
-    # }
+    # Omit user_account because bpg/proxmox rejects it alongside user_data_file_id; cloudinit.yaml configures user/SSH
     ip_config {
       ipv4 {
         address = "dhcp"
@@ -77,9 +67,9 @@ resource "proxmox_virtual_environment_vm" "template" {
     bridge = var.network_bridge
   }
 
-  # onboot = false
   tags = ["template", "terraform"]
 
+  # Ignore post-seal state transitions after cleanup_vm.sh and convert_to_template.sh convert the VM to a template
   lifecycle {
     ignore_changes = [
       template,
@@ -88,7 +78,6 @@ resource "proxmox_virtual_environment_vm" "template" {
       network_device,
     ]
   }
-
 }
 
 resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
@@ -96,7 +85,7 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
   datastore_id = "local"
   node_name    = var.node_name
 
-  # Use source_raw instead of source_file or content
+  # Use source_raw so rendered templatefile() content uploads directly without a separate staging file
   source_raw {
     data = templatefile("${path.module}/cloudinit.yaml", {
       hostname       = var.vm_name
@@ -112,19 +101,4 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
   datastore_id = var.iso_target
   node_name    = var.node_name
   url          = var.iso_url
-  # checksum           = var.iso_checksum
-  # checksum_algorithm = var.iso_checksum_algorithm
-  # overwrite          = false
 }
-
-
-
-
-# DELETEME resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
-#   content_type = "snippets"
-#   datastore_id = "local"
-#   node_name    = var.node_name
-#   source_file {
-#     path = "${path.module}/cloudinit.yaml"
-#   }
-# }

@@ -1,6 +1,4 @@
 
-# commented out to use default values
-
 locals {
   # trimspace removes trailing newlines that cause perpetual drift in some providers
   ssh_public_key_content  = trimspace(file("~/.ssh/id_ed25519.pub"))
@@ -17,10 +15,9 @@ module "ubuntu_template" {
 
   efi_storage_id = "local-lvm"
   vm_bios        = "ovmf"
-  #   vm_cores       
-  vm_machine = "q35"
-  vm_memory  = 4096
-  vm_os      = "l26"
+  vm_machine     = "q35"
+  vm_memory      = 4096
+  vm_os          = "l26"
 
   network_bridge = "vmbr0"
 
@@ -28,10 +25,9 @@ module "ubuntu_template" {
   disk_interface  = "virtio0"
   disk_storage_id = "local-lvm"
 
-  iso_target   = "local"
-  iso_checksum = "d8f7f427a53c221feee90d47ca008d89237e206a2d4935c98b84eefdbf52f41d"
-  iso_url      = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
-  #   iso_file               = "iso-images:iso/ubuntu-24.04-live-server-amd64.iso"
+  iso_target             = "local"
+  iso_checksum           = "d8f7f427a53c221feee90d47ca008d89237e206a2d4935c98b84eefdbf52f41d"
+  iso_url                = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
   iso_checksum_algorithm = "sha256"
 
   tags = ["template", "linux"]
@@ -51,7 +47,6 @@ module "Dev_Docker_01" {
   vm_name        = "dev-docker-01"
   vm_description = "Development Docker Instance"
   vm_on_boot     = false
-  #   keyboard      
 
   vm_username = var.default_username
   vm_password = var.default_password
@@ -116,7 +111,6 @@ module "truenas_vm" {
   proxmox_node_name = local.infra.vms["dev-truenas-01"].node
   proxmox_node_ip   = local.infra.proxmox_nodes["proxmox"].ip
 
-  # Resource Allocation
   vm_cores = 2
 
   vm_bios    = "ovmf"
@@ -125,12 +119,10 @@ module "truenas_vm" {
   vm_memory_max = 8192
   vm_memory_min = 8192
 
-  # Storage & Media
   boot_datastore = "local-lvm"
-  # iso_file_id    = "local:iso/TrueNAS-SCALE-25.10.2.1.iso"
-  iso_file_id = "none"
+  iso_file_id    = "none"
 
-  # Physical Disk Passthrough (sdb)
+  # Persistent /dev/disk/by-id identifier avoids drive-letter shifts across host reboots
   data_disk_id   = "ata-ST1000DM003-1ER162_Z4YCRN9L"
   disk_interface = "scsi0"
   disk_size      = 32

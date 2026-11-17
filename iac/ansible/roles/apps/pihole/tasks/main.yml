@@ -19,18 +19,12 @@
     group: root
     mode: "0644"
 
-# -----------------------
-# Start container only if not in check mode
-# -----------------------
 - name: Start Pi-hole container
   community.docker.docker_compose_v2:
     project_src: "{{ pihole_base_dir }}"
     state: present
   when: not ansible_check_mode
 
-# -------------------------------
-# Post-deploy health assertion
-# -------------------------------
 - name: Wait for Pi-hole container to become healthy
   community.docker.docker_container_info:
     name: "{{ pihole_instances[inventory_hostname].name }}"
@@ -45,7 +39,6 @@
 
 - name: Final health assertion
   ansible.builtin.assert:
-    # Use the same variable here to keep the error message accurate
     that:
       - pihole_container_info.container.State.Health.Status == "healthy"
     fail_msg: "Container {{ pihole_instances[inventory_hostname].name }} failed to reach healthy state."

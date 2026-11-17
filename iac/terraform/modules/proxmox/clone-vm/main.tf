@@ -3,7 +3,6 @@ terraform {
   required_providers {
     proxmox = {
       source = "bpg/proxmox"
-      # version = "0.89.1" # version = ">=0.66"
     }
   }
 }
@@ -27,11 +26,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
   }
 
   agent {
-    # NOTE: The agent is installed and enabled as part of the cloud-init configuration in the template VM, see cloudinit.yaml
-    # The working agent is *required* to retrieve the VM IP addresses.
-    # If you are using a different cloud-init configuration, or a different clone source
-    # that does not have the qemu-guest-agent installed, you may need to disable the `agent` below and remove the `vm_ipv4_address` output.
-    # See https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_vm#qemu-guest-agent for more details.
+    # Requires qemu-guest-agent installed via template-ubuntu cloudinit.yaml so Proxmox can report VM IP addresses
     enabled = true
   }
 

@@ -2,7 +2,6 @@ terraform {
   required_providers {
     proxmox = {
       source = "bpg/proxmox"
-      # version = "0.89.1" # version = ">=0.66"
     }
   }
 }
@@ -15,9 +14,7 @@ resource "proxmox_virtual_environment_vm" "omv" {
   on_boot     = var.vm_on_boot
 
   agent {
-    # The QEMU guest agent is enabled to allow Proxmox to retrieve VM IP addresses and execute guest commands.
-    # Requires qemu-guest-agent package installed and running inside the OMV guest OS.
-    # See https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_vm#qemu-guest-agent for details.
+    # Requires qemu-guest-agent inside the OMV guest so Proxmox can report IP addresses
     enabled = true
   }
 
@@ -25,8 +22,6 @@ resource "proxmox_virtual_environment_vm" "omv" {
   machine       = var.vm_machine
   bios          = var.vm_bios
 
-  # virtio is the modern standard for Linux VMs
-  # 128MB is plenty big
   vga {
     type   = "virtio"
     memory = 128
@@ -47,23 +42,21 @@ resource "proxmox_virtual_environment_vm" "omv" {
     model  = "virtio"
   }
 
-  # 1. The Installer (Keep this for the first run)
+  # Attached as ide2 for initial ISO installation; callers pass "none" afterward
   cdrom {
     file_id   = var.iso_file_id
     interface = "ide2"
   }
 
-  # 2. The Cloud-Init "Static IP" Drive
   initialization {
     datastore_id = var.boot_datastore
-    interface    = "sata0" # Using SATA prevents the IDE conflict
+    # Use sata0 to avoid colliding with the ide2 CD-ROM device
+    interface = "sata0"
   }
 
-  # 3. Define the Boot Order clearly
-  # During install: [ide2, scsi0] | After install: [scsi0]
+  # Boot installer ISO before OS disk on initial provisioning
   boot_order = ["ide2", "scsi0"]
 
-  # OS Boot Drive (Virtual Disk)
   disk {
     datastore_id = var.boot_datastore
     interface    = var.disk_interface
@@ -87,7 +80,7 @@ resource "proxmox_virtual_environment_vm" "omv" {
   tags = var.tags
 }
 
-# This handles the disk passthrough that the API blocked
+# Attach raw /dev/disk/by-id passthrough via qm CLI because the Proxmox API token lacks host-device passthrough permissions
 resource "null_resource" "assign_passthrough_disk" {
   triggers = {
     vm_id = proxmox_virtual_environment_vm.omv.id
@@ -97,20 +90,20 @@ resource "null_resource" "assign_passthrough_disk" {
   provisioner "remote-exec" {
     inline = [
       "sleep 10",
-      # Using the explicit variable for the ID often prevents string/int type mismatches
       "qm set ${var.vm_id} -scsi1 /dev/disk/by-id/${var.data_disk_id},serial=1,backup=0"
     ]
 
     connection {
-      type = "ssh"
-      user = "root"
-      host = var.proxmox_node_ip
-      # Match the key from your provider block
-      private_key = var.ssh_private_key_content #file("~/.ssh/id_ed25519")
-      agent       = false                       # Keeps it clean
-      timeout     = "1m"
+      type        = "ssh"
+      user        = "root"
+      host        = var.proxmox_node_ip
+      private_key = var.ssh_private_key_content
+      # Disable SSH agent forwarding so connection uses only the explicit private key
+      agent   = false
+      timeout = "1m"
     }
   }
 
+  # Ensure the VM exists in Proxmox before running qm set over SSH
   depends_on = [proxmox_virtual_environment_vm.omv]
 }

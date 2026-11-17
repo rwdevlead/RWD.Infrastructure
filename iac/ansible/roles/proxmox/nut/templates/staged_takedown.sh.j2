@@ -8,17 +8,17 @@
 #   - Local VMs on {{ master_alias }}({{ inventory_hostname }}) use `qm` directly; remote slave VMs use SSH
 
 LOGFILE="{{ nut_takedown_log }}"
+# Record outage marker so nut-bringup.service triggers staged VM recovery after power returns
 touch {{ nut_outage_flag_file }}
 
 echo "=== $(date) - Initiating Staged Takedown Sequence ===" | tee -a "$LOGFILE"
 
-# Send Mailrise Alert via SMTP
 echo -e "Subject: UPS Alert\r\n\r\n⚠️ UPS on battery. Commencing graceful shutdown sequence." | \
   curl -s --url "{{ master.notifications.mailrise_url }}" --mail-from "{{ master.notifications.mail_from }}" --mail-rcpt "{{ master.notifications.mail_recipient }}" -T - || echo "Mailrise alert failed." | tee -a "$LOGFILE"
 {% for tier in [1, 2, 3] %}
 
-# Phase {{ tier }}
 echo "Phase {{ tier }}: Shutting down Tier {{ tier }}..." | tee -a "$LOGFILE"
+# Stop NFS-dependent VMs (false) before storage VMs (true) within the same tier to avoid hung mounts
 {% for is_storage_pass in [false, true] %}
 {% for node_name, node in nut_instances.items() %}
 {% set node_ip = proxmox_nodes[node_name].ip %}
@@ -58,5 +58,5 @@ ssh -o ConnectTimeout={{ nut_ssh_connect_timeout }} root@{{ proxmox_nodes[node_n
 
 echo "=== $(date) - Takedown Sequence Complete ===" | tee -a "$LOGFILE"
 
-# Signal NUT master shutdown
+# Force slave shutdown and set POWERDOWNFLAG so the UPS cuts load power after FINALDELAY
 /sbin/upsmon -c fsd

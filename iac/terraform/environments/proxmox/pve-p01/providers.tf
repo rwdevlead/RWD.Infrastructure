@@ -1,6 +1,3 @@
-# ==========================================================
-# Proxmox provider
-# ==========================================================
 terraform {
   required_version = ">= 1.13.1"
 
@@ -20,12 +17,11 @@ terraform {
     }
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.89.1" # version = ">=0.66"
+      version = "0.89.1"
     }
   }
 }
 
-# --- Infisical provider ---
 provider "infisical" {
   host = "https://app.infisical.com"
   auth = {
@@ -39,16 +35,10 @@ provider "infisical" {
 provider "proxmox" {
   endpoint  = local.PVE_ENDPOINT
   api_token = local.PVE_TOKEN
-  insecure  = true
+  # Proxmox VE nodes use self-signed TLS certificates on the internal LAN
+  insecure = true
   ssh {
-    # agent       = true
     username    = "root"
     private_key = file("~/.ssh/id_ed25519")
   }
 }
-
-
-# provider
-# https://registry.terraform.io/providers/bpg/proxmox/0.89.1
-# https://registry.terraform.io/providers/Infisical/infisical/latest/docs#terraform
-

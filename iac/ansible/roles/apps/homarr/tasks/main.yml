@@ -16,6 +16,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ homarr_base_dir }}"
     state: present
+  # Keep check_mode disabled defensively alongside the when-guard so container startup never runs in dry-run
   check_mode: false
   when: not ansible_check_mode
 
@@ -28,5 +29,6 @@
   retries: 10
   delay: 5
   until: homarr_health.status == 200
+  # Skip endpoint polling in --check mode since the container is not started during dry-runs
   check_mode: false
   when: not ansible_check_mode
