@@ -57,13 +57,12 @@ Deploys and configures Network UPS Tools (NUT) across the Proxmox VE cluster (`p
 
 ## Group Variables (`inventories/group_vars/proxmox_cluster.yml`)
 
-Cluster topology and VM shutdown/startup dependencies are defined in `nut_instances` keyed by `inventory_hostname` (`pve-d01`, `pve-p01`, `proxmox`). Each node specifies:
-- `alias`: Hardware nickname (`G9`, `M900`, `Tower`) used in log output (`Alias(hostname)`)
+Cluster topology and VM shutdown/startup dependencies are defined in `nut_instances` keyed by `inventory_hostname` (`pve-d01`, `pve-p01`, `proxmox`). Node hardware aliases (`G9`, `M900`, `Tower`), node IPs, and VM IDs/IPs are pulled automatically from `proxmox_nodes` and `vms` in `iac/shared/infrastructure.yml`. Each node in `nut_instances` specifies:
 - `role`: `master` or `slave`
 - `poweroff_tier` *(slaves)*: Tier (`2` or `3`) at which the physical slave host powers off
 - `ups` *(master)*: USB driver settings (`name`, `desc`, `driver`, `port`, `vendorid`, `productid`)
 - `notifications` *(master)*: Mailrise SMTP settings (`mailrise_url`, `mail_from`, `mail_recipient`)
-- `vms`: List of VMs managed during outage takedown/bring-up (`id`, `name`, `shutdown_tier`, `wait_for_stop`, `is_storage`, `ip`)
+- `vms`: List of VMs managed during outage takedown/bring-up (`name`, `shutdown_tier`, `wait_for_stop`, `is_storage`)
 
 ## Make Targets
 

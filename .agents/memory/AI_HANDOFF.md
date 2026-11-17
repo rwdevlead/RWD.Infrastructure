@@ -12,7 +12,7 @@ Deliver the user's 6-step IaC improvement request:
 The full plan, decisions, IP map and IP review log are in [PLAN-iac-refactor.md](PLAN-iac-refactor.md).
 
 ## Current Status
-Step 1 (`UPS-NUT` branch) is complete: `proxmox/nut` role refactored, deployed live via `make ups-nut`, verified with `make ups-nut-check` (`changed=0, failed=0`), tested end-to-end with a full physical cluster staged takedown and automated `nut-bringup.service` recovery across `pve-d01`, `pve-p01`, and `proxmox`, and pushed on `UPS-NUT` with PR ready for review. Next up is Step 2 (`iac/shared/infrastructure.yml`) on a new branch.
+Steps 1 (`UPS-NUT`) and 2 (`refactor/shared-infrastructure-vars`) are complete. `iac/shared/infrastructure.yml` is now the single source of truth for network, Proxmox node, and VM topology across Terraform (`yamldecode(file(...))`) and Ansible (`inventories/group_vars/all.yml` `lookup('ansible.builtin.file', ...) | from_yaml`), verified with zero drift across all 3 Terraform Proxmox environments and Ansible `ups-nut-check` / `traefik-check`. Next up is Step 3 (moving remaining hardcoded secrets to Infisical) on a new branch.
 
 ## Operating Constraints (MANDATORY — read first)
 - **Plan before every action.** For each step (and each sub-action inside a step), describe exactly what will change and which commands will run. Wait for explicit user approval before editing files or running commands. "Approved plan" ≠ approval to execute each detail.
@@ -30,12 +30,11 @@ Step 1 (`UPS-NUT` branch) is complete: `proxmox/nut` role refactored, deployed l
 ## Active Tasks
 | Task | Status | Notes |
 | :--- | :--- | :--- |
-| Housekeeping: delete `nut_*.diff`, add `*.diff` to `.gitignore`, remove `pbcopy` from `ups-nut-check` | Complete | Committed on `UPS-NUT` |
+| Housekeeping: delete `nut_*.diff`, add `*.diff` to `.gitignore`, remove `pbcopy` from `ups-nut-check` | Complete | Merged in PR #18 (`UPS-NUT`) |
 | Move plan into repo | Complete | `.agents/memory/PLAN-iac-refactor.md` (decisions recorded) |
-| IP review — `.12` | Complete | `mailrise_ip` → prod-docker-01 (.14). `truenas/nfs` `nfs_server` → dev-truenas-01 (.13). Not yet applied in code. |
-| IP review — remaining IPs | Pending | Next candidates: `.14`, `.16`, `.12`, `.8` (see Open Questions) |
-| Step 1 — NUT refactor (`UPS-NUT`) | Complete | Deployed (`make ups-nut`), idempotency verified (`make ups-nut-check`), full cluster takedown/bring-up tested, committed & pushed on `UPS-NUT`. |
-| Step 2 — shared `infrastructure.yml` | Pending | New branch |
+| IP review — `.12`, `.14`, `.16`, `.8` | Complete | All resolved and applied via `iac/shared/infrastructure.yml` |
+| Step 1 — NUT refactor (`UPS-NUT`) | Complete | Merged in PR #18 |
+| Step 2 — shared `infrastructure.yml` (`refactor/shared-infrastructure-vars`) | Complete | Terraform `fmt`/`validate`/`plan` + Ansible `ups-nut-check`/`traefik-check` verified, redundant files/vars cleaned up, committed & pushed. |
 | Step 3 — Infisical secrets | Pending | New branch. ACME email to be discussed separately (Q8). |
 | Step 4 — Ansible docs | Pending | New branch |
 | Step 5 — Root docs | Pending | New branch |
@@ -49,22 +48,15 @@ Step 1 (`UPS-NUT` branch) is complete: `proxmox/nut` role refactored, deployed l
 4. **Template comments & paths:** ✅ Added concise header/section comments to all `.j2` config files and scripts, and updated `upssched.conf.j2` to use modern Debian `/run/nut/upssched.{pipe,lock}`.
 5. **Hardware aliases & dynamic inventory:** ✅ Used `Alias(instance_name)` (`Tower(proxmox)`, `M900(pve-p01)`, `G9(pve-d01)`) in log output; all templates loop dynamically over `nut_instances` in `iac/ansible/inventories/group_vars/proxmox_cluster.yml` and `hostvars[node].ansible_host` from `iac/ansible/inventories/hosts.yml`.
 
-## Open Questions — IP Review (one at a time, for Step 2)
-- **.14 prod-docker-01:** the repo also runs Uptime Kuma (`uptime-kuma-p01`, port 3001) here. It's not in the user's list.
-- **.16 dev-docker-02:** the repo runs `pulse-d02` and `homarr-d02` here. The user's list has `homepage-d02`. Is homarr the "homepage"?
-- **.12 dev-docker-01:** the user lists services here, but dev-docker-01 is not in `inventories/hosts.yml` (only `host_vars/dev-docker-01.yml` exists).
-- **.8 printer:** should it go in the shared file?
+## Step 2 Resolved Decisions
+1. **No symlinks for `iac/shared/infrastructure.yml`:** ✅ Terraform reads `iac/shared/infrastructure.yml` via `yamldecode(file(...))` in `locals.tf`; Ansible reads it via `iac/ansible/inventories/group_vars/all.yml` using `lookup('ansible.builtin.file', inventory_dir ~ '/../../shared/infrastructure.yml') | from_yaml`.
+2. **IP review resolutions:** ✅ `.14` (`prod-docker-01`) includes `uptime-kuma-p01`; `.16` (`dev-docker-02`) runs `homarr-d02` (replaced `homepage-d02`) and `pulse-d02`; `.12` (`dev-docker-01`) is in `infrastructure.yml` (for TF and NUT) and kept out of `hosts.yml` `docker_hosts`; `.8` printer stays out of the repo.
+3. **Redundant code & broken reference cleanups:** ✅ Removed redundant `alias`/`id`/`ip` from `proxmox_cluster.yml`, removed per-host `ansible_user`/`mailrise_ip`/`alert_email` from `hosts.yml` (using `docker_hosts.yml` in `system_updates.yml`), deleted `inventories/host_vars/*.yml`, deleted obsolete `playbooks/truenas.yml` and `roles/truenas/nfs/`, removed dead `storage`/`storage-check` targets in `Makefile`, fixed `deploy_nas_storage.yml` role path (`truenas/nas_config`), fixed Watchtower `mailrise.port` string interpolation bug, and removed commented-out duplicate modules in `pve-d01/main.tf`.
 
 ## Recent Progress
 - Planned and reviewed every file of Step 1 one-by-one with the user before writing.
-- Removed the secret-printing debug task (`#DELETEME`) from `iac/ansible/roles/infisical_secrets/tasks/main.yaml`.
-- Flattened `proxmox_cluster` in `iac/ansible/inventories/hosts.yml` (`pve-d01`, `pve-p01`, `proxmox`) and removed `nut_config` from `iac/ansible/inventories/group_vars/docker_hosts.yml`.
-- Created `iac/ansible/inventories/group_vars/proxmox_cluster.yml` with `ansible_user: root` and `nut_instances` keyed by `inventory_hostname`.
-- Created `iac/ansible/roles/proxmox/nut/` (`defaults/main.yml`, `tasks/main.yml`, `handlers/main.yml`, 10 dynamic `.j2` templates in `templates/`, and `README.md`), and removed the old `iac/ansible/roles/nut/` directory.
-- Updated `iac/ansible/playbooks/nut.yml` to use `proxmox/nut` and updated `Makefile` (`ups-nut`, `ups-nut-check` in `.PHONY`, `$(ANSIBLE)`/`$(ANSIBLE_DIR)` vars, removed trailing `\`).
-- Ran `make ups-nut-check` against `pve-d01`, `proxmox`, and `pve-p01` (all succeeded with `failed=0`) and reviewed the live-file comparison with the user (notably fixing `pve-d01` `nut.conf` from `MODE=standalone` to `MODE=netserver` and updating `upssched.conf.j2` to `/run/nut/upssched.{pipe,lock}`).
 - Deployed `make ups-nut` live across `proxmox_cluster`, verified zero drift (`changed=0, failed=0`), verified `nut-server` / `nut-client` / `upsc` telemetry, and completed a full physical cluster staged takedown and automated `nut-bringup.service` recovery test across `pve-d01`, `pve-p01`, and `proxmox`.
-- Committed and pushed Step 1 on `UPS-NUT` and prepared the Pull Request package.
+- Merged Step 1 (`UPS-NUT`), created `refactor/shared-infrastructure-vars` for Step 2, created `iac/shared/infrastructure.yml` and `iac/ansible/inventories/group_vars/all.yml`, refactored Terraform Proxmox environments and Ansible inventories/group_vars/playbooks/roles/templates onto the shared config, cleaned up 6 redundant/broken items, and verified zero drift in both Terraform and Ansible.
 
 ## Immediate Next Action
-Complete the `UPS-NUT` Pull Request review/merge on GitHub, then create a new branch for Step 2 (`iac/shared/infrastructure.yml`), finish the 1-by-1 IP reviews (`.14`, `.16`, `.12`, `.8`), and plan Step 2 with the user.
+Complete the `refactor/shared-infrastructure-vars` Pull Request review/merge on GitHub, then create a new branch for Step 3 (moving remaining hardcoded secrets to Infisical) and plan Step 3 with the user.

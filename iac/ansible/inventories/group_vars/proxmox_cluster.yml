@@ -3,7 +3,6 @@ ansible_user: root
 
 nut_instances:
   pve-d01:
-    alias: "G9"
     role: "master"
     ups:
       name: "cyberpower"
@@ -17,41 +16,32 @@ nut_instances:
       mail_from: "nut-g9@local.rwdevs.com"
       mail_recipient: "email@mailrise.xyz"
     vms:
-      - id: 101
-        name: "dev-docker-02"
+      - name: "dev-docker-02"
         shutdown_tier: 3
         wait_for_stop: true
 
   pve-p01:
-    alias: "M900"
     role: "slave"
     poweroff_tier: 2
     vms:
-      - id: 102
-        name: "dev-omv-01"
+      - name: "dev-omv-01"
         shutdown_tier: 1
         wait_for_stop: false
-      - id: 101
-        name: "prod-docker-01"
+      - name: "prod-docker-01"
         shutdown_tier: 2
         wait_for_stop: true
 
   proxmox:
-    alias: "Tower"
     role: "slave"
     poweroff_tier: 3
     vms:
-      - id: 102
-        name: "homeassistant"
+      - name: "homeassistant"
         shutdown_tier: 1
         wait_for_stop: false
-      - id: 201
-        name: "dev-docker-01"
+      - name: "dev-docker-01"
         shutdown_tier: 1
         wait_for_stop: false
-      - id: 200
-        name: "dev-truenas-01"
-        ip: "192.168.50.13"
+      - name: "dev-truenas-01"
         is_storage: true
         shutdown_tier: 3
         wait_for_stop: true

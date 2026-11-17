@@ -1,0 +1,47 @@
+---
+# iac/shared/infrastructure.yml
+# Single source of truth for non-secret network, Proxmox node, and VM topology
+# Shared between Terraform (yamldecode) and Ansible (group_vars/all.yml lookup)
+
+network:
+  subnet: "192.168.50.0/24"
+  prefix: 24
+  gateway: "192.168.50.1"
+  domain: "local.rwdevs.com"
+
+proxmox_nodes:
+  pve-d01:
+    alias: "G9"
+    ip: "192.168.50.9"
+  pve-p01:
+    alias: "M900"
+    ip: "192.168.50.10"
+  proxmox:
+    alias: "Tower"
+    ip: "192.168.50.11"
+
+vms:
+  dev-docker-01:
+    vm_id: 201
+    node: "proxmox"
+    ip: "192.168.50.12"
+  dev-truenas-01:
+    vm_id: 200
+    node: "proxmox"
+    ip: "192.168.50.13"
+  prod-docker-01:
+    vm_id: 101
+    node: "pve-p01"
+    ip: "192.168.50.14"
+  homeassistant:
+    vm_id: 102
+    node: "proxmox"
+    ip: "192.168.50.15"
+  dev-docker-02:
+    vm_id: 101
+    node: "pve-d01"
+    ip: "192.168.50.16"
+  dev-omv-01:
+    vm_id: 102
+    node: "pve-p01"
+    ip: "192.168.50.17"

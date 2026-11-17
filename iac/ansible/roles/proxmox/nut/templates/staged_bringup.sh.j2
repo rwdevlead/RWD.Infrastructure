@@ -20,23 +20,26 @@ echo "=== $(date) - Initiating Staged Bring-Up Sequence ===" | tee -a "$LOGFILE"
 
 # 1. Wait for physical slave hosts to be accessible via SSH
 {% for node_name, node in nut_instances.items() if node.role == 'slave' %}
-echo "Waiting for {{ node.alias }}({{ node_name }}) host to come online..." | tee -a "$LOGFILE"
-while ! ssh -o ConnectTimeout=2 root@{{ hostvars[node_name].ansible_host }} "echo up" >/dev/null 2>&1; do sleep 5; done
+echo "Waiting for {{ proxmox_nodes[node_name].alias }}({{ node_name }}) host to come online..." | tee -a "$LOGFILE"
+while ! ssh -o ConnectTimeout=2 root@{{ proxmox_nodes[node_name].ip }} "echo up" >/dev/null 2>&1; do sleep 5; done
 {% endfor %}
 echo "All Proxmox hosts are online." | tee -a "$LOGFILE"
 
 # 2. Start Storage VMs and wait for NFS shares to initialize
 {% for node_name, node in nut_instances.items() %}
+{% set node_alias = proxmox_nodes[node_name].alias %}
 {% for vm in node.vms | default([]) if vm.is_storage | default(false) %}
-echo "Starting {{ vm.name }} ({{ node.alias }}({{ node_name }}) VM {{ vm.id }})..." | tee -a "$LOGFILE"
+{% set vm_id = vms[vm.name].vm_id %}
+{% set vm_ip = vms[vm.name].ip %}
+echo "Starting {{ vm.name }} ({{ node_alias }}({{ node_name }}) VM {{ vm_id }})..." | tee -a "$LOGFILE"
 {% if node_name == inventory_hostname %}
-qm start {{ vm.id }}
+qm start {{ vm_id }}
 {% else %}
-ssh root@{{ hostvars[node_name].ansible_host }} "qm start {{ vm.id }}"
+ssh root@{{ proxmox_nodes[node_name].ip }} "qm start {{ vm_id }}"
 {% endif %}
 
-echo "Waiting for {{ vm.name }} ({{ vm.ip }}) network stack to respond..." | tee -a "$LOGFILE"
-while ! ping -c 1 -W 2 "{{ vm.ip }}" >/dev/null 2>&1; do
+echo "Waiting for {{ vm.name }} ({{ vm_ip }}) network stack to respond..." | tee -a "$LOGFILE"
+while ! ping -c 1 -W 2 "{{ vm_ip }}" >/dev/null 2>&1; do
     sleep 5
 done
 echo "{{ vm.name }} is pingable. Giving services {{ nut_storage_init_wait_seconds }} seconds to initialize mounts..." | tee -a "$LOGFILE"
@@ -47,15 +50,17 @@ sleep {{ nut_storage_init_wait_seconds }}
 # 3. Start Core & Secondary VMs on slave nodes
 echo "Starting Core & Secondary VMs..." | tee -a "$LOGFILE"
 {% for node_name, node in nut_instances.items() if node.role == 'slave' %}
+{% set node_alias = proxmox_nodes[node_name].alias %}
 {% for vm in node.vms | default([]) if not (vm.is_storage | default(false)) %}
-ssh root@{{ hostvars[node_name].ansible_host }} "qm start {{ vm.id }}" # {{ node.alias }}({{ node_name }}): {{ vm.name }}
+ssh root@{{ proxmox_nodes[node_name].ip }} "qm start {{ vms[vm.name].vm_id }}" # {{ node_alias }}({{ node_name }}): {{ vm.name }}
 {% endfor %}
 {% endfor %}
 
 # 4. Start Master VMs locally
 {% for vm in nut_instances[inventory_hostname].vms | default([]) if not (vm.is_storage | default(false)) %}
-echo "Starting {{ nut_instances[inventory_hostname].alias }}({{ inventory_hostname }}) {{ vm.name }} VM ({{ vm.id }})..." | tee -a "$LOGFILE"
-qm start {{ vm.id }}
+{% set vm_id = vms[vm.name].vm_id %}
+echo "Starting {{ proxmox_nodes[inventory_hostname].alias }}({{ inventory_hostname }}) {{ vm.name }} VM ({{ vm_id }})..." | tee -a "$LOGFILE"
+qm start {{ vm_id }}
 {% endfor %}
 
 # 5. Clean up the state flag

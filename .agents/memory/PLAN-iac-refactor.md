@@ -11,7 +11,7 @@
 | Housekeeping | ✅ Deleted `nut_*.diff`. ✅ Added `*.diff` to `.gitignore` (Ansible section). ✅ Removed `pbcopy`/file output from `ups-nut-check`. |
 | NUT review | For each template, show the check diff against the stock file it replaces. Added concise header/section comments to all NUT templates and scripts. |
 | Reminder | Before finishing: (1) handle all `TODO` and `DELETEME` markers, and (2) **rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`), re-deploy, and set `diff: false` on `upsd.users` and `upsmon.conf`.** |
-| Q1 | ✅ Use `iac/shared/infrastructure.yml` |
+| Q1 | ✅ Use `iac/shared/infrastructure.yml` (loaded via `yamldecode(file(...))` in Terraform and `lookup('ansible.builtin.file', ...) | from_yaml` in `iac/ansible/inventories/group_vars/all.yml` — no symlinks) |
 | Q2 | ✅ Move role to `roles/proxmox/nut/` |
 | Q3 | ✅ `proxmox` is the instance name. `tower` is only an alias. Rename `tower` → `proxmox`. |
 | Q4 | Review IPs one at a time (see IP map below) |
@@ -40,8 +40,12 @@
 
 | IP | Issue | Resolution |
 | :--- | :--- | :--- |
-| .12 | `hosts.yml` `mailrise_ip` = .12 | ✅ Use prod-docker-01 IP (.14) from the shared file |
-| .12 | `truenas/nfs` `nfs_server` = .12 | ✅ Use dev-truenas-01 IP (.13) from the shared file |
+| .12 | `hosts.yml` `mailrise_ip` = .12 | ✅ Removed `mailrise_ip` from `hosts.yml`; `system_updates.yml` uses `vms['prod-docker-01'].ip` (.14) and `mailrise` vars from `docker_hosts.yml` |
+| .12 | `truenas/nfs` `nfs_server` = .12 | ✅ Removed obsolete `truenas/nfs` role and `playbooks/truenas.yml` (superseded by `docker/nfs-mounts` using `vms['dev-truenas-01'].ip` .13) |
+| .12 | `dev-docker-01` status | ✅ Kept in `iac/shared/infrastructure.yml` (for TF `proxmox/proxmox` and NUT) and kept out of `hosts.yml` `docker_hosts` while being decommissioned |
+| .14 | `uptime-kuma-p01` on `prod-docker-01` | ✅ Confirmed active on `prod-docker-01` (.14) |
+| .16 | `homarr-d02` & `pulse-d02` on `dev-docker-02` | ✅ Confirmed `homarr-d02` replaced `homepage-d02` and `pulse-d02` is active on `dev-docker-02` (.16) |
+| .8 | Printer (`Canon MF656Cdw`) | ✅ Excluded from repo |
 
 ---
 

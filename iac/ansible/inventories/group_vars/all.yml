@@ -1,0 +1,7 @@
+---
+# iac/ansible/inventories/group_vars/all.yml
+# Loads iac/shared/infrastructure.yml dynamically (no symlinks, no duplicated data)
+_shared_infra: "{{ lookup('ansible.builtin.file', inventory_dir ~ '/../../shared/infrastructure.yml') | from_yaml }}"
+network: "{{ _shared_infra.network }}"
+proxmox_nodes: "{{ _shared_infra.proxmox_nodes }}"
+vms: "{{ _shared_infra.vms }}"

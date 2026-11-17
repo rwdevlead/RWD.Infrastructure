@@ -1,10 +1,11 @@
 {% set master = nut_instances[inventory_hostname] %}
+{% set master_alias = proxmox_nodes[inventory_hostname].alias %}
 #!/bin/bash
 # {{ nut_config_dir }}/staged_takedown.sh — Managed by Ansible (role: proxmox/nut)
 # Dependency-ordered cluster shutdown driven dynamically by nut_instances:
 #   - Iterates shutdown tiers 1..3
 #   - Within each tier: stops non-storage VMs first, then storage VMs, then powers off slave nodes assigned to that tier
-#   - Local VMs on {{ master.alias }}({{ inventory_hostname }}) use `qm` directly; remote slave VMs use SSH
+#   - Local VMs on {{ master_alias }}({{ inventory_hostname }}) use `qm` directly; remote slave VMs use SSH
 
 LOGFILE="{{ nut_takedown_log }}"
 touch {{ nut_outage_flag_file }}
@@ -20,36 +21,38 @@ echo -e "Subject: UPS Alert\r\n\r\n⚠️ UPS on battery. Commencing graceful sh
 echo "Phase {{ tier }}: Shutting down Tier {{ tier }}..." | tee -a "$LOGFILE"
 {% for is_storage_pass in [false, true] %}
 {% for node_name, node in nut_instances.items() %}
-{% set node_ip = hostvars[node_name].ansible_host %}
+{% set node_ip = proxmox_nodes[node_name].ip %}
+{% set node_alias = proxmox_nodes[node_name].alias %}
 {% set is_local = (node_name == inventory_hostname) %}
 {% for vm in node.vms | default([]) if vm.shutdown_tier == tier and (vm.is_storage | default(false)) == is_storage_pass %}
+{% set vm_id = vms[vm.name].vm_id %}
 {% if is_storage_pass %}
-echo "Shutting down {{ vm.name }} ({{ vm.id }}) on {{ node.alias }}({{ node_name }})..." | tee -a "$LOGFILE"
+echo "Shutting down {{ vm.name }} ({{ vm_id }}) on {{ node_alias }}({{ node_name }})..." | tee -a "$LOGFILE"
 {% endif %}
 {% if is_local %}
-qm shutdown {{ vm.id }} # {{ node.alias }}({{ node_name }}): {{ vm.name }}
+qm shutdown {{ vm_id }} # {{ node_alias }}({{ node_name }}): {{ vm.name }}
 {% else %}
-ssh -o ConnectTimeout={{ nut_ssh_connect_timeout }} root@{{ node_ip }} "qm shutdown {{ vm.id }}" # {{ node.alias }}({{ node_name }}): {{ vm.name }}
+ssh -o ConnectTimeout={{ nut_ssh_connect_timeout }} root@{{ node_ip }} "qm shutdown {{ vm_id }}" # {{ node_alias }}({{ node_name }}): {{ vm.name }}
 {% endif %}
 {% if vm.wait_for_stop | default(false) %}
-echo "Waiting for {{ node.alias }}({{ node_name }}) {{ vm.name }} ({{ vm.id }}) to cleanly exit..." | tee -a "$LOGFILE"
+echo "Waiting for {{ node_alias }}({{ node_name }}) {{ vm.name }} ({{ vm_id }}) to cleanly exit..." | tee -a "$LOGFILE"
 {% if is_local %}
-while [ "$(qm status {{ vm.id }} 2>/dev/null)" == "status: running" ]; do
+while [ "$(qm status {{ vm_id }} 2>/dev/null)" == "status: running" ]; do
     sleep 3
 done
 {% else %}
-while [ "$(ssh -o ConnectTimeout={{ nut_ssh_connect_timeout }} root@{{ node_ip }} 'qm status {{ vm.id }} 2>/dev/null')" == "status: running" ]; do
+while [ "$(ssh -o ConnectTimeout={{ nut_ssh_connect_timeout }} root@{{ node_ip }} 'qm status {{ vm_id }} 2>/dev/null')" == "status: running" ]; do
     sleep 3
 done
 {% endif %}
-echo "{{ node.alias }}({{ node_name }}) {{ vm.name }} stopped successfully." | tee -a "$LOGFILE"
+echo "{{ node_alias }}({{ node_name }}) {{ vm.name }} stopped successfully." | tee -a "$LOGFILE"
 {% endif %}
 {% endfor %}
 {% endfor %}
 {% endfor %}
 {% for node_name, node in nut_instances.items() if node.role == 'slave' and (node.poweroff_tier | default(0)) == tier %}
-echo "Powering off {{ node.alias }}({{ node_name }}) host..." | tee -a "$LOGFILE"
-ssh -o ConnectTimeout={{ nut_ssh_connect_timeout }} root@{{ hostvars[node_name].ansible_host }} "{{ nut_shutdown_cmd }}"
+echo "Powering off {{ proxmox_nodes[node_name].alias }}({{ node_name }}) host..." | tee -a "$LOGFILE"
+ssh -o ConnectTimeout={{ nut_ssh_connect_timeout }} root@{{ proxmox_nodes[node_name].ip }} "{{ nut_shutdown_cmd }}"
 {% endfor %}
 {% endfor %}
 

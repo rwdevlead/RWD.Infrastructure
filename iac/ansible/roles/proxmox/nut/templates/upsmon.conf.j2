@@ -1,6 +1,6 @@
 {% set is_master = (nut_instances[inventory_hostname].role == 'master') %}
 {% set master = (nut_instances | dict2items | selectattr('value.role', 'equalto', 'master') | first) %}
-{% set target_host = 'localhost' if is_master else hostvars[master.key].ansible_host %}
+{% set target_host = 'localhost' if is_master else proxmox_nodes[master.key].ip %}
 # {{ nut_config_dir }}/upsmon.conf — Managed by Ansible (role: proxmox/nut)
 # UPS monitoring client configuration ({{ nut_instances[inventory_hostname].role }} mode)
 MONITOR {{ master.value.ups.name }}@{{ target_host }} 1 {{ secrets.ansible.nut.USER }} {{ secrets.ansible.nut.USER_PASSWORD }} {{ nut_instances[inventory_hostname].role }}

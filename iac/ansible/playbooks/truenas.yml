@@ -1,6 +1,0 @@
----
-- name: Configure shared storage for Docker
-  hosts: docker-vm01
-  become: true
-  roles:
-    - truenas/nfs

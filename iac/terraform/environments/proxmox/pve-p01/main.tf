@@ -46,8 +46,8 @@ module "Prod_Docker_01" {
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id          = 101
-  vm_node_name   = "pve-p01"
+  vm_id          = local.infra.vms["prod-docker-01"].vm_id
+  vm_node_name   = local.infra.vms["prod-docker-01"].node
   vm_name        = "prod-docker-01"
   vm_description = "Production Docker Instance"
   vm_on_boot     = false
@@ -70,8 +70,8 @@ module "Prod_Docker_01" {
   disk_size       = 40
   disk_storage_id = "local-lvm"
 
-  network_gateway      = "192.168.50.1"
-  vm_static_ip         = "192.168.50.14/24"
+  network_gateway      = local.infra.network.gateway
+  vm_static_ip         = "${local.infra.vms["prod-docker-01"].ip}/${local.infra.network.prefix}"
   network_device_model = "virtio"
 
   tags = ["vm", "prod", "docker"]
@@ -83,11 +83,11 @@ module "Prod_Docker_01" {
 module "omv_vm" {
   source            = "../../../modules/proxmox/omv-vm"
   vm_name           = "dev-omv-01"
-  vm_id             = 102
+  vm_id             = local.infra.vms["dev-omv-01"].vm_id
   vm_description    = "Open Media Vault - Managed by Terraform"
   vm_on_boot        = false
-  proxmox_node_name = "pve-p01"
-  proxmox_node_ip   = "192.168.50.10"
+  proxmox_node_name = local.infra.vms["dev-omv-01"].node
+  proxmox_node_ip   = local.infra.proxmox_nodes["pve-p01"].ip
 
   # Resource Allocation
   vm_cores = 2
@@ -108,8 +108,8 @@ module "omv_vm" {
   disk_interface = "scsi0"
   disk_size      = 32
 
-  network_gateway = "192.168.50.1"
-  vm_static_ip    = "192.168.50.17/24"
+  network_gateway = local.infra.network.gateway
+  vm_static_ip    = "${local.infra.vms["dev-omv-01"].ip}/${local.infra.network.prefix}"
 
   tags = ["vm", "dev", "omv", "storage"]
 
