@@ -13,7 +13,6 @@ Development/Test Proxmox cluster configuration.
 **Primary VMs:**
 
 - Ubuntu templates (VM ID 901+)
-- Development Docker instances (`dev-docker-01`, VM ID 201)
 - Home Assistant instance (VM ID 102)
 - TrueNAS storage VM (`dev-truenas-01`, VM ID 200)
 
@@ -178,7 +177,6 @@ locals {
 | VM Name         | VM ID | Static IP        | Purpose                 |
 | --------------- | ----- | ---------------- | ----------------------- |
 | ubuntu-template | 901   | N/A              | Template (not running)  |
-| dev-docker-01   | 201   | 192.168.50.12/24 | Development Docker host |
 | homeassistant   | 102   | Dynamic          | Home Assistant          |
 | dev-truenas-01  | 200   | 192.168.50.13/24 | TrueNAS Storage         |
 

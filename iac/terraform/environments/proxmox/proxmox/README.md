@@ -6,7 +6,7 @@ This directory contains the Terraform configuration for the development/test Pro
 
 - **Proxmox Node:** `proxmox`
 - **Purpose:** Development, testing, and template development
-- **Infrastructure:** Development Docker host, Home Assistant, and Ubuntu templates
+- **Infrastructure:** Home Assistant, TrueNAS storage, and Ubuntu templates
 - **Network:** 192.168.50.0/24
 
 ## Virtual Machines
@@ -27,17 +27,6 @@ Ubuntu 24.04 LTS template for cloning.
 **Note:** This template is created and updated using the workflow described in the main Terraform README.
 
 ### VMs
-
-#### dev-docker-01 (VM ID: 201)
-
-Development Docker host for testing containers and services.
-
-- **Status:** Running
-- **Hardware:** 2 CPU cores, 4-8 GB RAM (dynamic), 40 GB disk
-- **Network:** Static IP `192.168.50.12/24`
-- **OS:** Ubuntu 24.04 (cloned from template)
-- **User:** ka8kgj
-- **Use Case:** Development and testing Docker services
 
 #### homeassistant (VM ID: 102)
 
@@ -81,22 +70,6 @@ module "ubuntu_template" {
   # Configuration...
 }
 
-# Development Docker VM
-module "Dev_Docker_01" {
-  source = "../../../modules/proxmox/clone-vm"
-
-  tempate_node_id   = module.ubuntu_template.template_id
-  tempate_node_name = module.ubuntu_template.template_node_name
-
-  vm_id          = 201
-  vm_name        = "dev-docker-01"
-  vm_node_name   = "proxmox"
-  vm_on_boot     = false
-  vm_static_ip   = "192.168.50.12/24"
-
-  # Configuration...
-}
-
 # Home Assistant VM
 module "homeassistant" {
   source = "../../../modules/proxmox/homeassistant"
@@ -130,7 +103,6 @@ All VMs are connected to bridge `vmbr0` for LAN access.
 | VM Name         | IP Address       | Purpose                 |
 | --------------- | ---------------- | ----------------------- |
 | ubuntu-template | N/A              | Template (off)          |
-| dev-docker-01   | 192.168.50.12/24 | Development Docker host |
 | homeassistant   | Dynamic (DHCP)   | Home Automation         |
 | dev-truenas-01  | 192.168.50.13/24 | TrueNAS Storage         |
 
@@ -172,14 +144,14 @@ All VMs are connected to bridge `vmbr0` for LAN access.
 Once template is created, clone VMs for development:
 
 ```hcl
-module "dev_docker" {
+module "dev_test_vm" {
   source = "../../../modules/proxmox/clone-vm"
 
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id        = 201
-  vm_name      = "dev-docker-01"
+  vm_id        = 202
+  vm_name      = "dev-test-02"
   vm_on_boot   = false
   # ... other configuration
 }
@@ -187,14 +159,11 @@ module "dev_docker" {
 
 ## SSH Access
 
-All VMs are accessible via SSH using the injected public key:
+Cloned VMs are accessible via SSH using the injected public key:
 
 ```bash
-# Access dev-docker-01
-ssh ka8kgj@192.168.50.12
-
-# Access via hostname (if DNS configured)
-ssh ka8kgj@dev-docker-01.local
+# Access TrueNAS storage VM
+ssh truenas_admin@192.168.50.13
 ```
 
 ## Working with This Environment
@@ -290,14 +259,14 @@ The Home Assistant module can be extended with additional configuration via clou
 1. Check cloud-init status on VM:
 
    ```bash
-   ssh ka8kgj@192.168.50.12 cloud-init status
+   ssh ka8kgj@<vm-ip> cloud-init status
    ```
 
 2. Verify DHCP is configured in cloud-init
 
 3. Check Proxmox guest agent is running:
    ```bash
-   ssh ka8kgj@192.168.50.12 systemctl status qemu-guest-agent
+   ssh ka8kgj@<vm-ip> systemctl status qemu-guest-agent
    ```
 
 ### Template Not Initialized

@@ -12,7 +12,7 @@ Deliver the user's 6-step IaC improvement request:
 The full plan, decisions, IP map and IP review log are in [PLAN-iac-refactor.md](PLAN-iac-refactor.md).
 
 ## Current Status
-Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, and the IaC bug-fix/cleanup pass are all complete and merged into `main` (`5af7f08`). Remaining TODO: rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`) and re-deploy `make ups-nut` when ready.
+Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/cleanup pass, `proxmox/proxmox` Infisical folder path update (`/terraform/proxmox/proxmox`), full decommissioning/removal of `dev-docker-01`, and rotation/re-deployment of NUT `USER_PASSWORD` and `ADMIN_PASSWORD` across `proxmox_cluster` (`make ups-nut`) are all complete.
 
 ## Operating Constraints (MANDATORY — read first)
 - **PRIORITY 1 — NEVER ACT WITHOUT EXPLICIT APPROVAL:** Do **not** create, edit, or delete any file, and do **not** run any command, without explicit user approval first. When proposing a plan or batch of edits, **end the turn with no write/delete/command tool calls** and wait for the user's explicit go-ahead. "Approved plan" ≠ approval to execute each detail.
@@ -42,7 +42,8 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, and the IaC 
 | Inline comments & `.env.example` cleanup (`docs/ansible-documentation`) | Complete | Merged into `main` (`4e34754`) |
 | Step 6 — `.agents` skills/standards/templates + consolidate and remove `.github/instructions` and copilot instructions (Q7) | Complete | Merged into `main` (`fa7bdd6`) |
 | Final NUT security (`diff: false`) & IaC bug-fix/cleanup pass (`fix/nut-security-and-bugs`) | Complete | Merged into `main` (`5af7f08`) |
-| Rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`) and re-deploy `make ups-nut` | Pending | Paused until ready; `diff: false` is already active on `upsmon.conf` and `upsd.users`. |
+| Rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`) and re-deploy `make ups-nut` | Complete | Deployed across `pve-d01`, `pve-p01`, and `proxmox` (`failed=0`) |
+| Fix `proxmox/proxmox` Infisical folder path (`/terraform/proxmox/proxmox`) & remove decommissioned `dev-docker-01` across IaC and docs | Complete | Removed `dev-docker-01` from `infrastructure.yml`, Terraform, NUT `proxmox_cluster.yml`, and docs; deployed via `make ups-nut` |
 
 ## Step 1 Resolved Decisions
 1. **Remove the `infisical_secrets` debug task:** ✅ Removed lines 67–70 in `iac/ansible/roles/infisical_secrets/tasks/main.yaml`.
@@ -53,7 +54,7 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, and the IaC 
 
 ## Step 2 Resolved Decisions
 1. **No symlinks for `iac/shared/infrastructure.yml`:** ✅ Terraform reads `iac/shared/infrastructure.yml` via `yamldecode(file(...))` in `locals.tf`; Ansible reads it via `iac/ansible/inventories/group_vars/all.yml` using `lookup('ansible.builtin.file', inventory_dir ~ '/../../shared/infrastructure.yml') | from_yaml`.
-2. **IP review resolutions:** ✅ `.14` (`prod-docker-01`) includes `uptime-kuma-p01`; `.16` (`dev-docker-02`) runs `homarr-d02` (replaced `homepage-d02`) and `pulse-d02`; `.12` (`dev-docker-01`) is in `infrastructure.yml` (for TF and NUT) and kept out of `hosts.yml` `docker_hosts`; `.8` printer stays out of the repo.
+2. **IP review resolutions:** ✅ `.14` (`prod-docker-01`) includes `uptime-kuma-p01`; `.16` (`dev-docker-02`) runs `homarr-d02` (replaced `homepage-d02`) and `pulse-d02`; `.12` (`dev-docker-01`) has been decommissioned on `proxmox` and removed from `iac/shared/infrastructure.yml`, Terraform `proxmox/proxmox`, NUT `proxmox_cluster.yml`, and documentation; `.8` printer stays out of the repo.
 3. **Redundant code & broken reference cleanups:** ✅ Removed redundant `alias`/`id`/`ip` from `proxmox_cluster.yml`, removed per-host `ansible_user`/`mailrise_ip`/`alert_email` from `hosts.yml` (using `docker_hosts.yml` in `system_updates.yml`), deleted `inventories/host_vars/*.yml`, deleted obsolete `playbooks/truenas.yml` and `roles/truenas/nfs/`, removed dead `storage`/`storage-check` targets in `Makefile`, fixed `deploy_nas_storage.yml` role path (`truenas/nas_config`), fixed Watchtower `mailrise.port` string interpolation bug, and removed commented-out duplicate modules in `pve-d01/main.tf`.
 
 ## Step 3 Resolved Decisions
@@ -68,6 +69,7 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, and the IaC 
 - Merged Step 1 (`UPS-NUT`), created `refactor/shared-infrastructure-vars` for Step 2, created `iac/shared/infrastructure.yml` and `iac/ansible/inventories/group_vars/all.yml`, refactored Terraform Proxmox environments and Ansible inventories/group_vars/playbooks/roles/templates onto the shared config, cleaned up 6 redundant/broken items, and verified zero drift in both Terraform and Ansible.
 - Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`, and merged PR #20.
 - Merged `docs/ansible-documentation` (`4e34754`), `chore/agents-iac-tooling` (`fa7bdd6`), and `fix/nut-security-and-bugs` (`5af7f08`) into `main`.
+- Updated `iac/terraform/environments/proxmox/proxmox/data.tf` (`folder_path = "/terraform/proxmox/proxmox"`), removed decommissioned `dev-docker-01` (and unused `default_username` / `default_password` in `proxmox/proxmox/variables.tf`) from `iac/shared/infrastructure.yml`, Terraform, NUT `proxmox_cluster.yml`, and documentation, rotated NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`), and deployed `make ups-nut` cleanly across `pve-d01`, `pve-p01`, and `proxmox`.
 
 ## Immediate Next Action
-When ready, rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical under `/ansible/nut` and run `make ups-nut` to deploy the rotated credentials.
+Push the current branch and open a pull request to merge into `main` when ready.

@@ -21,10 +21,6 @@ proxmox_nodes:
     ip: "192.168.50.11"
 
 vms:
-  dev-docker-01:
-    vm_id: 201
-    node: "proxmox"
-    ip: "192.168.50.12"
   dev-truenas-01:
     vm_id: 200
     node: "proxmox"

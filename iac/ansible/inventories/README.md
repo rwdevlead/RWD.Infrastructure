@@ -20,9 +20,6 @@ Primary inventory for Docker hosts and the Proxmox cluster:
 | `pulse` | `dev-docker-02` | Inherited from `docker_hosts` | Pulse Proxmox/Docker monitor host |
 | `proxmox_cluster` | `pve-d01`, `pve-p01`, `proxmox` | `proxmox_nodes[host].ip` | Proxmox VE nodes for UPS/NUT orchestration |
 
-> [!NOTE]
-> `dev-docker-01` exists in `iac/shared/infrastructure.yml` (used by Terraform and NUT shutdown orchestration) but is intentionally omitted from `docker_hosts` in `hosts.yml` while being decommissioned.
-
 ### [truenas.yml](truenas.yml)
 
 Dedicated inventory for TrueNAS storage automation (`make truenas` / `make truenas-check`):
@@ -40,7 +37,7 @@ Dedicated inventory for TrueNAS storage automation (`make truenas` / `make truen
 Applies to every host across all inventories. Dynamically loads `iac/shared/infrastructure.yml` via `lookup('ansible.builtin.file', inventory_dir ~ '/../../shared/infrastructure.yml') | from_yaml` and exports:
 - `network` (`subnet`, `prefix`, `gateway`, `domain`)
 - `proxmox_nodes` (`pve-d01`, `pve-p01`, `proxmox` with `alias` and `ip`)
-- `vms` (`dev-docker-01`, `dev-truenas-01`, `prod-docker-01`, `homeassistant`, `dev-docker-02`, `dev-omv-01` with `vm_id`, `node`, `ip`)
+- `vms` (`dev-truenas-01`, `prod-docker-01`, `homeassistant`, `dev-docker-02`, `dev-omv-01` with `vm_id`, `node`, `ip`)
 
 ### [group_vars/docker_hosts.yml](group_vars/docker_hosts.yml)
 

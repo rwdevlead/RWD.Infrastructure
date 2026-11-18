@@ -21,9 +21,9 @@ module "dev_docker" {
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id          = 201
-  vm_name        = "dev-docker-01"
-  vm_node_name   = "proxmox"
+  vm_id          = 101
+  vm_name        = "dev-docker-02"
+  vm_node_name   = "pve-d01"
   vm_description = "Development Docker Host"
   vm_on_boot     = false
 
@@ -34,7 +34,7 @@ module "dev_docker" {
   vm_memory_max = 8192
   disk_size   = 40
 
-  vm_static_ip = "192.168.50.12/24"
+  vm_static_ip = "192.168.50.16/24"
   network_gateway = "192.168.50.1"
 
   ssh_public_key_content = file("~/.ssh/id_ed25519.pub")

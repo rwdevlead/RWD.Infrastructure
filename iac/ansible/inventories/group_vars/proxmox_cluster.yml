@@ -38,9 +38,6 @@ nut_instances:
       - name: "homeassistant"
         shutdown_tier: 1
         wait_for_stop: false
-      - name: "dev-docker-01"
-        shutdown_tier: 1
-        wait_for_stop: false
       - name: "dev-truenas-01"
         is_storage: true
         shutdown_tier: 3
