@@ -47,7 +47,11 @@ roles/<category>/<role_name>/
 ## 3. Secrets & Sensitive Output
 
 - Retrieve all secrets at runtime via `infisical_secrets` (`secrets.ansible.<path>.<KEY>`). Never commit Ansible Vault files, plaintext tokens, passwords, or PII emails in defaults or templates.
-- Set `no_log: true` and/or `diff: false` on tasks that template or write credential-bearing files (`upsd.users`, `upsmon.conf`, etc.) so `--check --diff` never leaks secrets to terminal output.
+- **Docker Compose Secret Isolation (`.env.j2` Standard):** For Docker Compose application roles that require secrets, never interpolate `secrets.*` directly into `docker-compose.yml.j2`. Instead:
+  1. Render secrets into a dedicated `templates/.env.j2` -> `{{ <app>_base_dir }}/.env` with `mode: "0600"`, `diff: false`, and `notify: Restart <App>`.
+  2. Reference `${SECRET_KEY}` in `docker-compose.yml.j2` (`mode: "0644"`, `diff` enabled).
+  3. This keeps plaintext secrets out of `docker-compose.yml` on disk and preserves full line-by-line `--check --diff` visibility on `docker-compose.yml` without exposing credentials.
+- For non-Compose credential files (`upsd.users`, `upsmon.conf`, `mailrise.conf`, etc.), set `diff: false` (and/or `no_log: true`) with restrictive file permissions (`0600` or `0640`) so `--check --diff` never leaks secrets to terminal output.
 - Never add debug tasks that print `secrets` or `read_results`.
 
 ---
@@ -68,9 +72,10 @@ Follow this sequence in `roles/apps/<app>/tasks/main.yml`:
 
 1. Create host base/data directories (`ansible.builtin.file` with explicit owner/group/mode).
 2. Ensure external `{{ shared_docker_network }}` (`traefik`) exists if needed.
-3. Render `docker-compose.yml.j2` (and app config templates) with `notify: Restart <App>`.
-4. Deploy with `community.docker.docker_compose_v2` (`when: not ansible_check_mode`).
-5. Verify container health (`community.docker.docker_container_info`) and/or HTTP endpoint (`ansible.builtin.uri`) + `ansible.builtin.assert` (`when: not ansible_check_mode`).
+3. If the role uses Infisical secrets, render `templates/.env.j2` -> `{{ <app>_base_dir }}/.env` with `mode: "0600"`, `diff: false`, and `notify: Restart <App>`.
+4. Render `docker-compose.yml.j2` (`mode: "0644"`, referencing `${SECRET_KEY}` from `.env` with `diff` enabled) and app config templates with `notify: Restart <App>`.
+5. Deploy with `community.docker.docker_compose_v2` (`when: not ansible_check_mode`).
+6. Verify container health (`community.docker.docker_container_info`) and/or HTTP endpoint (`ansible.builtin.uri`) + `ansible.builtin.assert` (`when: not ansible_check_mode`).
 
 ---
 

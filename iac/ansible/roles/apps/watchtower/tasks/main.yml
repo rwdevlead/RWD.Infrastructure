@@ -1,31 +1,34 @@
-- name: Deploy Watchtower (notify-only, self-monitoring)
-  community.docker.docker_container:
-    name: "{{ watchtower_instances[inventory_hostname].name }}"
-    image: "{{ watchtower_image }}"
-    recreate: true
-    restart_policy: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command:
-      - "{{ watchtower_cleanup | ternary('--cleanup', '') }}"
-      - "--label-enable"
-      - "{{ watchtower_monitor_only | ternary('--monitor-only', '') }}"
-      - "--schedule"
-      - "{{ watchtower_schedule }}"
-    env:
-      TZ: "{{ shared_timezone }}"
-      DOCKER_API_VERSION: "{{ shared_docker_api_version }}"
-      WATCHTOWER_NOTIFICATIONS: email
-      WATCHTOWER_NOTIFICATION_EMAIL_FROM: "{{ watchtower_instances[inventory_hostname].email }}"
-      WATCHTOWER_NOTIFICATION_EMAIL_TO: "{{ mailrise.email }}"
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: "{{ mailrise.domain }}"
-      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: "{{ mailrise.port | string }}"
-      WATCHTOWER_HTTP_API_METRICS: "true"
-      WATCHTOWER_HTTP_API_TOKEN: "{{ secrets.ansible.watchtower.API_TOKEN }}"
-    ports:
-      - "8082:8080"
-    labels:
-      com.centurylinklabs.watchtower.enable: "false"
-    networks:
-      - name: "{{ shared_docker_network }}"
-    state: started
+---
+- name: Ensure Watchtower directory exists
+  ansible.builtin.file:
+    path: "{{ watchtower_base_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Render Watchtower .env
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ watchtower_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  # Suppress diff output so Watchtower HTTP API token is not exposed in terminal logs
+  diff: false
+  notify: Restart Watchtower
+
+- name: Render Watchtower docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ watchtower_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Watchtower
+
+- name: Deploy Watchtower via Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ watchtower_base_dir }}"
+    state: present
+  when: not ansible_check_mode

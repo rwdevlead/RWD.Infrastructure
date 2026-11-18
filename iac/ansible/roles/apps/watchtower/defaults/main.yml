@@ -1,4 +1,6 @@
+---
 watchtower_image: containrrr/watchtower
+watchtower_base_dir: "{{ docker_base_dir }}/{{ watchtower_instances[inventory_hostname].name }}"
 watchtower_schedule: "0 0 4 * * *"
 watchtower_monitor_only: true
 watchtower_cleanup: true

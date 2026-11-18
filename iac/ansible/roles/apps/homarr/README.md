@@ -72,4 +72,5 @@ make homarr
 ## Notes
 
 - Mounts `{{ homarr_base_dir }}:/appdata` and `/var/run/docker.sock:/var/run/docker.sock:ro`, publishes `{{ homarr.port }}:7575`, and opts into Watchtower notifications.
+- Renders `SECRET_ENCRYPTION_KEY` into `{{ homarr_base_dir }}/.env` (`mode: "0600"`, `diff: false`) and references `${SECRET_ENCRYPTION_KEY}` in `docker-compose.yml` (`mode: "0644"`).
 - After starting the container, `tasks/main.yml` polls `https://{{ homarr.domain }}` (with `validate_certs: false`) until HTTP `200` is returned.

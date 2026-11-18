@@ -33,11 +33,25 @@
     mode: "0644"
   notify: Restart Traefik
 
+- name: Render Traefik .env
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ traefik_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  # Suppress diff output so Cloudflare API token and ACME email are not exposed in terminal logs
+  diff: false
+  notify: Restart Traefik
+
 - name: Render Traefik docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2
     dest: "{{ traefik_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
     mode: "0644"
+  notify: Restart Traefik
 
 - name: Deploy Traefik via Docker Compose
   community.docker.docker_compose_v2:

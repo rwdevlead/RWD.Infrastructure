@@ -20,6 +20,16 @@
     name: "{{ shared_docker_network }}"
     state: present
 
+- name: Render Portainer .env
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ portainer_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  # Suppress diff output so Portainer agent secret is not exposed in terminal logs
+  diff: false
+
 - name: Render docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2

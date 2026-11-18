@@ -1,2 +1,5 @@
+---
+nebula_sync_image: "ghcr.io/lovelaze/nebula-sync:v0.11.2"
+nebula_sync_base_dir: "{{ docker_base_dir }}/nebula-sync"
 nebula_sync_primary_token: "{{ secrets.ansible.pihole.PIHOLE_P01_PASSWORD }}"
 nebula_sync_replica1_token: "{{ secrets.ansible.pihole.PIHOLE_D02_PASSWORD }}"

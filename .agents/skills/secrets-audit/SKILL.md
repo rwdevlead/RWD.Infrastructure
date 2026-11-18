@@ -16,7 +16,7 @@ Read `.agents/standards/shared-config-standards.md`, `.agents/standards/ansible-
 
 Inspect the target scope (default: `iac/`, `.env.example`, `Makefile`, root scripts) for:
 1. Hardcoded passwords, API tokens, private keys, webhook URLs containing tokens, or personal/PII email addresses.
-2. Ansible tasks that print `secrets` / `read_results` or template credential files without `no_log: true` / `diff: false`.
+2. Ansible tasks that print `secrets` / `read_results`, interpolate `secrets.*` directly into `docker-compose.yml.j2` instead of isolating them in `.env.j2` (`mode: "0600"`, `diff: false`), or template credential files without `no_log: true` / `diff: false`.
 3. Terraform variables holding credentials without `sensitive = true`, or stale `ansible-vault` / `.env` references where Infisical is expected.
 4. Untracked or unignored temporary files (`*.diff`, `*.tfstate`, `.env`, `*.retry`) that may contain plaintext secrets.
 

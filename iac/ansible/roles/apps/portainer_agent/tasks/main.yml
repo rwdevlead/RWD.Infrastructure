@@ -7,6 +7,16 @@
     group: "0"
     mode: "0755"
 
+- name: Render Portainer Agent .env
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ portainer_agent_dir }}/.env"
+    owner: "0"
+    group: "0"
+    mode: "0600"
+  # Suppress diff output so Portainer agent secret is not exposed in terminal logs
+  diff: false
+
 - name: Deploy Portainer Agent docker-compose file
   ansible.builtin.template:
     src: docker-compose.yml.j2

@@ -19,6 +19,7 @@ Deploys Watchtower across `docker_hosts` in notify-only (`--monitor-only`), labe
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `watchtower_image` | Watchtower Docker image | `containrrr/watchtower` |
+| `watchtower_base_dir` | Host directory for `docker-compose.yml` and `.env` | `"{{ docker_base_dir }}/{{ watchtower_instances[inventory_hostname].name }}"` |
 | `watchtower_schedule` | 6-field cron schedule (with seconds) | `"0 0 4 * * *"` *(04:00 daily)* |
 | `watchtower_monitor_only` | Notify only without auto-updating containers | `true` |
 | `watchtower_cleanup` | Remove old images (`--cleanup`) if updating | `true` |
@@ -73,5 +74,6 @@ make watchtower
 
 ## Notes
 
+- Deploys via Docker Compose, rendering `WATCHTOWER_HTTP_API_TOKEN` into `{{ watchtower_base_dir }}/.env` (`mode: "0600"`, `diff: false`) and referencing `${WATCHTOWER_HTTP_API_TOKEN}` in `docker-compose.yml` (`mode: "0644"`).
 - Watchtower sets `com.centurylinklabs.watchtower.enable: "false"` on itself and only monitors containers labeled `com.centurylinklabs.watchtower.enable=true`.
 - Exposes HTTP metrics on host port `8082` (`8082:8080`).

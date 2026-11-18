@@ -1,0 +1,6 @@
+---
+- name: Restart Nebula Sync
+  community.docker.docker_compose_v2:
+    project_src: "{{ nebula_sync_base_dir }}"
+    state: restarted
+  when: not ansible_check_mode

@@ -12,7 +12,7 @@ Deliver the user's 6-step IaC improvement request:
 The full plan, decisions, IP map and IP review log are in [PLAN-iac-refactor.md](PLAN-iac-refactor.md).
 
 ## Current Status
-Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/cleanup pass, `proxmox/proxmox` Infisical folder path update (`/terraform/proxmox/proxmox`), full decommissioning/removal of `dev-docker-01`, and rotation/re-deployment of NUT `USER_PASSWORD` and `ADMIN_PASSWORD` across `proxmox_cluster` (`make ups-nut`) are all complete.
+Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/cleanup pass, `proxmox/proxmox` Infisical folder path update (`/terraform/proxmox/proxmox`), full decommissioning/removal of `dev-docker-01`, rotation/re-deployment of NUT `USER_PASSWORD` and `ADMIN_PASSWORD` across `proxmox_cluster` (`make ups-nut`), and Docker Compose `.env` (`mode: "0600"`, `diff: false`) secret isolation across all `apps/` roles (including migrating `nebula-sync` and `watchtower` to Docker Compose) are all complete.
 
 ## Operating Constraints (MANDATORY — read first)
 - **PRIORITY 1 — NEVER ACT WITHOUT EXPLICIT APPROVAL:** Do **not** create, edit, or delete any file, and do **not** run any command, without explicit user approval first. When proposing a plan or batch of edits, **end the turn with no write/delete/command tool calls** and wait for the user's explicit go-ahead. "Approved plan" ≠ approval to execute each detail.
@@ -44,6 +44,9 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/
 | Final NUT security (`diff: false`) & IaC bug-fix/cleanup pass (`fix/nut-security-and-bugs`) | Complete | Merged into `main` (`5af7f08`) |
 | Rotate NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`) and re-deploy `make ups-nut` | Complete | Deployed across `pve-d01`, `pve-p01`, and `proxmox` (`failed=0`) |
 | Fix `proxmox/proxmox` Infisical folder path (`/terraform/proxmox/proxmox`) & remove decommissioned `dev-docker-01` across IaC and docs | Complete | Removed `dev-docker-01` from `infrastructure.yml`, Terraform, NUT `proxmox_cluster.yml`, and docs; deployed via `make ups-nut` |
+| Standardize Docker Compose `.env` (`mode: "0600"`, `diff: false`) secret isolation across `apps/` roles (`traefik`, `pihole`, `portainer`, `portainer_agent`, `homarr`, `nebula-sync`, `watchtower`, plus `mailrise.conf` `0600`/`diff: false`) and `.agents/` + `RWD.Ai.Stack` | Complete | Keeps `docker-compose.yml` `--check --diff` output visible without exposing Infisical secrets; mirrored into `RWD.Ai.Stack` (`.agents/` and `starter/.agents/`) |
+| Commit `.env` secret-isolation changes on `chore/getLatest` (`RWD.Infrastructure`) and validate/commit in `RWD.Ai.Stack` | Pending | Ready to stage & commit locally or push |
+| Roll out `.env` secret-isolation updates to `dev-docker-02` and `prod-docker-01` (`make <app>-check` / `make <app>`) | Pending | Note: stop/remove existing standalone `nebula-sync` (`prod-docker-01`) and `watchtower` (`dev-docker-02`, `prod-docker-01`) containers once before `docker_compose_v2` takes over management |
 
 ## Step 1 Resolved Decisions
 1. **Remove the `infisical_secrets` debug task:** ✅ Removed lines 67–70 in `iac/ansible/roles/infisical_secrets/tasks/main.yaml`.
@@ -70,6 +73,8 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/
 - Merged Step 2 (`refactor/shared-infrastructure-vars`), created `fix/infisical-secrets` for Step 3, moved `NEBULA_PUSH_TOKEN` and `ACME_EMAIL` to Infisical, removed unused `apps/semaphore`, converted `iac/ansible/ansible.cfg` to relative paths, verified with `make ansible-config`, `make nebula-check`, and `make traefik-check`, and merged PR #20.
 - Merged `docs/ansible-documentation` (`4e34754`), `chore/agents-iac-tooling` (`fa7bdd6`), and `fix/nut-security-and-bugs` (`5af7f08`) into `main`.
 - Updated `iac/terraform/environments/proxmox/proxmox/data.tf` (`folder_path = "/terraform/proxmox/proxmox"`), removed decommissioned `dev-docker-01` (and unused `default_username` / `default_password` in `proxmox/proxmox/variables.tf`) from `iac/shared/infrastructure.yml`, Terraform, NUT `proxmox_cluster.yml`, and documentation, rotated NUT `USER_PASSWORD` and `ADMIN_PASSWORD` in Infisical (`/ansible/nut`), and deployed `make ups-nut` cleanly across `pve-d01`, `pve-p01`, and `proxmox`.
+- Implemented `.env.j2` (`mode: "0600"`, `diff: false`) secret isolation across all secret-bearing `apps/` roles (`traefik`, `pihole`, `portainer`, `portainer_agent`, `homarr`, `nebula-sync`, `watchtower`) and converted `nebula-sync` and `watchtower` to Docker Compose so `docker-compose.yml` diffs remain visible during `--check --diff` without leaking credentials; codified the pattern in `.agents/` and `RWD.Ai.Stack`.
 
 ## Immediate Next Action
-Push the current branch and open a pull request to merge into `main` when ready.
+1. Commit the `.env` secret-isolation role and `.agents/` updates on `chore/getLatest` in `RWD.Infrastructure` (and run `./scripts/validate-templates.sh` + commit in `RWD.Ai.Stack`).
+2. When ready to deploy to the Docker hosts (`dev-docker-02` and `prod-docker-01`), run `make <app>-check` and `make <app>` for `traefik`, `pihole`, `nebula`, `mailrise`, `portainer`, `portainer-agent`, `homarr`, and `watchtower` (removing the old standalone `nebula-sync` and `watchtower` containers once so `docker_compose_v2` can manage them cleanly).

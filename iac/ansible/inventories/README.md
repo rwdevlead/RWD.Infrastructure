@@ -44,7 +44,7 @@ Applies to every host across all inventories. Dynamically loads `iac/shared/infr
 Configuration shared across `docker_hosts`:
 - **System & Security:** `ansible_user: ka8kgj`, `shared_timezone`, `security_fail2ban_enabled`, `security_sysctl_enabled`, `security_firewall_enabled`, `ssh_port`.
 - **Docker & Storage:** `shared_docker_api_version`, `shared_docker_network` (`traefik`), `docker_base_dir` (`/opt/docker`), `docker_base_mnt` (`/mnt/docker`), `docker_users`, and `nfs_mounts` (pointing to `vms['dev-truenas-01'].ip:/mnt/tank/docker/{{ inventory_hostname }}`).
-- **Service Topology:** `pihole_instances`, `nebula_sync_*` (including `uptime_kuma_nebula_push_url_*` using `secrets.ansible.uptime_kuma.NEBULA_PUSH_TOKEN`), `traefik_instance`, `proxmox_instances`, `watchtower_instances`, `portainer_instance`, `portainer_agents`, `mailrise`, `truenas`, `homarr`, `homeassistant`, `uptime_kuma`, and `pulse_instance`.
+- **Service Topology:** `pihole_instances`, `nebula_sync_*` (including `uptime_kuma_nebula_push_url_*` using `${NEBULA_PUSH_TOKEN}` interpolated via `nebula-sync/.env`), `traefik_instance`, `proxmox_instances`, `watchtower_instances`, `portainer_instance`, `portainer_agents`, `mailrise`, `truenas`, `homarr`, `homeassistant`, `uptime_kuma`, and `pulse_instance`.
 
 ### [group_vars/proxmox_cluster.yml](group_vars/proxmox_cluster.yml)
 
