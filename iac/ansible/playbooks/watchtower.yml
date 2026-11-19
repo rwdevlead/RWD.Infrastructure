@@ -9,3 +9,4 @@
   roles:
     - infisical_secrets
     - apps/watchtower
+    - docker/image_cleanup

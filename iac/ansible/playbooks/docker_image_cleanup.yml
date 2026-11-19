@@ -1,0 +1,5 @@
+- name: Clean up unused Docker images
+  hosts: docker_hosts
+  become: true
+  roles:
+    - docker/image_cleanup

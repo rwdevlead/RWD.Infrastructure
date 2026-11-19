@@ -1,0 +1,5 @@
+---
+# Prune only untagged/dangling images by default so images for stopped containers are preserved
+image_cleanup_dangling_only: true
+# Optional additional filters passed to community.docker.docker_prune (e.g., {"until": "24h"})
+image_cleanup_filters: {}

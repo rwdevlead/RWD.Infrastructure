@@ -13,6 +13,9 @@ Roles under `iac/ansible/roles/docker/` configure NFS-backed persistent storage,
 3. [`docker/engine`](engine/README.md) — Installs Docker CE + plugins, adds systemd NFS dependency, adds `docker_users` to `docker`, and disables `systemd-resolved` stub listener
 4. [`docker/compose`](compose/README.md) — Ensures `docker-compose-plugin` is installed and creates the external `traefik` bridge network
 
+Additional reusable roles in `docker/`:
+- [`docker/image_cleanup`](image_cleanup/README.md) — Prunes dangling/unused Docker images (`make docker-cleanup-check` / `make docker-cleanup`, also included at the end of `playbooks/pihole.yml`)
+
 ---
 
 ## Shared Group Variables

@@ -1,0 +1,6 @@
+---
+- name: Prune unused Docker images
+  community.docker.docker_prune:
+    images: true
+    images_filters: "{{ image_cleanup_filters | combine({'dangling': image_cleanup_dangling_only}) }}"
+  when: not ansible_check_mode
