@@ -216,9 +216,9 @@ module "dev_docker" {
   tempate_node_id   = module.ubuntu_template.template_id
   tempate_node_name = module.ubuntu_template.template_node_name
 
-  vm_id        = 201
-  vm_name      = "dev-docker-01"
-  vm_node_name = "proxmox"
+  vm_id        = 101
+  vm_name      = "dev-docker-02"
+  vm_node_name = "pve-d01"
   vm_on_boot   = false
 
   # Clone-specific configuration...

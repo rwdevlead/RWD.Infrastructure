@@ -33,6 +33,17 @@ Reference snippets for scaffolding a new application role under `iac/ansible/rol
     - "{{ <app>_base_dir }}"
     - "{{ <app>_data_dir }}"
 
+- name: Render <App> .env
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ <app>_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  # Suppress diff output so Infisical secrets are not exposed in terminal logs
+  diff: false
+  notify: Restart <App>
+
 - name: Render <App> docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2

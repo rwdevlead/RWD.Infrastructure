@@ -24,9 +24,9 @@ Using `.agents/templates/ansible-role-skeleton.md`:
 
 1. Create `iac/ansible/roles/<category>/<role>/`:
    - `defaults/main.yml` — role-prefixed constants (`<role>_*`) only; no hardcoded IPs/hostnames.
-   - `tasks/main.yml` — FQCN modules, imperative task names, `when: not ansible_check_mode` on runtime deploys/health checks, `no_log: true` / `diff: false` on credential tasks.
+   - `tasks/main.yml` — FQCN modules, imperative task names, `when: not ansible_check_mode` on runtime deploys/health checks, and `.env.j2` (`mode: "0600"`, `diff: false`) for secrets so `docker-compose.yml.j2` (`mode: "0644"`) diffs remain visible without exposing credentials.
    - `handlers/main.yml` — capitalized handler names (e.g., `Restart <App>`).
-   - `templates/*.j2` — keep `#!/bin/bash` on line 1 for scripts; pull host metadata from `group_vars` and `iac/shared/infrastructure.yml`.
+   - `templates/*.j2` — put secrets in `.env.j2` and reference `${SECRET_KEY}` in `docker-compose.yml.j2`; keep `#!/bin/bash` on line 1 for scripts; pull host metadata from `group_vars` and `iac/shared/infrastructure.yml`.
 2. Create `iac/ansible/playbooks/<playbook>.yml` (include `infisical_secret_paths` and `infisical_secrets` if credentials are required).
 3. Update `iac/ansible/inventories/hosts.yml` and `inventories/group_vars/` with any host group or service instance metadata.
 4. Add `<target>-check` (`--check --diff`) and `<target>` to the root `Makefile` and register both under `.PHONY`.

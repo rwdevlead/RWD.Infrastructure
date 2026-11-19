@@ -39,6 +39,7 @@ Category overview: [docker/README.md](docker/README.md)
 | `docker/nfs-mounts` | Installs NFS client utilities and mounts persistent TrueNAS shares | [README](docker/nfs-mounts/README.md) |
 | `docker/engine` | Installs Docker CE, configures daemon settings, and adds users to `docker` group | [README](docker/engine/README.md) |
 | `docker/compose` | Creates standard `/opt/docker` directories and shared Docker bridge network | [README](docker/compose/README.md) |
+| `docker/image_cleanup` | Prunes dangling/unused Docker images on `docker_hosts` | [README](docker/image_cleanup/README.md) |
 
 ### Proxmox Host Automation (`proxmox/`)
 Category overview: [proxmox/README.md](proxmox/README.md)

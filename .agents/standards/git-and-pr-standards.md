@@ -107,10 +107,14 @@ Before opening or requesting review on a pull request, ensure:
 4. **Memory & Docs:** `.agents/memory/AI_HANDOFF.md` is up-to-date, and relevant READMEs or documentation files are synchronized.
 5. **Up-to-Date Branch:** Branch is rebased or updated against latest base branch (`main`).
 
-### Pure Git & Server-Side Completion Requirement
-- **Pure Git Execution:** Use standard `git` commands (`git push -u origin <branch>`) rather than platform-specific CLI tools (`gh`, `glab`).
-- **Direct Creation Links:** The agent provides the direct web comparison/creation link for GitHub or GitLab based on the remote URL.
-- **Human Server Completion:** The agent must **never** auto-merge or complete the PR/MR. The PR/MR remains open for the developer or reviewer to inspect, review, and complete on the remote server UI.
+### Git, API, & GitHub CLI (`gh`) Execution and Server-Side Completion
+- **Standard Git First:** Use native `git` commands (`git status`, `git diff`, `git log`, `git checkout -b`, `git commit`, `git push -u origin <branch>`) for core version-control operations, and standard Git API calls where appropriate.
+- **GitHub CLI (`gh`) Integration:** For GitHub-hosted repositories, allow and prefer the GitHub CLI (`gh`) when installed and authenticated for platform operations where it adds value—most notably creating or updating Pull Requests (`gh pr create`, `gh pr edit`, `gh pr view`), checking PR status/checks, or querying issues.
+- **CLI Installation & Authentication Pre-Check (In Order):**
+  1. **Check Installation First (`command -v gh`):** Before attempting any CLI operation, check if the CLI binary is installed on the host. If it is **not installed**, immediately use the alternative/fallback method (e.g., standard `git`, API calls, or the pre-populated comparison URL) without prompting for authentication.
+  2. **Check Authentication If Installed (`gh auth status`):** Only when the CLI **is installed**, verify authentication status before calling the method (such as `gh pr create` or `gh pr edit`). If it is installed but not authenticated (or its session has expired), stop and prompt the user so they have the opportunity to log in first (e.g., `gh auth login`) before retrying or choosing the fallback link.
+- **Direct Creation Links Fallback:** When `gh` is not installed, the user chooses not to authenticate `gh`, or the repository is hosted on another platform (GitLab, Bitbucket, Azure DevOps), provide the direct web comparison/creation link with URL-encoded `title` and `body` parameters.
+- **Human Server Completion:** The agent must **never** auto-merge or complete the PR/MR (e.g., never run `gh pr merge`). Whether opened via `gh pr create` or prepared via a comparison link, the PR/MR remains open for the developer or reviewer to inspect, review, and complete on the remote server UI.
 
 ### Final Link Placement Standard
 - **Execution Scoping:** Direct links to commits and PRs/MRs must **only** be output at the conclusion of actual commit/push or PR preparation execution events (`/commit-cleanup` and `/create-pr`).

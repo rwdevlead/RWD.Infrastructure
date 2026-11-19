@@ -23,7 +23,7 @@ These standards govern all Terraform root environments and reusable modules unde
 ## 2. Execution & State Management Rules
 
 - **Makefile-Only Execution:** Always run Terraform through the root `Makefile` (`make init`, `make plan`, `make apply`, `make validate`, `make fmt`, `make clean`, `make destroy` with `TARGET=<env-path>`, e.g., `TARGET=proxmox/pve-p01`). Never invoke raw `terraform` CLI commands from the repository root so `.env` and `TF_VAR_infisical_*` exports are consistently applied.
-- **HCP Terraform Remote State:** Environments store state remotely in HCP Terraform (`realworlddevelopers` / `RWD Infrastructure`). Developers authenticate locally via `terraform login` (`~/.terraform.d/credentials.tfrc.json`). Never store the HCP Terraform user token in Infisical or git.
+- **HCP Terraform Remote State & Auth Pre-Check:** Environments store state remotely in HCP Terraform (`realworlddevelopers` / `RWD Infrastructure`). Developers authenticate locally via `terraform login` (`~/.terraform.d/credentials.tfrc.json`). Before invoking state-dependent Terraform targets (`make init`, `make plan`, `make apply`), check that local HCP Terraform credentials exist; if unauthenticated, stop and give the user the opportunity to run `terraform login` first. Never store the HCP Terraform user token in Infisical or git.
 - **Secrets via Infisical:** Fetch provider tokens and infrastructure secrets via `data "infisical_secrets"` in `data.tf` and expose them via `locals.tf`. Never commit `.tfvars`, `.tfstate`, `tfplan`, or hardcoded credentials.
 
 ---

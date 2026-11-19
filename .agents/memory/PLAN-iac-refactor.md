@@ -42,7 +42,7 @@
 | :--- | :--- | :--- |
 | .12 | `hosts.yml` `mailrise_ip` = .12 | ✅ Removed `mailrise_ip` from `hosts.yml`; `system_updates.yml` uses `vms['prod-docker-01'].ip` (.14) and `mailrise` vars from `docker_hosts.yml` |
 | .12 | `truenas/nfs` `nfs_server` = .12 | ✅ Removed obsolete `truenas/nfs` role and `playbooks/truenas.yml` (superseded by `docker/nfs-mounts` using `vms['dev-truenas-01'].ip` .13) |
-| .12 | `dev-docker-01` status | ✅ Kept in `iac/shared/infrastructure.yml` (for TF `proxmox/proxmox` and NUT) and kept out of `hosts.yml` `docker_hosts` while being decommissioned |
+| .12 | `dev-docker-01` status | ✅ Decommissioned on `proxmox` and removed from `iac/shared/infrastructure.yml`, Terraform `proxmox/proxmox`, NUT `proxmox_cluster.yml`, and documentation |
 | .14 | `uptime-kuma-p01` on `prod-docker-01` | ✅ Confirmed active on `prod-docker-01` (.14) |
 | .16 | `homarr-d02` & `pulse-d02` on `dev-docker-02` | ✅ Confirmed `homarr-d02` replaced `homepage-d02` and `pulse-d02` is active on `dev-docker-02` (.16) |
 | .8 | Printer (`Canon MF656Cdw`) | ✅ Excluded from repo |

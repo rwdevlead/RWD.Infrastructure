@@ -78,4 +78,5 @@ make pihole
 
 - Publishes `53:53/tcp`, `53:53/udp`, and `8888:80/tcp` when `pihole_bind_dns` is `true` (port `8888` is used by `nebula-sync` and Traefik's `pihole-prod-service`), and attaches to `shared_docker_network` with Traefik HTTPS labels.
 - Runs with `NET_ADMIN` capability and asserts container health (`pihole status | grep -q 'FTL is listening on port 53'`) after deployment.
+- Renders `FTLCONF_webserver_api_password` into `{{ pihole_base_dir }}/.env` (`mode: "0600"`, `diff: false`) and references `"${FTLCONF_webserver_api_password}"` in `docker-compose.yml` (`mode: "0644"`).
 - Do not run multiple Pi-hole containers on the same host, and do not proxy DNS (port 53) through Traefik.

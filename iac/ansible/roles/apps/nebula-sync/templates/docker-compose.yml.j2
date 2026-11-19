@@ -1,0 +1,46 @@
+services:
+  nebula-sync:
+    container_name: nebula-sync
+    image: {{ nebula_sync_image }}
+    restart: unless-stopped
+    networks:
+      - {{ shared_docker_network }}
+    environment:
+      PRIMARY: "{{ nebula_sync_primary_node }}|${NEBULA_SYNC_PRIMARY_TOKEN}"
+      REPLICAS: "{{ nebula_sync_replica1_node }}|${NEBULA_SYNC_REPLICA1_TOKEN}"
+      FULL_SYNC: "true"
+
+      RUN_GRAVITY: "false"
+      CRON: "0 * * * *"
+      TZ: "{{ shared_timezone }}"
+
+      CLIENT_SKIP_TLS_VERIFICATION: "false"
+      CLIENT_RETRY_DELAY_SECONDS: "1"
+      CLIENT_TIMEOUT_SECONDS: "20"
+
+      # Disabled explicitly because FULL_SYNC=true supersedes individual sync flags
+      SYNC_CONFIG_DNS: "false"
+      SYNC_CONFIG_DHCP: "false"
+      SYNC_CONFIG_NTP: "false"
+      SYNC_CONFIG_RESOLVER: "false"
+      SYNC_CONFIG_DATABASE: "false"
+      SYNC_CONFIG_MISC: "false"
+      SYNC_CONFIG_DEBUG: "false"
+      SYNC_GRAVITY_DHCP_LEASES: "false"
+      SYNC_GRAVITY_GROUP: "false"
+      SYNC_GRAVITY_AD_LIST: "false"
+      SYNC_GRAVITY_AD_LIST_BY_GROUP: "false"
+      SYNC_GRAVITY_DOMAIN_LIST: "false"
+      SYNC_GRAVITY_DOMAIN_LIST_BY_GROUP: "false"
+      SYNC_GRAVITY_CLIENT: "false"
+      SYNC_GRAVITY_CLIENT_BY_GROUP: "false"
+
+      WEBHOOK_CLIENT_SKIP_TLS_VERIFICATION: "false"
+      WEBHOOK_SYNC_SUCCESS_URL: "{{ uptime_kuma_nebula_push_url_success }}"
+      WEBHOOK_SYNC_SUCCESS_METHOD: "GET"
+      WEBHOOK_SYNC_FAILURE_URL: "{{ uptime_kuma_nebula_push_url_fail }}"
+      WEBHOOK_SYNC_FAILURE_METHOD: "GET"
+
+networks:
+  {{ shared_docker_network }}:
+    external: true

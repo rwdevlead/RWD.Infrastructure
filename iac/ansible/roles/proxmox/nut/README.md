@@ -7,7 +7,7 @@ Deploys and configures Network UPS Tools (NUT) across the Proxmox VE cluster (`p
 - **Master Node (`role: "master"`):** Connects directly to the UPS via USB (`usbhid-ups`), runs `nut-server` (`upsd`) bound to localhost and its LAN IP, runs `upssched` to start a countdown timer on battery events, and orchestrates cluster-wide staged VM/host shutdown and recovery.
 - **Slave Nodes (`role: "slave"`):** Run `nut-client` (`upsmon`) connected to the master node's `upsd` server over the LAN (`3493/tcp`).
 - **Staged Takedown (`staged_takedown.sh`):** Iterates through `shutdown_tier` `1..3` from `nut_instances`:
-  - **Tier 1:** Non-blocking shutdown of secondary VMs (`dev-omv-01`, `homeassistant`, `dev-docker-01`).
+  - **Tier 1:** Non-blocking shutdown of secondary VMs (`dev-omv-01`, `homeassistant`).
   - **Tier 2:** Graceful shutdown of `prod-docker-01` (waits for exit so Mailrise finishes sending alerts), then powers off `M900(pve-p01)`.
   - **Tier 3:** Graceful shutdown of local `dev-docker-02` (waits for exit so NFS clients disconnect), graceful shutdown of storage VM `dev-truenas-01` (waits for exit), powers off `Tower(proxmox)`, and triggers `/sbin/upsmon -c fsd`.
 - **Staged Bring-Up (`staged_bringup.sh` + `nut-bringup.service`):** Runs on boot if `/etc/nut/power_outage.flag` is present. Waits for slave Proxmox hosts to respond to SSH, boots storage VMs (`is_storage: true`) first and waits for ping + NFS initialization, then starts remaining slave and master VMs before removing the outage flag.

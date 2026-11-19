@@ -5,6 +5,7 @@
 	ansible-config \
 	base base-check \
 	docker docker-check \
+	docker-cleanup docker-cleanup-check \
 	portainer portainer-check \
 	traefik traefik-check \
 	mailrise mailrise-check \
@@ -186,6 +187,15 @@ docker: ## Deploy Docker platform (NFS mounts, engine, compose)
 	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker.yml \
 		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
 		--limit dev-docker-02 -v
+
+docker-cleanup-check: ## Dry-run: Review unused Docker image cleanup across docker_hosts
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker_image_cleanup.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml \
+		--check --diff
+
+docker-cleanup: ## Prune dangling Docker images across docker_hosts
+	$(ANSIBLE) $(ANSIBLE_DIR)/playbooks/docker_image_cleanup.yml \
+		-i $(ANSIBLE_DIR)/inventories/hosts.yml
 
 # Reverse proxy & load balancing
 

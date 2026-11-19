@@ -81,7 +81,7 @@ make mailrise
 ## Notes
 
 - Exposes SMTP on `8025:8025` (plus `8081:8080`) and configures a Traefik TCP router on entrypoint `smtp` (`HostSNI(*)`).
-- Defines `email`, `icloud`, and `outlook` Mailrise routes in `config/mailrise.conf`.
+- Defines `email`, `icloud`, and `outlook` Mailrise routes in `config/mailrise.conf` (`mode: "0600"`, `diff: false` so SMTP credentials are not printed during `--check --diff`).
 - Note: `tasks/main.yml` renders `mailrise.conf` and `docker-compose.yml` with `check_mode: no` even during `--check`.
 
 ### Manual SMTP Test (`swaks`)

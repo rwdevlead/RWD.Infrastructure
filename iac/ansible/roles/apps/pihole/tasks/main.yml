@@ -11,8 +11,18 @@
     - "{{ pihole_base_dir }}/etc-pihole"
     - "{{ pihole_base_dir }}/etc-dnsmasq.d"
 
+- name: Render Pi-hole .env
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ pihole_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  # Suppress diff output so Pi-hole web password is not exposed in terminal logs
+  diff: false
+
 - name: Deploy Pi-hole docker-compose file
-  template:
+  ansible.builtin.template:
     src: docker-compose.yml.j2
     dest: "{{ pihole_base_dir }}/docker-compose.yml"
     owner: root
@@ -23,6 +33,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ pihole_base_dir }}"
     state: present
+    pull: always
   when: not ansible_check_mode
 
 - name: Wait for Pi-hole container to become healthy

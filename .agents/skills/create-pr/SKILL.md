@@ -1,12 +1,12 @@
 ---
 name: create-pr
-description: Prepare a Pull Request or Merge Request with a structured description, push the branch, and provide a pre-filled server link for review. Trigger with "/create-pr" or "/pr".
+description: Prepare a Pull Request or Merge Request with a structured description, push the branch, and create the PR via gh (when available) or provide a pre-filled server link for review. Trigger with "/create-pr" or "/pr".
 argument-hint: "[optional base branch, defaults to main]"
 ---
 
 # Purpose
 
-Assemble a complete Pull Request (GitHub) or Merge Request (GitLab / Bitbucket / Azure DevOps) using standard git commands. The skill inspects diffs, validates quality gates, builds a per-commit changelog for squash-merge preservation, pushes the branch, and hands off to the developer on the server UI for final review and merge.
+Assemble a complete Pull Request (GitHub) or Merge Request (GitLab / Bitbucket / Azure DevOps) using standard git commands and the GitHub CLI (`gh`) when available. The skill inspects diffs, validates quality gates, builds a per-commit changelog for squash-merge preservation, pushes the branch, opens the PR via `gh pr create` (or generates a pre-filled comparison link if `gh` is unavailable), and hands off to the developer on the server UI for final review and merge.
 
 ---
 
@@ -79,30 +79,46 @@ Before running any push commands, present a clean summary plan:
 <Markdown body following pull-request-template.md>
 ```
 
-> **MANDATORY GATE:** Stop and ask the user for confirmation. Do NOT execute `git push` until the user explicitly confirms (e.g. "yes" or "proceed").
+> **MANDATORY GATE:** Stop and ask the user for confirmation. Do NOT execute `git push` or `gh pr create` until the user explicitly confirms (e.g. "yes" or "proceed").
 
 ---
 
-## Step 5 — Git Push & Server Completion Package
+## Step 5 — Git Push, PR Creation (`gh` or Fallback Link), & Server Completion
 
 Only after user confirmation:
 1. **Push Branch via Git:** If upstream is unlinked or branch has unpushed commits:
    ```bash
    git push -u origin <current-branch>
    ```
-2. **Present Final Package & Pre-Populated Server Link:**
-   - **URL Pre-Population Requirement:** Always URL-encode `title` and `body` parameters into the comparison URL:
+2. **Create Pull Request via `gh` (Preferred on GitHub) or Generate Pre-Populated Link (Fallback):**
+   - **Step 2a — Check If `gh` Is Installed (`command -v gh`):**
+     First check whether `gh` is installed on the host. If `gh` is **not installed** (or the remote is a non-GitHub host), skip `gh` authentication checks and proceed directly to **Option B (Fallback Pre-Populated Server Link)**.
+   - **Step 2b — Check `gh` Authentication (`gh auth status`):**
+     Only when `gh` **is installed** and the repository remote is GitHub, verify authentication status via `gh auth status` before calling any `gh pr` subcommand. If `gh` is not logged in or the token has expired, stop and prompt the user so they have the opportunity to authenticate first (e.g., `gh auth login`) before continuing, or ask if they prefer the fallback comparison link.
+   - **Option A — GitHub CLI (`gh`) Installed & Authenticated:**
+     Once `command -v gh` and `gh auth status` both succeed, create or update the Pull Request directly using `gh`:
+     ```bash
+     gh pr create --base <base> --head <branch> --title "<title>" --body-file <temp_body_file>
+     ```
+     *(If a PR already exists for the branch, update it with `gh pr edit --title "<title>" --body-file <temp_body_file>` and retrieve its URL via `gh pr view --json url -q .url`).*
+   - **Option B — Fallback Pre-Populated Server Link:**
+     If `gh` is not installed, the user chooses not to log in to `gh`, or the remote is a non-GitHub host (GitLab, Bitbucket, Azure DevOps), URL-encode `title` and `body` parameters into the comparison URL:
      `https://github.com/<owner>/<repo>/compare/<base>...<branch>?expand=1&title=<encoded_title>&body=<encoded_body>`
      *(This guarantees GitHub pre-populates the exact Conventional Commit title and full Markdown body for multi-commit branches and before templates are merged to default branch).*
-   - **Link Styling:** Always mask long URLs behind clean Markdown anchor text. Never output raw percent-encoded strings.
+   - **Link Styling:** Always mask URLs behind clean Markdown anchor text. Never output raw percent-encoded strings.
 3. **Require Server-Side Completion:**
    - Explicitly instruct the user to complete the review and merge on the server:
-     > *"Branch pushed and PR/MR package ready. Please open the link below to review diffs and complete the merge on the server."*
-   - The AI agent must **never** auto-merge the branch locally or attempt automated server-side merging.
-4. **Memory Update:** Update `AI_HANDOFF.md` recording that the PR/MR was prepared and branch pushed.
+     > *"Branch pushed and PR/MR ready. Please open the link below to review diffs and complete the merge on the server."*
+   - The AI agent must **never** auto-merge the branch locally or run `gh pr merge`.
+4. **Memory Update:** Update `AI_HANDOFF.md` recording that the PR/MR was created/prepared and branch pushed.
 5. **Execution Link Rule:** ONLY at the conclusion of this PR/MR execution step (and never during planning, reviews, or general conversation), output clean Markdown links as the very last lines:
    - **Single-commit branches:** Show both the commit link and the PR link.
    - **Multi-commit branches:** Show only the PR link (the PR itself lists all commits).
-   ```markdown
-   👉 **[Create Pull Request on GitHub](https://github.com/<owner>/<repo>/compare/<base>...<branch>?expand=1&title=...&body=...)**
-   ```
+   - When created via `gh`:
+     ```markdown
+     👉 **[View Pull Request #<number> on GitHub](https://github.com/<owner>/<repo>/pull/<number>)**
+     ```
+   - When using the fallback comparison URL:
+     ```markdown
+     👉 **[Create Pull Request on GitHub](https://github.com/<owner>/<repo>/compare/<base>...<branch>?expand=1&title=...&body=...)**
+     ```

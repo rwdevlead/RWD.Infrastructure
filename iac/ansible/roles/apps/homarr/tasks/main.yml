@@ -6,10 +6,24 @@
     group: docker
     mode: "0775"
 
+- name: Render Homarr .env
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ homarr_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  # Suppress diff output so Homarr encryption key is not exposed in terminal logs
+  diff: false
+  notify: Restart Homarr
+
 - name: Deploy docker compose file
-  template:
+  ansible.builtin.template:
     src: docker-compose.yml.j2
     dest: "{{ homarr_base_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
   notify: Restart Homarr
 
 - name: Start Homarr container

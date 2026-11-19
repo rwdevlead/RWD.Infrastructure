@@ -24,9 +24,11 @@
     dest: "{{ mailrise_data_dir }}/config/mailrise.conf"
     owner: root
     group: root
-    mode: "0644"
+    mode: "0600"
   # Render config even during --check so compose/mount checks reference a complete config path
   check_mode: no
+  # Suppress diff output so SMTP relay credentials are not exposed in terminal logs
+  diff: false
   notify: Restart Mailrise
 
 - name: Render Mailrise docker-compose.yml
