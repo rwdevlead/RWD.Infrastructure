@@ -13,7 +13,7 @@ All playbooks live in `iac/ansible/playbooks/` and are mapped to `make <target>-
 | [system_updates.yml](system_updates.yml) | `docker_hosts` *(Makefile limits to `dev-docker-02`)* | `hosts.yml` | Inline tasks (`unattended-upgrades`, `postfix` → Mailrise, `nfs-common`/`cifs-utils`, `manual_upgrade` dist-upgrade + reboot) | — | `make setup-updates`, `make run-upgrade` |
 | [docker.yml](docker.yml) | `docker_hosts` *(`make docker` limits to `dev-docker-02 -v`)* | `hosts.yml` | `system_base/hostname`, `docker/nfs-mounts`, `docker/engine`, `docker/compose` | — | `make docker-check` / `make docker` |
 | [docker_image_cleanup.yml](docker_image_cleanup.yml) | `docker_hosts` | `hosts.yml` | `docker/image_cleanup` | — | `make docker-cleanup-check` / `make docker-cleanup` |
-| [traefik.yml](traefik.yml) | `dev-docker-02` | `hosts.yml` | `infisical_secrets`, `apps/traefik` | `/ansible/cloudflare` | `make traefik-check` / `make traefik` |
+| [traefik.yml](traefik.yml) | `dev-docker-02` | `hosts.yml` | `infisical_secrets`, `apps/traefik`, `docker/image_cleanup` | `/ansible/cloudflare` | `make traefik-check` / `make traefik` |
 | [mailrise.yml](mailrise.yml) | `prod-docker-01` | `hosts.yml` | `infisical_secrets`, `apps/mailrise` | `/ansible/mail`, `/ansible/mailrise` | `make mailrise-check` / `make mailrise` |
 | [pihole.yml](pihole.yml) | `docker_hosts` | `hosts.yml` | `showmount -e` pre-task, `infisical_secrets`, `apps/pihole`, `docker/image_cleanup` | `/ansible/pihole` | `make pihole-check` / `make pihole` |
 | [nebula_sync.yml](nebula_sync.yml) | `prod-docker-01` | `hosts.yml` | `infisical_secrets`, `apps/nebula-sync` | `/ansible/pihole`, `/ansible/uptime_kuma` | `make nebula-check` / `make nebula` |

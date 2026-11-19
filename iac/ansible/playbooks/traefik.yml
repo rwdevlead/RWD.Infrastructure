@@ -8,3 +8,4 @@
   roles:
     - infisical_secrets
     - apps/traefik
+    - docker/image_cleanup
