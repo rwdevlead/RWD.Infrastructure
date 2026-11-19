@@ -1,6 +1,6 @@
 # apps/mailrise
 
-Deploys the Mailrise SMTP-to-Apprise relay container via Docker Compose on `prod-docker-01`, forwarding local infrastructure alert emails through iCloud and Outlook SMTP relays.
+Deploys the Mailrise SMTP-to-Apprise relay container via Docker Compose on `prod-docker-01`, forwarding local infrastructure alert emails through the iCloud SMTP relay.
 
 ---
 
@@ -24,10 +24,8 @@ Deploys the Mailrise SMTP-to-Apprise relay container via Docker Compose on `prod
 | `mailrise_icloud_user` | iCloud SMTP username | `"{{ secrets.ansible.mail.ICLOUD_MAIL_USER }}"` |
 | `mailrise_icloud_pass` | iCloud SMTP app password | `"{{ secrets.ansible.mail.ICLOUD_MAIL_PASS }}"` |
 | `mailrise_icloud_from` | iCloud sender address | `"{{ secrets.ansible.mail.ICLOUD_MAIL_FROM }}"` |
-| `mailrise_outlook_user` | Outlook SMTP username | `"{{ secrets.ansible.mail.OUTLOOK_MAIL_USER }}"` |
-| `mailrise_outlook_pass` | Outlook SMTP password | `"{{ secrets.ansible.mail.OUTLOOK_MAIL_PASS }}"` |
-| `mailrise_outlook_from` | Outlook sender address | `"{{ secrets.ansible.mail.OUTLOOK_MAIL_FROM }}"` |
 | `mailrise_target_email` | Destination alert email address | `"{{ secrets.ansible.mailrise.EMAIL_DEST }}"` |
+| `mailrise_send_test` | Send test notifications to configured mediums on deploy | `true` |
 
 ### Group Variables (`inventories/group_vars/docker_hosts.yml`)
 
@@ -40,7 +38,7 @@ Deploys the Mailrise SMTP-to-Apprise relay container via Docker Compose on `prod
 
 | Path | Secret Keys |
 | :--- | :--- |
-| `/ansible/mail` | `ICLOUD_MAIL_USER`, `ICLOUD_MAIL_PASS`, `ICLOUD_MAIL_FROM`, `OUTLOOK_MAIL_USER`, `OUTLOOK_MAIL_PASS`, `OUTLOOK_MAIL_FROM` |
+| `/ansible/mail` | `ICLOUD_MAIL_USER`, `ICLOUD_MAIL_PASS`, `ICLOUD_MAIL_FROM` |
 | `/ansible/mailrise` | `EMAIL_DEST` |
 
 ---
@@ -81,7 +79,7 @@ make mailrise
 ## Notes
 
 - Exposes SMTP on `8025:8025` (plus `8081:8080`) and configures a Traefik TCP router on entrypoint `smtp` (`HostSNI(*)`).
-- Defines `email`, `icloud`, and `outlook` Mailrise routes in `config/mailrise.conf` (`mode: "0600"`, `diff: false` so SMTP credentials are not printed during `--check --diff`).
+- Defines `email` and `icloud` Mailrise routes in `config/mailrise.conf` (`owner: 999`, `group: 999`, `mode: "0600"`, `diff: false` so SMTP credentials are not printed during `--check --diff`).
 - Note: `tasks/main.yml` renders `mailrise.conf` and `docker-compose.yml` with `check_mode: no` even during `--check`.
 
 ### Manual SMTP Test (`swaks`)

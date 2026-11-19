@@ -3,12 +3,10 @@ mailrise_tag: "1.4.0"
 
 mailrise_base_dir: "/opt/mailrise"
 mailrise_data_dir: "/mnt/docker/mailrise"
+mailrise_send_test: true
 
 # Mail relay credentials and target address loaded from Infisical (/ansible/mail, /ansible/mailrise)
 mailrise_icloud_user: "{{ secrets.ansible.mail.ICLOUD_MAIL_USER }}"
 mailrise_icloud_pass: "{{ secrets.ansible.mail.ICLOUD_MAIL_PASS }}"
 mailrise_icloud_from: "{{ secrets.ansible.mail.ICLOUD_MAIL_FROM }}"
-mailrise_outlook_user: "{{ secrets.ansible.mail.OUTLOOK_MAIL_USER }}"
-mailrise_outlook_pass: "{{ secrets.ansible.mail.OUTLOOK_MAIL_PASS }}"
-mailrise_outlook_from: "{{ secrets.ansible.mail.OUTLOOK_MAIL_FROM }}"
 mailrise_target_email: "{{ secrets.ansible.mailrise.EMAIL_DEST }}"

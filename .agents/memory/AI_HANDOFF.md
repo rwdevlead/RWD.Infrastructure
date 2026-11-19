@@ -53,6 +53,7 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/
 | Update Pi-hole (`make pihole`) | Complete | Deployed across `dev-docker-02` and `prod-docker-01` (`failed=0`); `.env` isolation, `pull: always`, health assertions, and `docker/image_cleanup` all succeeded |
 | Fix Watchtower notifications (`make watchtower-check` / `make watchtower`) | Complete | Removed old standalone `watchtower-d02` / `watchtower-p01` containers and deployed Compose-managed Watchtower with `pull: always`, `docker/image_cleanup`, and `WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: "8025"` (`failed=0`) |
 | Update Traefik (`make traefik`) | Complete | Added `pull: always` and `docker/image_cleanup`, verified with `make traefik-check`, and deployed cleanly on `dev-docker-02` (`failed=0`, healthy, `/ping` `200`) |
+| Update Mailrise (`make mailrise`) | Complete | Added `pull: always`, `docker/image_cleanup`, `999:999` `0600` ownership on `mailrise.conf`, removed `outlook` medium, and verified `email`/`icloud` test notifications on `prod-docker-01` (`failed=0`) |
 
 ## Step 1 Resolved Decisions
 1. **Remove the `infisical_secrets` debug task:** ✅ Removed lines 67–70 in `iac/ansible/roles/infisical_secrets/tasks/main.yaml`.
@@ -82,6 +83,6 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/
 - Implemented `.env.j2` (`mode: "0600"`, `diff: false`) secret isolation across all secret-bearing `apps/` roles (`traefik`, `pihole`, `portainer`, `portainer_agent`, `homarr`, `nebula-sync`, `watchtower`) and converted `nebula-sync` and `watchtower` to Docker Compose so `docker-compose.yml` diffs remain visible during `--check --diff` without leaking credentials; codified the pattern in `.agents/` and `RWD.Ai.Stack`.
 
 ## Immediate Next Action
-1. Open and merge the pull request for `feat/traefik-update` -> `main` in `RWD.Infrastructure` (`/create-pr`).
-2. Roll out the remaining `.env` (`0600`, `diff: false`) + `docker-compose.yml` updates to `dev-docker-02` and `prod-docker-01` via `make <app>-check` and `make <app>` (`nebula`, `mailrise`, `portainer`, `portainer-agent`, `homarr`), removing the old standalone `nebula-sync` container once so `docker_compose_v2` can manage it cleanly.
+1. Open and merge the pull request for `feat/mailrise-update` -> `main` in `RWD.Infrastructure` (`/create-pr`).
+2. Roll out the remaining `.env` (`0600`, `diff: false`) + `docker-compose.yml` updates to `dev-docker-02` and `prod-docker-01` via `make <app>-check` and `make <app>` (`nebula`, `portainer`, `portainer-agent`, `homarr`), removing the old standalone `nebula-sync` container once so `docker_compose_v2` can manage it cleanly.
 3. In `RWD.Ai.Stack`, run `./scripts/validate-templates.sh`, commit the mirrored IaC standards/templates/skills and `.env` isolation updates, and open/merge the PR to `main`.
