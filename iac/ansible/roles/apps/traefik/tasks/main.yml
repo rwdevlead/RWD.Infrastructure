@@ -57,6 +57,7 @@
   community.docker.docker_compose_v2:
     project_src: "{{ traefik_base_dir }}"
     state: present
+    pull: always
   when: not ansible_check_mode
 
 - name: Wait for Traefik container to be healthy
