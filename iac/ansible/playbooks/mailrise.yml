@@ -9,3 +9,4 @@
   roles:
     - infisical_secrets
     - apps/mailrise
+    - docker/image_cleanup

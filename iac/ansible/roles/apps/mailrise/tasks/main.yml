@@ -22,8 +22,9 @@
   ansible.builtin.template:
     src: mailrise-settings.yaml.j2
     dest: "{{ mailrise_data_dir }}/config/mailrise.conf"
-    owner: root
-    group: root
+    # Match uid/gid 999 inside yoryan/mailrise:1.4.0 so the non-root container user can read 0600 config
+    owner: "999"
+    group: "999"
     mode: "0600"
   # Render config even during --check so compose/mount checks reference a complete config path
   check_mode: no
@@ -44,3 +45,34 @@
   community.docker.docker_compose_v2:
     project_src: "{{ mailrise_base_dir }}"
     state: present
+    pull: always
+  when: not ansible_check_mode
+
+- name: Flush handlers before sending test notifications
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for Mailrise SMTP port to be ready
+  ansible.builtin.wait_for:
+    host: "127.0.0.1"
+    port: "{{ mailrise.port }}"
+    timeout: 30
+  when: not ansible_check_mode and mailrise_send_test
+
+- name: Send test notification to all configured Mailrise mediums
+  ansible.builtin.command:
+    cmd: >-
+      python3 -c "import smtplib; from email.message import EmailMessage;
+      m = EmailMessage();
+      m['Subject'] = 'Mailrise Test ({{ item }})';
+      m['From'] = 'ansible@{{ inventory_hostname }}';
+      m['To'] = '{{ item }}@mailrise.xyz';
+      m.set_content('Mailrise deployment test notification for medium: {{ item }}');
+      s = smtplib.SMTP('127.0.0.1', {{ mailrise.port }}, timeout=15);
+      s.send_message(m);
+      s.quit()"
+  loop:
+    - email
+    - icloud
+  # Test emails are verification probes, not configuration state changes
+  changed_when: false
+  when: not ansible_check_mode and mailrise_send_test
