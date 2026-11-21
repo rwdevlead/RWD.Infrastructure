@@ -8,3 +8,4 @@
   roles:
     - infisical_secrets
     - apps/portainer
+    - docker/image_cleanup

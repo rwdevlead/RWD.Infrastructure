@@ -44,3 +44,22 @@
     state: present
     pull: always
   when: not ansible_check_mode
+
+- name: Wait for Portainer container to become healthy
+  community.docker.docker_container_info:
+    name: "{{ portainer_instance.container }}"
+  register: portainer_container_info
+  until:
+    - portainer_container_info.container is not none
+    - portainer_container_info.container.State is defined
+    - portainer_container_info.container.State.Health.Status | default('') == "healthy"
+  retries: 15
+  delay: 5
+  when: not ansible_check_mode
+
+- name: Final health assertion for Portainer
+  ansible.builtin.assert:
+    that:
+      - portainer_container_info.container.State.Health.Status == "healthy"
+    fail_msg: "Container {{ portainer_instance.container }} failed to reach healthy state."
+  when: not ansible_check_mode

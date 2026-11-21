@@ -63,6 +63,7 @@ Deploys the primary Portainer CE server via Docker Compose on `dev-docker-02`, e
   roles:
     - infisical_secrets
     - apps/portainer
+    - docker/image_cleanup
 ```
 
 ---
@@ -78,6 +79,6 @@ make portainer
 
 ## Notes
 
-- Runs `community.docker.docker_compose_v2` with `pull: always` and does not publish host ports directly; UI access is routed through Traefik at `https://portainer-d02.local.rwdevs.com` (port `9000` internal).
+- Runs `community.docker.docker_compose_v2` with `pull: always`, asserts `{{ portainer_instance.container }}` reaches `healthy` status, and does not publish host ports directly; UI access is routed through Traefik at `https://portainer-d02.local.rwdevs.com` (port `9000` internal).
 - Renders `AGENT_SECRET` into `{{ portainer_base_dir }}/.env` (`mode: "0600"`, `diff: false`) and references `${AGENT_SECRET}` in `docker-compose.yml` (`mode: "0644"`).
 - Sets `SKIP_TLS_CERT_VERIFICATION=true` to simplify internal endpoint communication.
