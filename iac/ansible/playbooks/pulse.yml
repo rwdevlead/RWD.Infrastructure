@@ -5,3 +5,4 @@
 
   roles:
     - role: apps/pulse
+    - role: docker/image_cleanup

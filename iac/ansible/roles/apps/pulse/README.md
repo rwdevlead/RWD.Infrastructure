@@ -49,6 +49,7 @@ None.
   become: true
   roles:
     - role: apps/pulse
+    - role: docker/image_cleanup
 ```
 
 ---
@@ -64,4 +65,4 @@ make pulse
 
 ## Notes
 
-- Publishes `{{ pulse_instance.port }}:7655`, sets `PULSE_DEPLOYMENT_METHOD=docker_compose`, runs `docker_compose_v2` with `pull: always`, configures `json-file` logging (`10m`, max `3`), and opts into Watchtower notifications.
+- Publishes `{{ pulse_instance.port }}:7655`, sets `PULSE_DEPLOYMENT_METHOD=docker_compose`, runs `docker_compose_v2` with `pull: always`, asserts `{{ pulse_instance.container }}` reaches `running` state, configures `json-file` logging (`10m`, max `3`), and opts into Watchtower notifications.

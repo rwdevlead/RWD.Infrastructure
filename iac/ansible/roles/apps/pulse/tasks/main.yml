@@ -3,9 +3,6 @@
   ansible.builtin.file:
     path: "{{ pulse_data_dir }}"
     state: directory
-    owner: root
-    group: root
-    mode: "0755"
 
 - name: Ensure Pulse base directory exists
   ansible.builtin.file:
@@ -29,4 +26,23 @@
     project_src: "{{ pulse_base_dir }}"
     state: present
     pull: always
+  when: not ansible_check_mode
+
+- name: Wait for Pulse container to be running
+  community.docker.docker_container_info:
+    name: "{{ pulse_instance.container }}"
+  register: pulse_container_info
+  until:
+    - pulse_container_info.container is not none
+    - pulse_container_info.container.State is defined
+    - pulse_container_info.container.State.Running | default(false) | bool
+  retries: 10
+  delay: 3
+  when: not ansible_check_mode
+
+- name: Final running state assertion for Pulse
+  ansible.builtin.assert:
+    that:
+      - pulse_container_info.container.State.Running | bool
+    fail_msg: "Container {{ pulse_instance.container }} failed to reach running state."
   when: not ansible_check_mode
