@@ -87,3 +87,4 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/
 1. Open and merge the pull request for `feat/nebula-sync-update` -> `main` in `RWD.Infrastructure`.
 2. Update and deploy Uptime Kuma (`make uptime-kuma-check` / `make uptime-kuma`), then roll out the remaining `.env` (`0600`, `diff: false`) + `docker-compose.yml` updates (`portainer`, `portainer-agent`, `homarr`).
 3. In `RWD.Ai.Stack`, run `./scripts/validate-templates.sh`, commit the mirrored IaC standards/templates/skills and `.env` isolation updates, and open/merge the PR to `main`.
+4. Next time `make nebula` is run, check whether a newer release of `ghcr.io/lovelaze/nebula-sync` (currently pinned to `v0.11.2`) should be adopted.

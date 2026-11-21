@@ -3,3 +3,4 @@
   become: true
   roles:
     - role: apps/uptime_kuma
+    - role: docker/image_cleanup

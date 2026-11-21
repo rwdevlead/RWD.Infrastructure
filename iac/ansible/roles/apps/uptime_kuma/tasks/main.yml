@@ -16,8 +16,29 @@
   community.docker.docker_compose_v2:
     project_src: "{{ uptime_kuma_base_dir }}"
     state: present
+    pull: always
   # Keep check_mode disabled defensively alongside the when-guard so container startup never runs in dry-run
   check_mode: false
+  when: not ansible_check_mode
+
+- name: Wait for Uptime Kuma container to become healthy
+  community.docker.docker_container_info:
+    name: "{{ uptime_kuma.container }}"
+  register: uptime_kuma_container_info
+  until:
+    - uptime_kuma_container_info.container is not none
+    - uptime_kuma_container_info.container.State is defined
+    - uptime_kuma_container_info.container.State.Health.Status | default('') == "healthy"
+  retries: 15
+  delay: 5
+  check_mode: false
+  when: not ansible_check_mode
+
+- name: Final health assertion for Uptime Kuma container
+  ansible.builtin.assert:
+    that:
+      - uptime_kuma_container_info.container.State.Health.Status == "healthy"
+    fail_msg: "Container {{ uptime_kuma.container }} failed to reach healthy state."
   when: not ansible_check_mode
 
 - name: Wait for Uptime Kuma to respond via Traefik
