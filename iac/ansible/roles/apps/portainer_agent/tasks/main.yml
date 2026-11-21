@@ -29,3 +29,24 @@
   community.docker.docker_compose_v2:
     project_src: "{{ portainer_agent_dir }}"
     state: present
+    pull: always
+  when: not ansible_check_mode
+
+- name: Wait for Portainer Agent container to be running
+  community.docker.docker_container_info:
+    name: "{{ portainer_agents[inventory_hostname].name }}"
+  register: portainer_agent_container_info
+  until:
+    - portainer_agent_container_info.container is not none
+    - portainer_agent_container_info.container.State is defined
+    - portainer_agent_container_info.container.State.Running | default(false) | bool
+  retries: 10
+  delay: 3
+  when: not ansible_check_mode
+
+- name: Final running state assertion for Portainer Agent
+  ansible.builtin.assert:
+    that:
+      - portainer_agent_container_info.container.State.Running | bool
+    fail_msg: "Container {{ portainer_agents[inventory_hostname].name }} failed to reach running state."
+  when: not ansible_check_mode
