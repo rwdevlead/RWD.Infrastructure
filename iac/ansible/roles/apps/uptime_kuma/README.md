@@ -49,6 +49,7 @@ None required by this role (`apps/nebula-sync` uses `/ansible/uptime_kuma` → `
   become: true
   roles:
     - role: apps/uptime_kuma
+    - role: docker/image_cleanup
 ```
 
 ---
@@ -65,4 +66,4 @@ make uptime-kuma
 ## Notes
 
 - Publishes `{{ uptime_kuma.port }}:3001`, configures `json-file` logging (`10m`, max `3`), healthchecks `http://localhost:3001`, and opts into Watchtower notifications.
-- After deployment, `tasks/main.yml` polls `https://{{ uptime_kuma.domain }}` (with `validate_certs: false`) until HTTP `200` is returned.
+- After deployment (`pull: always`), `tasks/main.yml` waits for `{{ uptime_kuma.container }}` to reach Docker `healthy` status and then polls `https://{{ uptime_kuma.domain }}` (with `validate_certs: false`) until HTTP `200` is returned.

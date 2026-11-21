@@ -86,3 +86,4 @@ Steps 1–6, inline comment cleanup, NUT `diff: false` suppression, IaC bug-fix/
 1. Open and merge the pull request for `feat/mailrise-update` -> `main` in `RWD.Infrastructure` (`/create-pr`).
 2. Roll out the remaining `.env` (`0600`, `diff: false`) + `docker-compose.yml` updates to `dev-docker-02` and `prod-docker-01` via `make <app>-check` and `make <app>` (`nebula`, `portainer`, `portainer-agent`, `homarr`), removing the old standalone `nebula-sync` container once so `docker_compose_v2` can manage it cleanly.
 3. In `RWD.Ai.Stack`, run `./scripts/validate-templates.sh`, commit the mirrored IaC standards/templates/skills and `.env` isolation updates, and open/merge the PR to `main`.
+4. Next time `make nebula` is run, check whether a newer release of `ghcr.io/lovelaze/nebula-sync` (currently pinned to `v0.11.2`) should be adopted.
