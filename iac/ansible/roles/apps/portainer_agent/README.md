@@ -57,6 +57,7 @@ Deploys the Portainer Agent container via Docker Compose on hosts in the `portai
   roles:
     - infisical_secrets
     - apps/portainer_agent
+    - docker/image_cleanup
 ```
 
 ---
@@ -72,5 +73,5 @@ make portainer-agent
 
 ## Notes
 
-- Runs `portainer/agent:latest` with `restart: always`, exposing `{{ portainer_agent_port }}:9001` and mounting `/var/run/docker.sock` and `/var/lib/docker/volumes`.
+- Runs `portainer/agent:latest` (`pull: always`) with `restart: always`, exposing `{{ portainer_agent_port }}:9001`, mounting `/var/run/docker.sock` and `/var/lib/docker/volumes`, and asserting the container reaches `running` state.
 - Renders `AGENT_SECRET` into `{{ portainer_agent_dir }}/.env` (`mode: "0600"`, `diff: false`) and references `${AGENT_SECRET}` in `docker-compose.yml` (`mode: "0644"`).
