@@ -1,4 +1,5 @@
 ---
 homarr_version: latest
 homarr_base_dir: "{{ docker_base_dir }}/{{ homarr.container }}"
+homarr_data_dir: "{{ docker_base_mnt }}/{{ homarr.container }}"
 homarr_config_dir: "{{ homarr_base_dir }}/config"

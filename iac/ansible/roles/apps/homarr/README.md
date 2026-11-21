@@ -19,7 +19,8 @@ Deploys the Homarr homelab dashboard via Docker Compose on hosts in the `homarr`
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `homarr_version` | `ghcr.io/homarr-labs/homarr` image tag | `latest` |
-| `homarr_base_dir` | Host directory for `docker-compose.yml` and `/appdata` mount | `"{{ docker_base_dir }}/{{ homarr.container }}"` |
+| `homarr_base_dir` | Host directory for `docker-compose.yml` and `.env` | `"{{ docker_base_dir }}/{{ homarr.container }}"` |
+| `homarr_data_dir` | Persistent NFS directory mounted to `/appdata` | `"{{ docker_base_mnt }}/{{ homarr.container }}"` |
 | `homarr_config_dir` | Config subdirectory path variable | `"{{ homarr_base_dir }}/config"` |
 
 ### Group Variables (`inventories/group_vars/docker_hosts.yml`)
@@ -56,6 +57,7 @@ Deploys the Homarr homelab dashboard via Docker Compose on hosts in the `homarr`
   roles:
     - infisical_secrets
     - apps/homarr
+    - docker/image_cleanup
 ```
 
 ---
@@ -71,6 +73,6 @@ make homarr
 
 ## Notes
 
-- Mounts `{{ homarr_base_dir }}:/appdata` and `/var/run/docker.sock:/var/run/docker.sock:ro`, publishes `{{ homarr.port }}:7575`, and opts into Watchtower notifications.
+- Mounts `{{ homarr_data_dir }}:/appdata` and `/var/run/docker.sock:/var/run/docker.sock:ro`, publishes `{{ homarr.port }}:7575`, and opts into Watchtower notifications.
 - Renders `SECRET_ENCRYPTION_KEY` into `{{ homarr_base_dir }}/.env` (`mode: "0600"`, `diff: false`) and references `${SECRET_ENCRYPTION_KEY}` in `docker-compose.yml` (`mode: "0644"`).
-- After starting the container, `tasks/main.yml` polls `https://{{ homarr.domain }}` (with `validate_certs: false`) until HTTP `200` is returned.
+- After starting the container (`pull: always`), `tasks/main.yml` asserts `{{ homarr.container }}` reaches `running` state and polls `https://{{ homarr.domain }}` (with `validate_certs: false`) until HTTP `200` is returned.

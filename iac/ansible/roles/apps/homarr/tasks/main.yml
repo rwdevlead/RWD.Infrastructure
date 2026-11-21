@@ -1,3 +1,8 @@
+- name: Ensure Homarr data directory exists
+  ansible.builtin.file:
+    path: "{{ homarr_data_dir }}"
+    state: directory
+
 - name: Create Homarr base directory
   file:
     path: "{{ homarr_base_dir }}"
@@ -30,8 +35,29 @@
   community.docker.docker_compose_v2:
     project_src: "{{ homarr_base_dir }}"
     state: present
+    pull: always
   # Keep check_mode disabled defensively alongside the when-guard so container startup never runs in dry-run
   check_mode: false
+  when: not ansible_check_mode
+
+- name: Wait for Homarr container to be running
+  community.docker.docker_container_info:
+    name: "{{ homarr.container }}"
+  register: homarr_container_info
+  until:
+    - homarr_container_info.container is not none
+    - homarr_container_info.container.State is defined
+    - homarr_container_info.container.State.Running | default(false) | bool
+  retries: 10
+  delay: 3
+  check_mode: false
+  when: not ansible_check_mode
+
+- name: Final running state assertion for Homarr
+  ansible.builtin.assert:
+    that:
+      - homarr_container_info.container.State.Running | bool
+    fail_msg: "Container {{ homarr.container }} failed to reach running state."
   when: not ansible_check_mode
 
 - name: Wait for Homarr to respond via Traefik
