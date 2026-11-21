@@ -9,3 +9,4 @@
   roles:
     - infisical_secrets
     - apps/nebula-sync
+    - docker/image_cleanup

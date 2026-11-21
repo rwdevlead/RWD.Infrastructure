@@ -65,6 +65,7 @@ Deploys `nebula-sync` on `prod-docker-01` to synchronize configuration from the 
   roles:
     - infisical_secrets
     - apps/nebula-sync
+    - docker/image_cleanup
 ```
 
 ---
@@ -80,6 +81,6 @@ make nebula
 
 ## Notes
 
-- Deploys `ghcr.io/lovelaze/nebula-sync:v0.11.2` via Docker Compose with `FULL_SYNC=true`, `RUN_GRAVITY=false`, `CRON="0 * * * *"`, and `TZ="{{ shared_timezone }}"`.
+- Deploys `ghcr.io/lovelaze/nebula-sync:v0.11.2` via Docker Compose (`pull: always`) with `FULL_SYNC=true`, `RUN_GRAVITY=false`, `CRON="0 * * * *"`, and `TZ="{{ shared_timezone }}"`, then verifies the `nebula-sync` container is running.
 - Renders `NEBULA_SYNC_PRIMARY_TOKEN`, `NEBULA_SYNC_REPLICA1_TOKEN`, and `NEBULA_PUSH_TOKEN` into `{{ nebula_sync_base_dir }}/.env` (`mode: "0600"`, `diff: false`) and references them via `${...}` in `docker-compose.yml` (`mode: "0644"`).
 - Individual `SYNC_CONFIG_*` and `SYNC_GRAVITY_*` flags are explicitly set to `"false"` because `FULL_SYNC="true"` is enabled.
